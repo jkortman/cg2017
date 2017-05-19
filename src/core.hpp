@@ -11,6 +11,12 @@
 #include <glm/glm.hpp>
 #include <string>
 
+#ifndef MAIN_FILE
+    #define EXTERN extern
+#else
+    #define EXTERN
+#endif
+
 // --------------------------
 // -- Core type defintions --
 // --------------------------
@@ -29,43 +35,51 @@ const glm::vec3 AXIS_Z                  = glm::vec3(0.0f, 0.0f, 1.0f);
 const int       DEFAULT_WINDOW_HEIGHT   = 480;
 const int       DEFAULT_WINDOW_WIDTH    = 640;
 const float     DEFAULT_FOV             = 70.0f;
+const float     DEFAULT_ASPECT          = float(DEFAULT_WINDOW_WIDTH)
+                                            / DEFAULT_WINDOW_HEIGHT;
+const float     DEFAULT_NEAR            = 0.05;
+const float     DEFAULT_FAR             = 10.0;
 
 // -------------
 // -- Globals --
 // -------------
 // Window properties
 // TODO: These can probably be refactored out to not be globals!
-GLFWwindow* window;
-int         window_width;
-int         window_height;
-// The file to log errors and warnings to.
-FILE*       logfile = stderr;
+EXTERN GLFWwindow* window;
+EXTERN int         window_width;
+EXTERN int         window_height;
 
 // ---------------------------------
 // -- Warning and error functions --
 // ---------------------------------
+void warn(const std::string& msg);
+void warn_if(bool test, const std::string& msg);
+using fatal_cleanup_fn = void(*)();   // no arguments, void return value
+void fatal(const std::string& msg, fatal_cleanup_fn cleanup=nullptr);
+void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup=nullptr);
+
+#ifdef MAIN_FILE
 // Warn the user.
-static void warn(const std::string& msg)
+void warn(const std::string& msg)
 {
-    std::fprintf(logfile, "Warning: %s\n", msg.c_str());
+    std::fprintf(stderr, "Warning: %s\n", msg.c_str());
 }
 
 // Warn if a test fails.
-static void warn_if(bool test, const std::string& msg)
+void warn_if(bool test, const std::string& msg)
 {
     if (!test) warn(msg);
 }
 
 // Fatal error - cleanup and exit.
-using fatal_cleanup_fn = void(*)();   // no arguments, void return value
-static void fatal(const std::string& msg, fatal_cleanup_fn cleanup=nullptr)
+void fatal(const std::string& msg, fatal_cleanup_fn cleanup)
 {
-    std::fprintf(logfile, "Error: %s\n", msg.c_str());
+    std::fprintf(stderr, "Error: %s\n", msg.c_str());
     std::exit(EXIT_FAILURE);
 }
 
 // Fatal error if a test fails.
-static void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup=nullptr)
+void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup)
 {
     if (!test)
     {
@@ -74,5 +88,7 @@ static void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup=nullpt
         fatal(msg, cleanup);
     }
 }
+#endif
 
+#undef EXTERN
 #endif // CORE_H
