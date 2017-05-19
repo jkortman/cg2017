@@ -3,15 +3,14 @@
 #include "Renderer.hpp"
 
 #include <array>
+#include <cstdio>
 #include <unordered_map>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 Renderer::Renderer()
-{
-    initialize();
-}
+{}
 
 // Callback for GLFW errors.
 static void error_callback(int error, const char* description)
@@ -36,7 +35,7 @@ void Renderer::initialize()
     // Setup the window.
     window_width  = DEFAULT_WINDOW_WIDTH;
     window_height = DEFAULT_WINDOW_HEIGHT;
-    GLFWwindow* window = glfwCreateWindow(
+    window = glfwCreateWindow(
         window_width, window_height, "!", nullptr, nullptr);
     fatal_if(window, "Failed to create window", glfwTerminate);
     glfwMakeContextCurrent(window);
@@ -228,6 +227,8 @@ void Renderer::render(const Scene& scene)
     // Load uniforms that are constant for every object into each shader program.
     for (const auto& shader : scene.shaders)
     {
+        glUseProgram(shader->program_id);
+
         // Load projection matrix
         // TODO - this doesn't need to happen every time!
         shader->assert_existence("ProjectionMatrix");
