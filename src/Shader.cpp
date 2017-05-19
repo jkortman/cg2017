@@ -37,13 +37,12 @@ void Shader::load(
 
 bool Shader::exists(const std::string& uniform)
 {
-    //return glGetU
-    return false;   // todo
+    return (glGetUniformLocation(program_id, "ProjectionMatrix") == -1);
 }
 
-void Shader::assert(const std::string& uniform)
+void Shader::assert_existence(const std::string& uniform)
 {
-
+    if (!exists(uniform)) fatal("Uniform '" + uniform + "' does not exist");
 }
 
 // TODO: Cite where this comes from!
