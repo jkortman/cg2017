@@ -1,5 +1,7 @@
 // Main function for CG 2017 final project.
 
+#include <cassert>
+
 #define MAIN_FILE
 #include "core.hpp"
 #include "Mesh.hpp"
@@ -9,8 +11,13 @@
 
 int main(int argc, char** argv)
 {
+    std::printf("starting\n");
+
     Renderer renderer;
     Scene scene;
+
+    // Renderer setup
+    renderer.initialize();
 
     // Scene setup
     scene.camera = Camera(
@@ -21,16 +28,19 @@ int main(int argc, char** argv)
         0.05f,                          // near
         10.0f);                         // far
 
-    scene.give_shader("test1", new Shader("shaders/test1.vert", "shaders/test1.frag"));
-    scene.give_mesh("Barrel", Mesh::load_obj("models/Barrel/", "Barrel02.obj"));
+    Shader* shader = new Shader("shaders/test1.vert", "shaders/test1.frag");
+    scene.give_shader("test1", shader);
+
+    Mesh* mesh = Mesh::load_obj("models/tree/", "PineTree03.obj");
+    renderer.assign_vao(mesh);
+    renderer.create_materials(mesh);
+    scene.give_mesh("Barrel", mesh);
+
     scene.objects.push_back(Object(
         scene.get_mesh("Barrel"),               // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),            // position
         scene.get_shader("test1")->program_id   // shader id
     ));
-
-    // Renderer setup
-    renderer.initialize();
 
     // Rendering loop
     while (!renderer.should_end())
