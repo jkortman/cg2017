@@ -11,12 +11,14 @@
 
 #include "tiny_obj_loader.h"
 
-class Mesh
+struct Mesh
 {
-public:
+    // Create a Mesh
     static Mesh* load_obj(
         const std::string& dir, const std::string& objfile);
+    // Mesh properties.
     std::vector<tinyobj::shape_t> shapes;
+    int num_shapes;
     std::vector<tinyobj::material_t> materials;
     // vaos for each shape
     std::vector<unsigned int> vaos;

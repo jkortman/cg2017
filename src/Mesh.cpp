@@ -17,6 +17,7 @@ Mesh* Mesh::load_obj(const std::string& dir, const std::string& file) {
         err,
         (dir+file).c_str(),
         dir.c_str());
+    mesh->num_shapes = mesh->shapes.size();
 
     if (!result) {
         std::fprintf(stderr, "Error in Mesh::load(): %s", err.c_str());
