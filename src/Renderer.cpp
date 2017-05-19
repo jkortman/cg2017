@@ -5,6 +5,9 @@
 #include <array>
 #include <unordered_map>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 Renderer::Renderer()
 {
     initialize();
@@ -120,7 +123,7 @@ bool Renderer::assign_vao(Mesh* mesh)
 // Forward declare helper functions for material loading.
 enum ImageFormat {JPEG, PNG, UNKNOWN};
 static ImageFormat get_image_type(const std::string& path);
-void load_texture(const std::string& path);
+static void load_texture(const std::string& path);
 
 // Read and load mesh textures onto the GPU.
 bool Renderer::create_materials(Mesh* mesh)
@@ -289,7 +292,7 @@ bool Renderer::should_end()
 // -- Helper functions --
 // ----------------------
 // Get the format of an image (supported: PNG or JPEG).
-ImageFormat get_image_type(const std::string& path) {
+static ImageFormat get_image_type(const std::string& path) {
     if (path.substr(path.length() - 4) == std::string(".jpg")
         || path.substr(path.length() - 5) == std::string(".jpeg"))
         return JPEG;
@@ -300,7 +303,7 @@ ImageFormat get_image_type(const std::string& path) {
 }
 
 // Load a texture from a given path to an image
-void load_texture(std::string path)
+static void load_texture(const std::string& path)
 {
     ImageFormat image_fmt = get_image_type(path);
     int x, y, n;
