@@ -38,5 +38,4 @@ Shader* Scene::get_shader(const std::string& name) {
         return nullptr;
     }
     return owned_shaders[name].get();
-
 }
