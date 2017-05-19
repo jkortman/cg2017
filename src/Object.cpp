@@ -6,7 +6,7 @@
 
 Object::Object(Mesh* mesh, const glm::vec3& position, ShaderID program_id)
 {
-    initialize(mesh, glm::vec4(position, 1.0));
+    initialize(mesh, glm::vec4(position, 1.0), program_id);
 }
 
 Object::Object(Mesh* mesh, const glm::vec4& position, ShaderID program_id)
