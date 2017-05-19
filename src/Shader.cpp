@@ -10,6 +10,7 @@
 
 #include "Shader.hpp"
 
+// Forward declaration of shader loading function
 GLuint LoadShaders(
     const char * vertex_file_path,
     const char * fragment_file_path);
@@ -30,6 +31,10 @@ void Shader::load(
     const std::string& vertex_file_path,
     const std::string& fragment_file_path)
 {
+    std::string vertname = vertex_file_path.substr(0, vertex_file_path.length() - 5);
+    std::string fragname = vertex_file_path.substr(0, fragment_file_path.length() - 5);
+    if (vertname == fragname) name = vertname;
+    else                      name = vertname + "|" + fragname;
     program_id = LoadShaders(
         vertex_file_path.c_str(),
         fragment_file_path.c_str());

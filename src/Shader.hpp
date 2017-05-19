@@ -4,6 +4,8 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <string>
+
 #include "core.hpp"
 
 class Shader
@@ -22,8 +24,11 @@ public:
     bool exists(const std::string& uniform);
     // Fail if a uniform does not exist.
     void assert_existence(const std::string& uniform);
-    // The id of the shader program
+
+    // The id of the shader program.
     ShaderID program_id;
+    // The name of the shader program.
+    std::string name;
 };
 
 #endif // SHADER_H
