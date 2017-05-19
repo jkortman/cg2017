@@ -14,14 +14,21 @@ class Object: public Entity
 {
 public:
     Object() = delete;
-    Object(Mesh* mesh, const glm::vec3& position);
-    Object(Mesh* mesh, const glm::vec4& position);
+    Object(
+        Mesh* mesh,
+        const glm::vec3& position,
+        ShaderID program_id=SHADER_NONE);
+    Object(
+        Mesh* mesh,
+        const glm::vec4& position,
+        ShaderID program_id=SHADER_NONE);
 
     // Functions to update and retrieve data.
     const RenderUnit& get_render_unit();
     const glm::mat4&  get_model_matrix();
     const glm::mat3&  get_normal_matrix();
     const ShaderID    get_program_id();
+    void              set_program_id(ShaderID program_id);
 
     // Data
     glm::vec4   position;
@@ -31,7 +38,7 @@ public:
     float       z_rotation;
     RenderUnit  render_unit;
 private:
-    void initialize(Mesh* mesh, const glm::vec4& position);
+    void initialize(Mesh* mesh, const glm::vec4& position, ShaderID program_id);
 };
 
 #endif

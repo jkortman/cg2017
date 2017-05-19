@@ -4,27 +4,26 @@
 
 #include "Object.hpp"
 
-Object::Object(Mesh* mesh, const glm::vec3& position)
+Object::Object(Mesh* mesh, const glm::vec3& position, ShaderID program_id)
 {
     initialize(mesh, glm::vec4(position, 1.0));
 }
 
-Object::Object(Mesh* mesh, const glm::vec4& position)
+Object::Object(Mesh* mesh, const glm::vec4& position, ShaderID program_id)
 {
-    initialize(mesh, position);
+    initialize(mesh, position, program_id);
 }
 
-void Object::initialize(Mesh* mesh, const glm::vec4& position)
+void Object::initialize(Mesh* mesh, const glm::vec4& position, ShaderID program_id)
 {
-    this->render_unit.mesh  = mesh;
-    this->position          = position;
-    this->scale             = glm::vec3(1.0, 1.0, 1.0);
-    this->x_rotation        = 0.0f;
-    this->y_rotation        = 0.0f;
-    this->z_rotation        = 0.0f;
-    this->render_unit
-        .program_id         = SHADER_NONE;
-    this->render_unit       = get_render_unit();
+    this->render_unit.mesh          = mesh;
+    this->position                  = position;
+    this->scale                     = glm::vec3(1.0, 1.0, 1.0);
+    this->x_rotation                = 0.0f;
+    this->y_rotation                = 0.0f;
+    this->z_rotation                = 0.0f;
+    this->render_unit.program_id    = program_id;
+    this->render_unit               = get_render_unit();
 }
 
 
@@ -58,5 +57,10 @@ const glm::mat3& Object::get_normal_matrix()
 const ShaderID Object::get_program_id()
 {
     return render_unit.program_id;
+}
+
+void Object::set_program_id(ShaderID program_id)
+{
+    render_unit.program_id = program_id;
 }
 
