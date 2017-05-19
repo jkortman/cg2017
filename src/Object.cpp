@@ -30,12 +30,12 @@ void Object::initialize(Mesh* mesh, const glm::vec4& position, ShaderID program_
 // Functions to update and retrieve data.
 const RenderUnit& Object::get_render_unit()
 {
-    render_unit.model_matrix  = get_model_matrix();
-    render_unit.normal_matrix = get_normal_matrix();
+    render_unit.model_matrix  = update_model_matrix();
+    render_unit.normal_matrix = update_normal_matrix();
     return render_unit;
 }
 
-const glm::mat4& Object::get_model_matrix()
+const glm::mat4& Object::update_model_matrix()
 {
     glm::mat4& model_matrix = render_unit.model_matrix;
     model_matrix = glm::mat4();
@@ -47,7 +47,7 @@ const glm::mat4& Object::get_model_matrix()
     return model_matrix;
 }
 
-const glm::mat3& Object::get_normal_matrix()
+const glm::mat3& Object::update_normal_matrix()
 {
     render_unit.normal_matrix = glm::mat3(
         glm::transpose(glm::inverse(render_unit.model_matrix)));

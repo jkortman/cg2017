@@ -25,8 +25,8 @@ public:
 
     // Functions to update and retrieve data.
     const RenderUnit& get_render_unit();
-    const glm::mat4&  get_model_matrix();
-    const glm::mat3&  get_normal_matrix();
+    const glm::mat4&  update_model_matrix();
+    const glm::mat3&  update_normal_matrix();
     const ShaderID    get_program_id();
     void              set_program_id(ShaderID program_id);
 
