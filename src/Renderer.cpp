@@ -49,6 +49,14 @@ void Renderer::initialize()
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+
+    // Set callbacks - TODO
+    /*
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, mouse_motion_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetFramebufferSizeCallback(window, reshape_callback);
+    */
 }
 
 // Generate and assign a VAO to a mesh object.
@@ -258,6 +266,25 @@ void Renderer::render(const Scene& scene)
     }
 }
 
+// Cleanup after a single render
+void Renderer::postrender()
+{
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+}
+
+// Cleanup OpenGL environent.
+void Renderer::cleanup()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+// Check if the rendering process should end.
+bool Renderer::should_end()
+{
+    return glfwWindowShouldClose(window);
+}
+
 // ----------------------
 // -- Helper functions --
 // ----------------------
@@ -271,8 +298,6 @@ ImageFormat get_image_type(const std::string& path) {
     warn("Unknown image format for image '" + path + "'");
     return UNKNOWN;
 }
-
-// A red texture to be used when no texture is provided.
 
 // Load a texture from a given path to an image
 void load_texture(std::string path)
@@ -290,7 +315,9 @@ void load_texture(std::string path)
     if (data == nullptr || image_fmt == UNKNOWN) {
         warn("No path to image '" + path  + "'");
 
+        // A red texture to be used when no texture is provided.
         const std::array<unsigned char, 3> error_texture({255, 0, 0});
+
         glTexImage2D(
             GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB,
             GL_UNSIGNED_BYTE, &error_texture[0]);

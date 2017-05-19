@@ -29,6 +29,12 @@ public:
     bool create_materials(Mesh* mesh);
     // Render a scene.
     void render(const Scene& scene);
+    // Cleanup after a single render cycle
+    void postrender();
+    // Cleanup OpenGL environent.
+    void cleanup();
+    // Check if the rendering process should end.
+    bool should_end();
 };
 
 #endif // RENDERER_HPP
