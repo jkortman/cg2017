@@ -21,3 +21,8 @@ Mesh* Scene::get_mesh(const std::string& name)
     }
     return meshes[name].get();
 }
+
+void Scene::give_shader(Shader* shader) {
+    owned_shaders.push_back(std::unique_ptr<Shader>(shader));
+    shaders.push_back(shader);
+}
