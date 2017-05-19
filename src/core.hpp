@@ -1,23 +1,46 @@
-// Core typedefs and constants
+// Core typedefs, constants, and global variables.
 
 #ifndef CORE_H
 #define CORE_H
 
 #include <cstdio>
+#include <cstdlib>
+#define GLFW_INCLUDE_NONE
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <string>
 
+// --------------------------
+// -- Core type defintions --
+// --------------------------
 using ShaderID = unsigned int;
-const ShaderID SHADER_NONE = -1;
 
-const glm::vec3 AXIS_X = glm::vec3(1.0f, 0.0f, 0.0f);
-const glm::vec3 AXIS_Y = glm::vec3(0.0f, 1.0f, 0.0f);
-const glm::vec3 AXIS_Z = glm::vec3(0.0f, 0.0f, 1.0f);
+// ---------------------
+// -- Constant values --
+// ---------------------
+const int       VALS_PER_VERT   = 3;
+const int       VALS_PER_TEX    = 2;
+const int       VALS_PER_NORMAL = 3;
+const ShaderID  SHADER_NONE     = -1;
+const glm::vec3 AXIS_X          = glm::vec3(1.0f, 0.0f, 0.0f);
+const glm::vec3 AXIS_Y          = glm::vec3(0.0f, 1.0f, 0.0f);
+const glm::vec3 AXIS_Z          = glm::vec3(0.0f, 0.0f, 1.0f);
 
-FILE* logfile = stderr;
+// -------------
+// -- Globals --
+// -------------
+// Window properties
+// TODO: These can probably be refactored out to not be globals!
+GLFWwindow* window;
+int         window_width;
+int         window_height;
+// The file to log errors and warnings to.
+FILE*       logfile = stderr;
 
+// ---------------------------------
 // -- Warning and error functions --
-
+// ---------------------------------
 // Warn the user.
 static void warn(const std::string& msg)
 {
