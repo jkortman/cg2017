@@ -37,7 +37,7 @@ void Shader::load(
 
 bool Shader::exists(const std::string& uniform)
 {
-    return (glGetUniformLocation(program_id, "ProjectionMatrix") == -1);
+    return (glGetUniformLocation(program_id, "ProjectionMatrix") != -1);
 }
 
 void Shader::assert_existence(const std::string& uniform)
