@@ -1,5 +1,6 @@
 // Implementation of Shader class member functions
 
+#include <cassert>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -16,13 +17,13 @@ GLuint LoadShaders(
     const char * fragment_file_path);
 
 Shader::Shader()
-    : program_id(-1)
+    : program_id(SHADER_NONE)
 {}
 
 Shader::Shader(
     const std::string& vertex_file_path,
     const std::string& fragment_file_path)
-    : program_id(-1)
+    : program_id(SHADER_NONE)
 {
     load(vertex_file_path, fragment_file_path);
 }
@@ -35,19 +36,24 @@ void Shader::load(
     std::string fragname = vertex_file_path.substr(0, fragment_file_path.length() - 5);
     if (vertname == fragname) name = vertname;
     else                      name = vertname + "|" + fragname;
+    
     program_id = LoadShaders(
         vertex_file_path.c_str(),
         fragment_file_path.c_str());
+    assert(program_id != SHADER_NONE && SHADER_NONE == -1);
 }
 
 bool Shader::exists(const std::string& uniform)
 {
-    return (glGetUniformLocation(program_id, "ProjectionMatrix") != -1);
+    return (glGetUniformLocation(program_id, uniform.c_str()) != -1);
 }
 
 void Shader::assert_existence(const std::string& uniform)
 {
-    if (!exists(uniform)) fatal("Uniform '" + uniform + "' does not exist");
+    if (glGetUniformLocation(program_id, uniform.c_str()) == -1)
+    {
+        fatal("Uniform '" + uniform + "' does not exist");
+    }
 }
 
 // TODO: Cite where this comes from!
