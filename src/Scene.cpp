@@ -2,6 +2,9 @@
 
 #include "Scene.hpp"
 
+#include <cstdio>
+#include <GL/glew.h>
+
 Scene::Scene()
 {}
 
@@ -28,6 +31,9 @@ Mesh* Scene::get_mesh(const std::string& name)
 void Scene::give_shader(const std::string& name, Shader* shader) {
     owned_shaders[name] = std::unique_ptr<Shader>(shader);
     shaders.push_back(shader);
+    
+    glUseProgram(shader->program_id);
+    assert(glGetUniformLocation(shader->program_id, "ProjectionMatrix") != -1);
 }
 
 void Scene::give_shader(Shader* shader) {
