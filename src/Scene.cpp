@@ -12,11 +12,17 @@ Scene::Scene()
 
 void Scene::update(float dt)
 {
+    if (InputHandler::mouse_buttons[GLFW_MOUSE_BUTTON_LEFT])
+    {
+        objects[0].x_rotation += 0.3 * InputHandler::mouse_dy;
+        objects[0].y_rotation += 0.3 * InputHandler::mouse_dx;
+    }
+
+    // Update the model and normal matrices for each object.
     for (auto& object : objects)
     {
-        // Update the matrices for the object.
-        object.get_model_matrix();
-        object.get_normal_matrix();
+        object.update_model_matrix();
+        object.update_normal_matrix();
     }
 }
 
@@ -54,41 +60,6 @@ Shader* Scene::get_shader(const std::string& name) {
         return nullptr;
     }
     return owned_shaders[name].get();
-}
-
-
-void Scene::inform_key(int key, int action)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-}
-
-bool mouse_left_drag = false;
-double last_xpos;   // The last x-position of the mouse.
-double last_ypos;   // The last x-position of the mouse.
-void Scene::inform_mouse_button(int button, int action)
-{
-    fprintf(stderr, "mouse button callback\n");
-    // Update last position of mouse
-    glfwGetCursorPos(window, &last_xpos, &last_ypos);
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-    {
-        mouse_left_drag = (action == GLFW_PRESS);
-    }
-}
-
-void Scene::inform_mouse_motion(double xpos, double ypos)
-{
-    if (mouse_left_drag)
-    {
-        double dx = xpos - last_xpos;
-        double dy = ypos - last_ypos;
-        last_xpos = xpos;
-        last_ypos = ypos;
-        objects[0].x_rotation += 0.5 * dy;
-        objects[0].y_rotation += 0.5 * dx;
-    }
 }
 
 

@@ -15,6 +15,7 @@
 #include "Player.hpp"
 #include "Mesh.hpp"
 #include "Shader.hpp"
+#include "InputHandler.hpp"
 
 class Scene
 {
