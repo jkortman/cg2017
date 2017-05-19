@@ -1,0 +1,49 @@
+# Exported from Wings 3D 1.0.1
+newmtl CartFront
+Ns 100.0
+d 1.0
+illum 2
+Kd 1.0 1.0 1.0
+Ka 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+Ke 0.0 0.0 0.0
+map_Kd CartFront.png
+
+newmtl CartMid
+Ns 100.0
+d 1.0
+illum 2
+Kd 1.0 1.0 1.0
+Ka 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+Ke 0.0 0.0 0.0
+map_Kd CartMid.png
+
+newmtl CartRear
+Ns 100.0
+d 1.0
+illum 2
+Kd 1.0 1.0 1.0
+Ka 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+Ke 0.0 0.0 0.0
+map_Kd CartRear.png
+
+newmtl Metal
+Ns 100.0
+d 1.0
+illum 2
+Kd 0.173581 0.164396 0.211765
+Ka 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+Ke 0.0 0.0 0.0
+
+newmtl Seat
+Ns 100.0
+d 1.0
+illum 2
+Kd 0.502993 0.0666667 0.0588238
+Ka 1.0 1.0 1.0
+Ks 1.0 1.0 1.0
+Ke 0.0 0.0 0.0
+
