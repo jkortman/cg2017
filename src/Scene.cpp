@@ -22,7 +22,21 @@ Mesh* Scene::get_mesh(const std::string& name)
     return meshes[name].get();
 }
 
-void Scene::give_shader(Shader* shader) {
-    owned_shaders.push_back(std::unique_ptr<Shader>(shader));
+void Scene::give_shader(const std::string& name, Shader* shader) {
+    owned_shaders[name] = std::unique_ptr<Shader>(shader);
     shaders.push_back(shader);
+}
+
+void Scene::give_shader(Shader* shader) {
+    give_shader(shader->name, shader);
+}
+
+Shader* Scene::get_shader(const std::string& name) {
+    if (owned_shaders.find(name) == owned_shaders.end())
+    {
+        // 'name' not in meshes
+        return nullptr;
+    }
+    return owned_shaders[name].get();
+
 }

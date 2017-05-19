@@ -31,19 +31,25 @@ public:
     std::vector<LightSource> lights;
     // Access for the shaders required by the scene.
     std::vector<Shader*> shaders;
+
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
+
     // Give the scene a mesh to own.
     void give_mesh(const std::string& name, Mesh* mesh);
-    // Get a mesh owned by the scene.
+    // Get a mesh owned by the scene by name.
     Mesh* get_mesh(const std::string& name);
-    // Give the scene a mesh to own.
+
+    // Give the scene a shader to own.
+    void give_shader(const std::string& name, Shader* shader);
     void give_shader(Shader* shader);
+    // Get a shader owned by the scene by name.
+    Shader* get_shader(const std::string& name);
 private:
     // The meshes, stored as owning pointers hashed by name.
     std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
     // The owned shaders.
-    std::vector<std::unique_ptr<Shader>> owned_shaders;
+    std::unordered_map<std::string, std::unique_ptr<Shader>> owned_shaders;
 };
 
 #endif // SCENE_H
