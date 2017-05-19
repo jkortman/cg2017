@@ -2,6 +2,9 @@
 
 #include "Scene.hpp"
 
+Scene::Scene()
+{}
+
 void Scene::update(float dt)
 {
 

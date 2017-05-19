@@ -19,6 +19,8 @@
 class Scene
 {
 public:
+    Scene();
+
     // The player.
     Player player;
     Camera camera;
