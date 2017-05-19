@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     Renderer renderer;
     Scene scene;
-    InputHandler::set_scene(scene);
+    InputHandler::initialize();
 
     // Renderer setup
     renderer.initialize();
