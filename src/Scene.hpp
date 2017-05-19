@@ -47,6 +47,12 @@ public:
     void give_shader(Shader* shader);
     // Get a shader owned by the scene by name.
     Shader* get_shader(const std::string& name);
+
+    // Input handlers
+    void inform_key(int key, int action);
+    void inform_mouse_button(int button, int action);
+    void inform_mouse_motion(double xpos, double ypos);
+
 private:
     // The meshes, stored as owning pointers hashed by name.
     std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;

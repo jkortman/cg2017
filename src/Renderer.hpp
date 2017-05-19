@@ -14,6 +14,7 @@
 
 #include "core.hpp"
 #include "Scene.hpp"
+#include "InputHandler.hpp"
 
 class Renderer
 {
@@ -21,6 +22,8 @@ public:
     Renderer();
     // Setup the OpenGL environment and settings.
     void initialize();
+    // Register InputHandler functions as callbacks.
+    void set_callbacks();
     // Generate and assign a VAO to a mesh object.
     bool assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.

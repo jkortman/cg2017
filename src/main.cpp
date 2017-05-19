@@ -8,6 +8,7 @@
 #include "Renderer.hpp"
 #include "Scene.hpp"
 #include "Shader.hpp"
+#include "InputHandler.hpp"
 
 int main(int argc, char** argv)
 {
@@ -15,9 +16,11 @@ int main(int argc, char** argv)
 
     Renderer renderer;
     Scene scene;
+    InputHandler::set_scene(scene);
 
     // Renderer setup
     renderer.initialize();
+    renderer.set_callbacks();
 
     // Scene setup
     scene.camera = Camera(
@@ -43,8 +46,10 @@ int main(int argc, char** argv)
     ));
 
     // Rendering loop
+    float dt = 0.0f;
     while (!renderer.should_end())
     {
+        scene.update(dt);
         renderer.render(scene);
         renderer.postrender();
     }

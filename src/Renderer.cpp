@@ -51,14 +51,23 @@ void Renderer::initialize()
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+}
 
-    // Set callbacks - TODO
-    /*
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetCursorPosCallback(window, mouse_motion_callback);
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
-    glfwSetFramebufferSizeCallback(window, reshape_callback);
-    */
+// Callback for window resize
+void reshape_callback(GLFWwindow *window, int x, int y) 
+{
+    window_width = x;
+    window_height = y;
+    glViewport(0, 0, x, y);
+}
+
+// Register InputHandler functions as callbacks.
+void Renderer::set_callbacks()
+{
+    glfwSetKeyCallback              (window, InputHandler::key_callback);
+    glfwSetCursorPosCallback        (window, InputHandler::mouse_motion_callback);
+    glfwSetMouseButtonCallback      (window, InputHandler::mouse_button_callback);
+    glfwSetFramebufferSizeCallback  (window, reshape_callback);
 }
 
 // Generate and assign a VAO to a mesh object.
