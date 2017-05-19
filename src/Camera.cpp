@@ -6,6 +6,14 @@
 #include "Camera.hpp"
 #include "core.hpp"
 
+Camera::Camera()
+    : position(glm::vec4(0.0, 0.0, 0.0, 1.0)),
+      target(glm::vec4(0.0, 0.0, 1.0, 0.0))
+{
+    set_projection(DEFAULT_FOV, DEFAULT_ASPECT, DEFAULT_NEAR, DEFAULT_FAR);
+    update_view();
+}
+
 Camera::Camera(
     const glm::vec4&    position,
     const glm::vec4&    target,
@@ -24,8 +32,8 @@ void Camera::set_projection(float fov, float aspect, float near, float far)
 {
     projection = glm::perspective(
         fov * 3.14f / 180.0f,
-        aspect,         // aspect ratio
-        near,           // near
+        aspect,       // aspect ratio
+        near,         // near
         far);         // far
 }
 

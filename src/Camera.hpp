@@ -12,7 +12,7 @@
 class Camera: public Entity
 {
 public:
-    Camera() = delete;
+    Camera();
     Camera(
         const glm::vec4&    position,
         const glm::vec4&    target,
