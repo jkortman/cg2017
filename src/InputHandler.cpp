@@ -38,7 +38,8 @@ void InputHandler::key_callback(
 
     if (key >= 0 && key < 1024)
     {
-        keys[key] = (action == GLFW_PRESS);
+        if (action == GLFW_PRESS)   keys[key] = true;
+        if (action == GLFW_RELEASE) keys[key] = false;
     }
 }
 
@@ -54,6 +55,3 @@ void InputHandler::mouse_button_callback(
 void InputHandler::mouse_motion_callback(
     GLFWwindow* window, double xpos, double ypos)
 {}
-
-
-
