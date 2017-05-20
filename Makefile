@@ -3,10 +3,15 @@ TARGET = cg2017
 SOURCES = $(shell echo ./src/*.cpp)
 OBJS = $(subst ./src/,./build/,$(SOURCES:.cpp=.o))
 CPPFLAGS = -Wall -std=c++11
+UNAME = $(shell uname)
 # Linux
-#LIB = `pkg-config --static --libs glfw3` -lGLEW -lGL
+ifeq ($(UNAME),Linux)
+	LIB = `pkg-config --static --libs glfw3` -lGLEW -lGL
+endif
 # MacOS
-LIB = `pkg-config --static --libs glfw3` -lGLEW -framework OpenGL
+ifeq ($(UNAME),Darwin)
+	LIB = `pkg-config --static --libs glfw3` -lGLEW -framework OpenGL
+endif
 INC = -I include
 
 all: $(TARGET)
