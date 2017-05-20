@@ -47,7 +47,9 @@ void Scene::give_shader(const std::string& name, Shader* shader) {
     shaders.push_back(shader);
     
     glUseProgram(shader->program_id);
-    assert(glGetUniformLocation(shader->program_id, "ProjectionMatrix") != -1);
+    warn_if(
+        glGetUniformLocation(shader->program_id, "ProjectionMatrix") == -1,
+        "Scene given invalid shader with name '" + name + "'");
 }
 
 void Scene::give_shader(Shader* shader) {

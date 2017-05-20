@@ -1,6 +1,8 @@
 // Implementation of InputHandler class member functions.
 
 #include "InputHandler.hpp"
+
+// Declaration of statics.
 std::array<bool, 1024> InputHandler::keys; 
 std::array<bool, 8>    InputHandler::mouse_buttons;
 double                 InputHandler::mouse_xpos;
@@ -12,6 +14,7 @@ double                 InputHandler::mouse_dy;
 
 void InputHandler::initialize()
 {
+    warn_if(window == nullptr, "InputHandler initialized before GLFW window");
     glfwGetCursorPos(window, &mouse_xpos_prev, &mouse_ypos_prev);
 }
 
