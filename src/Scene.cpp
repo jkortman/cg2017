@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <stdexcept>
 
 Scene::Scene()
 {}
@@ -36,7 +37,7 @@ Mesh* Scene::get_mesh(const std::string& name)
     if (meshes.find(name) == meshes.end())
     {
         // 'name' not in meshes
-        return nullptr;
+        throw std::runtime_error("Invalid mesh name '" + name + "'.");
     }
     return meshes[name].get();
 }
@@ -57,7 +58,7 @@ Shader* Scene::get_shader(const std::string& name) {
     if (owned_shaders.find(name) == owned_shaders.end())
     {
         // 'name' not in meshes
-        return nullptr;
+        throw std::runtime_error("Invalid shader name '" + name + "'.");
     }
     return owned_shaders[name].get();
 }
