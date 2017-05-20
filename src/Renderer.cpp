@@ -22,9 +22,7 @@ static void error_callback(int error, const char* description)
 void Renderer::initialize()
 {
     glfwSetErrorCallback(error_callback);
-    if (!glfwInit()) {
-        fatal("Failed to initialise GLFW");
-    }
+    fatal_if(!glfwInit(), "Failed to initialise GLFW");
 
     // Load OpenGL 3.3 Core Profile.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -37,15 +35,14 @@ void Renderer::initialize()
     window_height = DEFAULT_WINDOW_HEIGHT;
     window = glfwCreateWindow(
         window_width, window_height, "!", nullptr, nullptr);
-    fatal_if(window, "Failed to create window", glfwTerminate);
+    fatal_if(window == nullptr, "Failed to create window", glfwTerminate);
+
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
     // Initialize GLEW.
     glewExperimental = true;
-    if (glewInit() != GLEW_OK) {
-        fatal("Failed to initialise GLEW");
-    }
+    fatal_if(glewInit() != GLEW_OK, "Failed to initialise GLEW");
 
     // Setup OpenGL.
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);

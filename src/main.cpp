@@ -32,24 +32,25 @@ int main(int argc, char** argv)
         0.05f,                          // near
         10.0f);                         // far
 
-    Shader* shader = new Shader("shaders/test1.vert", "shaders/test1.frag");
-    scene.give_shader("test1", shader);
+    Shader* shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
+    scene.give_shader("texture", shader);
 
     Mesh* mesh = Mesh::load_obj("models/tree/", "PineTree03.obj");
     renderer.assign_vao(mesh);
     renderer.create_materials(mesh);
-    scene.give_mesh("Barrel", mesh);
+    scene.give_mesh("PineTree03", mesh);
 
     scene.objects.push_back(Object(
-        scene.get_mesh("Barrel"),               // mesh
-        glm::vec3(0.0f, 0.0f, 0.0f),            // position
-        scene.get_shader("test1")->program_id   // shader id
+        scene.get_mesh("PineTree03"),               // mesh
+        glm::vec3(0.0f, 0.0f, 0.0f),                // position
+        scene.get_shader("texture")->program_id     // shader id
     ));
 
     // Rendering loop
     float dt = 0.0f;
     while (!renderer.should_end())
     {
+        InputHandler::update();
         scene.update(dt);
         renderer.render(scene);
         renderer.postrender();

@@ -45,7 +45,11 @@ const float     DEFAULT_FAR             = 10.0;
 // -------------
 // Window properties
 // TODO: These can probably be refactored out to not be globals!
-EXTERN GLFWwindow* window;
+#ifdef MAIN_FILE
+    GLFWwindow* window = nullptr;
+#else
+    extern GLFWwindow* window;
+#endif
 EXTERN int         window_width;
 EXTERN int         window_height;
 
@@ -68,7 +72,7 @@ void warn(const std::string& msg)
 // Warn if a test fails.
 void warn_if(bool test, const std::string& msg)
 {
-    if (!test) warn(msg);
+    if (test) warn(msg);
 }
 
 // Fatal error - cleanup and exit.
@@ -81,7 +85,7 @@ void fatal(const std::string& msg, fatal_cleanup_fn cleanup)
 // Fatal error if a test fails.
 void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup)
 {
-    if (!test)
+    if (test)
     {
         // Cleanup and exit if test fails.
         if (cleanup != nullptr) cleanup();

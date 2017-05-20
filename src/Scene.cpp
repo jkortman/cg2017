@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <stdexcept>
 
 Scene::Scene()
 {}
@@ -14,8 +15,8 @@ void Scene::update(float dt)
 {
     if (InputHandler::mouse_buttons[GLFW_MOUSE_BUTTON_LEFT])
     {
-        objects[0].x_rotation += 0.3 * InputHandler::mouse_dy;
-        objects[0].y_rotation += 0.3 * InputHandler::mouse_dx;
+        objects[0].x_rotation += 0.3f * float(InputHandler::mouse_dy);
+        objects[0].y_rotation += 0.3f * float(InputHandler::mouse_dx);
     }
 
     // Update the model and normal matrices for each object.
@@ -36,7 +37,7 @@ Mesh* Scene::get_mesh(const std::string& name)
     if (meshes.find(name) == meshes.end())
     {
         // 'name' not in meshes
-        return nullptr;
+        throw std::runtime_error("Invalid mesh name '" + name + "'.");
     }
     return meshes[name].get();
 }
@@ -46,7 +47,9 @@ void Scene::give_shader(const std::string& name, Shader* shader) {
     shaders.push_back(shader);
     
     glUseProgram(shader->program_id);
-    assert(glGetUniformLocation(shader->program_id, "ProjectionMatrix") != -1);
+    warn_if(
+        glGetUniformLocation(shader->program_id, "ProjectionMatrix") == -1,
+        "Scene given invalid shader with name '" + name + "'");
 }
 
 void Scene::give_shader(Shader* shader) {
@@ -57,7 +60,7 @@ Shader* Scene::get_shader(const std::string& name) {
     if (owned_shaders.find(name) == owned_shaders.end())
     {
         // 'name' not in meshes
-        return nullptr;
+        throw std::runtime_error("Invalid shader name '" + name + "'.");
     }
     return owned_shaders[name].get();
 }
