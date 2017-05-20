@@ -6,23 +6,6 @@
 
 #include "Console.hpp"
 
-std::vector<std::string> tokenize(
-    std::string str,
-    const std::string delims)
-{
-    std::vector<std::string> tokens;
-    int pos = str.find(delims);
-
-    while (pos != -1)
-    {
-        tokens.push_back(str.substr(0, pos));
-        str.erase(0,pos+1);
-        pos = str.find(delims);
-    }
-    tokens.push_back(str);
-    return tokens;
-}
-
 int Console::parse()
 {
     // Load input
@@ -44,7 +27,25 @@ int Console::parse()
     std::vector<std::string> InputStorage = tokenize(input, " ");
 
     // Handle input
+
+    
     return 0;
 }
 
 
+std::vector<std::string> Console::tokenize(
+    std::string str,
+    const std::string delims)
+{
+    std::vector<std::string> tokens;
+    int pos = str.find(delims);
+
+    while (pos != -1)
+    {
+        tokens.push_back(str.substr(0, pos));
+        str.erase(0,pos+1);
+        pos = str.find(delims);
+    }
+    tokens.push_back(str);
+    return tokens;
+}
