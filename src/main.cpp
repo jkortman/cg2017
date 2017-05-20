@@ -50,6 +50,7 @@ int main(int argc, char** argv)
     float dt = 0.0f;
     while (!renderer.should_end())
     {
+        InputHandler::update();
         scene.update(dt);
         renderer.render(scene);
         renderer.postrender();

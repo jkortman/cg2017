@@ -8,8 +8,8 @@ class Console
 {
 public:
 	int parse();
-    // get(var);
-    // set(var,value);
+    // get(std::string var);
+    // set(std::string var, std::string value);
     // register(type,var,ptr, writeable=true, what='');
 
 };

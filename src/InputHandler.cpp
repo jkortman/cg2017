@@ -5,17 +5,27 @@
 // Declaration of statics.
 std::array<bool, 1024> InputHandler::keys; 
 std::array<bool, 8>    InputHandler::mouse_buttons;
-double                 InputHandler::mouse_xpos;
-double                 InputHandler::mouse_ypos;
-double                 InputHandler::mouse_xpos_prev;
-double                 InputHandler::mouse_ypos_prev;
+double                 InputHandler::mouse_x;
+double                 InputHandler::mouse_y;
 double                 InputHandler::mouse_dx;
 double                 InputHandler::mouse_dy;
 
 void InputHandler::initialize()
 {
     warn_if(window == nullptr, "InputHandler initialized before GLFW window");
-    glfwGetCursorPos(window, &mouse_xpos_prev, &mouse_ypos_prev);
+    glfwGetCursorPos(window, &mouse_x, &mouse_y);
+    mouse_dx = 0.0;
+    mouse_dy = 0.0;
+}
+
+void InputHandler::update()
+{
+    double mouse_x_new, mouse_y_new;
+    glfwGetCursorPos(window, &mouse_x_new, &mouse_y_new);
+    mouse_dx = mouse_x_new - mouse_x;
+    mouse_dy = mouse_y_new - mouse_y;
+    mouse_x = mouse_x_new;
+    mouse_y = mouse_y_new;
 }
 
 void InputHandler::key_callback(
@@ -43,12 +53,7 @@ void InputHandler::mouse_button_callback(
 
 void InputHandler::mouse_motion_callback(
     GLFWwindow* window, double xpos, double ypos)
-{
-    // Update mouse position variables.
-    mouse_xpos      = xpos;
-    mouse_ypos      = ypos;
-    mouse_dx        = xpos - mouse_xpos_prev;
-    mouse_dy        = ypos - mouse_ypos_prev;
-    mouse_xpos_prev = xpos;
-    mouse_ypos_prev = ypos;
-}
+{}
+
+
+

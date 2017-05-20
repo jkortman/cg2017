@@ -45,13 +45,13 @@ const float     DEFAULT_FAR             = 10.0;
 // -------------
 // Window properties
 // TODO: These can probably be refactored out to not be globals!
-EXTERN GLFWwindow* window;
+#ifdef MAIN_FILE
+    GLFWwindow* window = nullptr;
+#else
+    extern GLFWwindow* window;
+#endif
 EXTERN int         window_width;
 EXTERN int         window_height;
-
-#ifdef MAIN_FILE
-    window = nullptr;
-#endif
 
 // ---------------------------------
 // -- Warning and error functions --
