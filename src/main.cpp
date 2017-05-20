@@ -31,8 +31,8 @@ int main(int argc, char** argv)
         0.05f,                          // near
         10.0f);                         // far
 
-    Shader* shader = new Shader("shaders/test1.vert", "shaders/test1.frag");
-    scene.give_shader("test1", shader);
+    Shader* shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
+    scene.give_shader("texture", shader);
 
     Mesh* mesh = Mesh::load_obj("models/tree/", "PineTree03.obj");
     renderer.assign_vao(mesh);
