@@ -13,11 +13,17 @@ Scene::Scene()
 
 void Scene::update(float dt)
 {
-    if (InputHandler::mouse_buttons[GLFW_MOUSE_BUTTON_LEFT])
+    if (InputHandler::keys[GLFW_KEY_W])
     {
-        objects[0].x_rotation += 0.3f * float(InputHandler::mouse_dy);
-        objects[0].y_rotation += 0.3f * float(InputHandler::mouse_dx);
+        player.position.z += 0.2;
     }
+    if (InputHandler::keys[GLFW_KEY_S])
+    {
+        player.position.z -= 0.2;
+    }
+
+    camera.position = player.position;
+    camera.update_view();
 
     // Update the model and normal matrices for each object.
     for (auto& object : objects)
