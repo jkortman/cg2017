@@ -16,11 +16,12 @@ int main(int argc, char** argv)
 
     Renderer renderer;
     Scene scene;
-    InputHandler::initialize();
 
     // Renderer setup
     renderer.initialize();
     renderer.set_callbacks();
+    
+    InputHandler::initialize();
 
     // Scene setup
     scene.camera = Camera(
