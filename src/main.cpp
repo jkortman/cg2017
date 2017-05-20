@@ -38,12 +38,12 @@ int main(int argc, char** argv)
     Mesh* mesh = Mesh::load_obj("models/tree/", "PineTree03.obj");
     renderer.assign_vao(mesh);
     renderer.create_materials(mesh);
-    scene.give_mesh("Barrel", mesh);
+    scene.give_mesh("PineTree03", mesh);
 
     scene.objects.push_back(Object(
-        scene.get_mesh("Barrel"),               // mesh
-        glm::vec3(0.0f, 0.0f, 0.0f),            // position
-        scene.get_shader("test1")->program_id   // shader id
+        scene.get_mesh("PineTree03"),               // mesh
+        glm::vec3(0.0f, 0.0f, 0.0f),                // position
+        scene.get_shader("texture")->program_id     // shader id
     ));
 
     // Rendering loop
