@@ -11,21 +11,29 @@
 
 //VarType := enum class {Function, Int, Float, Bool};
 //Var := struct {VarType type, void* pointer, bool writable, std::string what};
-struct Var {VarType type; void* pointer; bool writable; std::string what;};
-std::unordered_map<std::string, Var> variables;
 
-std::vector<std::string> tokenize(std::string str, const std::string delims)
+
+
+Input tokenize(std::string str, const std::string delims)
 {
-    std::vector<std::string> tokens;
+    Input tokens;
     int pos = str.find(delims);
-
-    while (pos != -1)
+    if ( pos == -1)
     {
-        tokens.push_back(str.substr(0, pos));
+        tokens.command = str;
+    } else
+    {
+        tokens.command = str.substr(0, pos);
         str.erase(0,pos+1);
         pos = str.find(delims);
+        while (pos != -1)
+        {
+            tokens.values.push_back(str.substr(0, pos));
+            str.erase(0,pos+1);
+            pos = str.find(delims);
+        }
+        tokens.values.push_back(str);
     }
-    tokens.push_back(str);
     return tokens;
 }
 
@@ -37,37 +45,37 @@ int Console::parse()
     {
         std::cout << ">>";
         // Load input
-        std::string input;
-        getline(std::cin, input);
+        std::string input_string;
+        getline(std::cin, input_string);
 
-        if ( input.size() == 0) return -1; // No input
+        if ( input_string.size() == 0) return -1; // No input
 
         // Strip leading/trailing spaces
-        int start = input.find_first_not_of(" ");
-        int end = input.find_last_not_of(" ");
+        int start = input_string.find_first_not_of(" ");
+        int end = input_string.find_last_not_of(" ");
         if (start == -1) start = 0; // No leading spaces
         if (end == -1) end = 0;     // No trailing spaces
-        input = input.substr(start,end-start+1);
+        input_string = input_string.substr(start,end-start+1);
 
-        if ( input.size() == 1) return -1; // Only spaces
+        if ( input_string.size() == 1) return -1; // Only spaces
 
         // Tokenise input
-        std::vector<std::string> InputStorage = tokenize(input, " ");
+        Input input = tokenize(input_string, " "); // Input = {string command, vector<string> values }
 
         // Handle input
         Var container;
-        std::string cmd = InputStorage.at(0);
-        std::string name, value;
+        //std::string cmd = InputStorage.at(0);
+        std::string name;
         //Special commands
-        if (cmd == "continue")
+        if (input.command == "continue")
         {
             isRunning = false;
             std::cout << "Returning to game" << std::endl;
-        } else if (cmd == "quit")
+        } else if (input.command == "quit")
         {
             isRunning = false;
             std::cout << "Shutting down program" << std::endl;
-        } else if (cmd == "help")
+        } else if (input.command == "help")
         {
             std::cout << "Availible commands:" << std::endl;
             std::cout << "help - prints out this." << std::endl;
@@ -78,9 +86,9 @@ int Console::parse()
             std::cout << "<var> - returns value of variable (if registered)." << std::endl;
             std::cout << "<var> <value> - sets value of variable (if registered and writable)." << std::endl << std::endl;
             // Print Help
-        } else if (cmd == "whatis")
+        } else if (input.command == "whatis")
         {
-            name = InputStorage.at(1);
+            name = input.values.at(0);
             container = variables[name];
             if (container.type != Invalid)
             {
@@ -93,23 +101,23 @@ int Console::parse()
                 std::cout << name << " is not a registered variable." << std::endl;
             }
             
-        } else if (cmd == "noclip")
+        } else if (input.command == "noclip")
         {
             // Set noclip flag
         } 
 
         // Variable Set/Get commands
-        container = variables[cmd];
+        container = variables[input.command];
         if (container.type != Invalid)
         {
-            if (InputStorage.size() == 1)
+            if (input.values.size() == 0)
             {
-                // get_var()
-                std::cout << cmd << " = " << "value" << std::endl;    
-            } else if (InputStorage.size() > 1)
+                get_var(container);
+                //std::cout << cmd << " = " << "value" << std::endl;    
+            } else if (input.values.size() > 0)
             {
-                std::cout << cmd << " has been set to " << InputStorage.at(1) << std::endl;
-                // set_var()
+                //std::cout << cmd << " has been set to " << InputStorage.at(1) << std::endl;
+                set_var(container, input.values);
             }
         } else
         {
@@ -129,10 +137,10 @@ int Console::parse()
 
 
 
-void Console::register_var(VarType type, std::string var, void* ptr, bool writable, std::string what)
+void Console::register_var(std::string name, VarType type, void* ptr, std::string what, bool writable)
 {
-    Var h = {type, ptr, writable, what};
-    variables[var] = h;
+    Var h = {name, type, ptr, what, writable};
+    variables[name] = h;
 };
 
 
@@ -140,8 +148,8 @@ void Console::register_var(VarType type, std::string var, void* ptr, bool writab
 void Console::initialize()
 {
     //register_var(Function,"help",nullptr,false,"Lists possible commands");
-    register_var(Int,"mode",nullptr,true,"Reports the current mode.");
-    register_var(Float,"fov",nullptr, true,"Sets the current Field of View of camera.");
+    register_var("mode",Int,nullptr,"Reports the current mode.", true);
+    //register_var(Float,"fov",nullptr, true,"Sets the current Field of View of camera.");
 
 }
 
@@ -166,3 +174,84 @@ void Console::initialize()
 // }
 
 
+void Console::get_var(Var container)
+{
+    std::cout << container.name << " = ";// << (container.pointer) <<std::endl;
+    if (container.type == Float)
+    {
+        float* ptr = (float*)container.pointer;
+        std::cout << *ptr << std::endl;
+    }
+    switch(container.type)
+    {
+        case VarType::Float:
+        {
+            float* ptr = (float*)container.pointer;
+            std::cout << *ptr << std::endl;
+        }
+        break;
+        case VarType::Int:
+        {
+            int* ptr = (int*)container.pointer;
+            std::cout << *ptr << std::endl;
+            
+        }
+        break;
+        case VarType::Bool:
+        {
+            bool* ptr = (bool*)container.pointer;
+            
+            //*ptr = stob(values.at(0));
+            std::cout << *ptr << std::endl;
+            
+        }
+        break;
+        case VarType::Invalid:
+        default:
+            //error
+        break;
+
+    }
+}
+
+void Console::set_var(Var container, std::vector<std::string> values)
+{
+    if (container.writable)
+    {
+        std::cout << "Set " << container.name << " to ";
+        switch(container.type)
+        {
+            case VarType::Float:
+            {
+                float* ptr = (float*)container.pointer;
+                *ptr = std::stof(values.at(0));
+                std::cout << *ptr << std::endl;
+            }
+            break;
+            case VarType::Int:
+            {
+                int* ptr = (int*)container.pointer;
+                *ptr = std::stoi(values.at(0));
+                std::cout << values.at(0) << std::endl;
+            }
+            break;
+            case VarType::Bool:
+            {
+                bool* ptr = (bool*)container.pointer;
+                if ((values.at(0) == "0") || (values.at(0) == "false")) *ptr = false;
+                else if ((values.at(0) == "1") || (values.at(0) == "true")) *ptr = true;
+                std::cout << *ptr << std::endl;        
+            }
+            break;
+            case VarType::Invalid:
+            default:
+                //error
+            break;
+        }        
+    }
+    else
+    {
+        std::cout << "Error: " << container.name << " is not writable. Value not set." << std::endl;
+    }
+    
+}
