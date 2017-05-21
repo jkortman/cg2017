@@ -24,13 +24,15 @@ int main(int argc, char** argv)
     InputHandler::initialize();
 
     // Scene setup
+    scene.player.position = glm::vec3(0.0, 0.0, 3.0);
+    scene.player.direction = glm::vec3(0.0, 0.0, -1.0);
     scene.camera = Camera(
-        glm::vec4(0.0, 0.0, 3.0, 1.0),  // position
-        glm::vec4(0.0, 0.0, 0.0, 1.0),  // target
-        DEFAULT_FOV,                    // fov
-        DEFAULT_ASPECT,                 // aspect
-        0.05f,                          // near
-        10.0f);                         // far
+        glm::vec3(0.0, 0.0, 3.0),          // position
+        scene.player.direction, // target
+        DEFAULT_FOV,                            // fov
+        DEFAULT_ASPECT,                         // aspect
+        0.05f,                                  // near
+        1000.0f);                               // far
 
     Shader* shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
     scene.give_shader("texture", shader);

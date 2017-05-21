@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core.hpp"
 #include "Object.hpp"
 #include "LightSource.hpp"
 #include "Camera.hpp"
