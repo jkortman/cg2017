@@ -260,7 +260,7 @@ void Renderer::render(const Scene& scene)
     // Load and draw each object in the scene.
     for (const auto& object : scene.objects)
     {
-        const RenderUnit& render_unit = object.render_unit;
+        const RenderUnit& render_unit = object->render_unit;
         glUseProgram(render_unit.program_id);
 
         // Load model and normal matrices.

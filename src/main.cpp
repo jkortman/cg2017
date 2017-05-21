@@ -46,19 +46,19 @@ int main(int argc, char** argv)
     scene.give_mesh("Pine1", mesh_pine1);
     scene.give_mesh("Pine2", mesh_pine2);
 
-    scene.objects.push_back(Object(
+    scene.give_object(new Object(
         scene.get_mesh("Pine1"),                    // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),                // position
         scene.get_shader("texture")->program_id     // shader id
     ));
 
-    scene.objects.push_back(Object(
+    scene.give_object(new Object(
         scene.get_mesh("Pine2"),                    // mesh
         glm::vec3(2.0f, 0.0f, 1.0f),                // position
         scene.get_shader("texture")->program_id     // shader id
     ));
 
-    scene.objects.push_back(Object(
+    scene.give_object(new Object(
         scene.get_mesh("Pine1"),                    // mesh
         glm::vec3(-3.0f, 0.0f, 6.0f),               // position
         scene.get_shader("texture")->program_id     // shader id

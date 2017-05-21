@@ -70,9 +70,15 @@ void Scene::update(float dt)
     // Update the model and normal matrices for each object.
     for (auto& object : objects)
     {
-        object.update_model_matrix();
-        object.update_normal_matrix();
+        object->update_model_matrix();
+        object->update_normal_matrix();
     }
+}
+
+void Scene::give_object(Object* object)
+{
+    objects.push_back(object);
+    owned_objects.push_back(std::unique_ptr<Object>(object));
 }
 
 void Scene::give_mesh(const std::string& name, Mesh* mesh)

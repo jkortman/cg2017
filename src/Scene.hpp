@@ -27,7 +27,7 @@ public:
     Player player;
     Camera camera;
     // The objects present in the scene.
-    std::vector<Object> objects;
+    std::vector<Object*> objects;
     // Directional lights for day and night, which cast shadows.
     LightSource world_light_day;
     LightSource world_light_night;
@@ -38,6 +38,9 @@ public:
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
+
+    // Give the scene an object to own.
+    void give_object(Object* object);
 
     // Give the scene a mesh to own.
     void give_mesh(const std::string& name, Mesh* mesh);
@@ -62,6 +65,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
     // The owned shaders.
     std::unordered_map<std::string, std::unique_ptr<Shader>> owned_shaders;
+    std::vector<std::unique_ptr<Object>> owned_objects;
 };
 
 #endif // SCENE_H
