@@ -15,7 +15,6 @@ public:
 	int parse();
     void get_var(Var container);
     void set_var(Var container, std::vector<std::string> values);
-    // set(std::string var, std::string value);
     void register_var(std::string name, VarType type, void* ptr, std::string what="", bool writeable=true);
 
 private:
