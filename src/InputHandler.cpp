@@ -16,6 +16,7 @@ void InputHandler::initialize()
     glfwGetCursorPos(window, &mouse_x, &mouse_y);
     mouse_dx = 0.0;
     mouse_dy = 0.0;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void InputHandler::update()
@@ -26,6 +27,7 @@ void InputHandler::update()
     mouse_dy = mouse_y_new - mouse_y;
     mouse_x = mouse_x_new;
     mouse_y = mouse_y_new;
+    //fprintf(stderr, "%f %f\n", mouse_dx, mouse_dy);
 }
 
 void InputHandler::key_callback(
