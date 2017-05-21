@@ -8,12 +8,6 @@
 #include "Console.hpp"
 
 
-
-//VarType := enum class {Function, Int, Float, Bool};
-//Var := struct {VarType type, void* pointer, bool writable, std::string what};
-
-
-
 Input tokenize(std::string str, const std::string delims)
 {
     Input tokens;
@@ -124,9 +118,6 @@ int Console::parse()
             // Error
         }
 
-
-
-             
         //        
         
     }
@@ -147,31 +138,9 @@ void Console::register_var(std::string name, VarType type, void* ptr, std::strin
 
 void Console::initialize()
 {
-    //register_var(Function,"help",nullptr,false,"Lists possible commands");
-    register_var("mode",Int,nullptr,"Reports the current mode.", true);
-    //register_var(Float,"fov",nullptr, true,"Sets the current Field of View of camera.");
+    //Register necessary console commands here.
 
 }
-
-
-// set(std::string varname, string value) {
-//     switch (var.type)
-//     {
-//         case Type::Int:
-//         {
-//             // validate value is int
-//             int i = to_int(value);
-//             int* ptr = var.pointer;
-//             *ptr = int;
-//         }
-//         break;
-//         case Type::Float:
-//         {
-//             //etc
-//         }
-//         break;
-//     }
-// }
 
 
 void Console::get_var(Var container)
