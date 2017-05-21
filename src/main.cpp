@@ -37,14 +37,30 @@ int main(int argc, char** argv)
     Shader* shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
     scene.give_shader("texture", shader);
 
-    Mesh* mesh = Mesh::load_obj("models/tree/", "PineTree03.obj");
-    renderer.assign_vao(mesh);
-    renderer.create_materials(mesh);
-    scene.give_mesh("PineTree03", mesh);
+    Mesh* mesh_pine1 = Mesh::load_obj("models/tree/", "PineTree03.obj");
+    Mesh* mesh_pine2 = Mesh::load_obj("models/pine/", "PineTransp.obj");
+    renderer.assign_vao(mesh_pine1);
+    renderer.assign_vao(mesh_pine2);
+    renderer.create_materials(mesh_pine1);
+    renderer.create_materials(mesh_pine2);
+    scene.give_mesh("Pine1", mesh_pine1);
+    scene.give_mesh("Pine2", mesh_pine2);
 
     scene.objects.push_back(Object(
-        scene.get_mesh("PineTree03"),               // mesh
+        scene.get_mesh("Pine1"),                    // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),                // position
+        scene.get_shader("texture")->program_id     // shader id
+    ));
+
+    scene.objects.push_back(Object(
+        scene.get_mesh("Pine2"),                    // mesh
+        glm::vec3(2.0f, 0.0f, 1.0f),                // position
+        scene.get_shader("texture")->program_id     // shader id
+    ));
+
+    scene.objects.push_back(Object(
+        scene.get_mesh("Pine1"),                    // mesh
+        glm::vec3(-3.0f, 0.0f, 6.0f),               // position
         scene.get_shader("texture")->program_id     // shader id
     ));
 
