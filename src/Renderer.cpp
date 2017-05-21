@@ -67,6 +67,60 @@ void Renderer::set_callbacks()
     glfwSetFramebufferSizeCallback  (window, reshape_callback);
 }
 
+void assign_generic_vao(
+    unsigned int vao,                           // A generated VAO.
+    const std::vector<float>        positions,
+    const std::vector<float>        normals,
+    const std::vector<float>        texcoords,
+    const std::vector<unsigned int> indices)
+{
+    glBindVertexArray(vao);
+
+    // Create buffers for positions, normals, texcoords, indices
+    unsigned int buffer[4];
+    glGenBuffers(4, buffer);
+
+    // Set vertex position attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * positions.size(),
+        positions.data(),
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set normal attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * normals.size(),
+        normals.data(),
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set texcoord attribute
+    if (texcoords.size() != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(float) * texcoords.size(),
+            texcoords.data(),
+            GL_STATIC_DRAW);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, VALS_PER_TEX, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    // Set vertex indices attrib
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[3]);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(float) * indices.size(),
+        indices.data(),
+        GL_STATIC_DRAW);
+}
+
 // Generate and assign a VAO to a mesh object.
 bool Renderer::assign_vao(Mesh* mesh)
 {
@@ -75,51 +129,12 @@ bool Renderer::assign_vao(Mesh* mesh)
 
     // Create a VAO for each shape in the object.
     for (int i = 0; i < mesh->num_shapes; i += 1) {
-        glBindVertexArray(mesh->vaos[i]);
-
-        // Create buffers for positions, normals, texcoords, indices
-        unsigned int buffer[4];
-        glGenBuffers(4, buffer);
-
-        // Set vertex position attribute
-        glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(float) * mesh->shapes[i].mesh.positions.size(),
-            mesh->shapes[i].mesh.positions.data(),
-            GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
-
-        // Set normal attribute
-        glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            sizeof(float) * mesh->shapes[i].mesh.normals.size(),
-            mesh->shapes[i].mesh.normals.data(),
-            GL_STATIC_DRAW);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
-
-        // Set texcoord attribute
-        if (mesh->shapes[i].mesh.texcoords.size() != 0) {
-            glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
-            glBufferData(
-                GL_ARRAY_BUFFER,
-                sizeof(float) * mesh->shapes[i].mesh.texcoords.size(),
-                mesh->shapes[i].mesh.texcoords.data(),
-                GL_STATIC_DRAW);
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, VALS_PER_TEX, GL_FLOAT, GL_FALSE, 0, 0);
-        }
-
-        // Set vertex indices attrib
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[3]);
-        glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            sizeof(float) * mesh->shapes[i].mesh.indices.size(),
-            mesh->shapes[i].mesh.indices.data(),
-            GL_STATIC_DRAW);
+        assign_generic_vao(
+            mesh->vaos[i],
+            mesh->shapes[i].mesh.positions,
+            mesh->shapes[i].mesh.normals,
+            mesh->shapes[i].mesh.texcoords,
+            mesh->shapes[i].mesh.indices);
     }
 
     return true;
