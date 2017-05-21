@@ -17,6 +17,7 @@
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "InputHandler.hpp"
+#include "Landscape.hpp"
 
 class Scene
 {
@@ -35,12 +36,20 @@ public:
     std::vector<LightSource> lights;
     // Access for the shaders required by the scene.
     std::vector<Shader*> shaders;
+    // The landscape.
+    std::unique_ptr<Landscape> landscape;
+    ShaderID landscape_shader;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
 
     // Give the scene an object to own.
     void give_object(Object* object);
+
+    // Give the scene a landscape to own.
+    void give_landscape(Landscape* landscape, const std::string& shader_name);
+    // Get the owned landscape.
+    Landscape* get_landscape();
 
     // Give the scene a mesh to own.
     void give_mesh(const std::string& name, Mesh* mesh);

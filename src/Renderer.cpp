@@ -121,6 +121,19 @@ void assign_generic_vao(
         GL_STATIC_DRAW);
 }
 
+// Generate and assign a VAO to a landscape object.
+bool Renderer::assign_vao(Landscape* landscape)
+{
+    glGenVertexArrays(1, &landscape->vao);
+    assign_generic_vao(
+        landscape->vao,
+        landscape->positions,
+        landscape->normals,
+        std::vector<float>(),
+        landscape->indices);
+    return true;
+}
+
 // Generate and assign a VAO to a mesh object.
 bool Renderer::assign_vao(Mesh* mesh)
 {

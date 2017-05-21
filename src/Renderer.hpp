@@ -24,6 +24,8 @@ public:
     void initialize();
     // Register InputHandler functions as callbacks.
     void set_callbacks();
+    // Generate and assign a VAO to a landscape object.
+    bool assign_vao(Landscape* landscape);
     // Generate and assign a VAO to a mesh object.
     bool assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.

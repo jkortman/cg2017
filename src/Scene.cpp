@@ -81,6 +81,23 @@ void Scene::give_object(Object* object)
     owned_objects.push_back(std::unique_ptr<Object>(object));
 }
 
+void Scene::give_landscape(Landscape* landscape, const std::string& shader_name)
+{
+    this->landscape.reset(landscape);
+    this->landscape_shader = get_shader(shader_name)->program_id;
+
+    // Give the Landscape's objects to the Scene.
+    for (auto object: landscape->objects)
+    {
+        this->give_object(object);
+    }
+}
+
+Landscape* Scene::get_landscape()
+{
+    return landscape.get();
+}
+
 void Scene::give_mesh(const std::string& name, Mesh* mesh)
 {
     meshes[name] = std::unique_ptr<Mesh>(mesh);
