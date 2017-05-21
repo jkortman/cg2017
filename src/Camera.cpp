@@ -7,22 +7,22 @@
 #include "core.hpp"
 
 Camera::Camera()
-    : position(glm::vec4(0.0, 0.0, 0.0, 1.0)),
-      target(glm::vec4(0.0, 0.0, 1.0, 0.0))
+    : position(glm::vec3(0.0, 0.0, 0.0)),
+      direction(glm::vec3(0.0, 0.0, 1.0))
 {
     set_projection(DEFAULT_FOV, DEFAULT_ASPECT, DEFAULT_NEAR, DEFAULT_FAR);
     update_view();
 }
 
 Camera::Camera(
-    const glm::vec4&    position,
-    const glm::vec4&    target,
+    const glm::vec3&    position,
+    const glm::vec3&    direction,
     float               fov,
     float               aspect,
     float               near,
     float               far)
     : position(position),
-      target(target)
+      direction(direction)
 {
     set_projection(fov, aspect, near, far);
     update_view();
@@ -39,16 +39,8 @@ void Camera::set_projection(float fov, float aspect, float near, float far)
 
 void Camera::update_view()
 {
-    glm::vec3 looking_at;
-    if (target.w == 0.0f)
-    {
-        looking_at = glm::vec3(position + target);
-    } else
-    {
-        looking_at = glm::vec3(target);
-    }
     view = glm::lookAt(
-        glm::vec3(position),
-        looking_at,
+        position,
+        position + direction,
         AXIS_Y);
 }

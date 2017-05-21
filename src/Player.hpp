@@ -9,7 +9,7 @@
 class Player: public Entity
 {
 public:
-    glm::vec4 position;
+    glm::vec3 position;
     glm::vec3 direction;
 };
 

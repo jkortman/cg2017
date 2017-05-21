@@ -14,8 +14,8 @@ class Camera: public Entity
 public:
     Camera();
     Camera(
-        const glm::vec4&    position,
-        const glm::vec4&    target,
+        const glm::vec3&    position,
+        const glm::vec3&    direction,
         float               fov,
         float               aspect,
         float               near,
@@ -27,11 +27,8 @@ public:
     void update_view();
 
     // position is a vector for directional lighting.
-    glm::vec4 position;
-    // target can be a vector or a point.
-    // if a vector, it is a direction
-    // if it is a point, it is what the camera is looking at.
-    glm::vec4 target;
+    glm::vec3 position;
+    glm::vec3 direction;
     glm::mat4 projection;
     glm::mat4 view;
 };
