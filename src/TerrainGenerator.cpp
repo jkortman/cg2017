@@ -28,9 +28,9 @@ Landscape* TerrainGenerator::generate()
 
     landscape->indices = 
     {
-        0,1,2,
+        0,2,1,
         1,2,3,
     };
-    
+
     return landscape;
 }

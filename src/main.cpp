@@ -9,6 +9,8 @@
 #include "Scene.hpp"
 #include "Shader.hpp"
 #include "InputHandler.hpp"
+#include "Landscape.hpp"
+#include "TerrainGenerator.hpp"
 
 int main(int argc, char** argv)
 {
@@ -34,8 +36,15 @@ int main(int argc, char** argv)
         0.05f,                                  // near
         1000.0f);                               // far
 
-    Shader* shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
-    scene.give_shader("texture", shader);
+    Shader* tex_shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
+    scene.give_shader("texture", tex_shader);
+    Shader* ls_shader = new Shader("shaders/landscape.vert", "shaders/landscape.frag");
+    scene.give_shader("landscape", ls_shader);
+
+    TerrainGenerator tg;
+    Landscape* landscape = tg.generate();
+    renderer.assign_vao(landscape);
+    scene.give_landscape(landscape, "landscape");
 
     Mesh* mesh_pine1 = Mesh::load_obj("models/tree/", "PineTree03.obj");
     Mesh* mesh_pine2 = Mesh::load_obj("models/pine/", "PineTransp.obj");

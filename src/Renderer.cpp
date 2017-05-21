@@ -285,6 +285,30 @@ void Renderer::render(const Scene& scene)
             1, glm::value_ptr(scene.camera.position));
     }
 
+    // Render the landscape.
+    Landscape* landscape = scene.landscape.get();
+    if (landscape != nullptr)
+    {
+        glUseProgram(scene.landscape_shader);
+
+        // Load model and normal matrices.
+        /*
+        glUniformMatrix4fv(
+            glGetUniformLocation(render_unit.program_id, "ModelMatrix"),
+            1, false, glm::value_ptr(render_unit.model_matrix));
+        glUniformMatrix3fv(
+            glGetUniformLocation(render_unit.program_id, "NormalMatrix"),
+            1, false, glm::value_ptr(render_unit.normal_matrix));
+        */
+        glBindVertexArray(landscape->vao);
+        glDrawElements(
+            GL_TRIANGLES,
+            landscape->indices.size(),
+            GL_UNSIGNED_INT,
+            0);
+        glBindVertexArray(0);
+    }
+
     // Load and draw each object in the scene.
     for (const auto& object : scene.objects)
     {
