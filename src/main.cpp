@@ -6,6 +6,7 @@
 #include "core.hpp"
 #include "Mesh.hpp"
 #include "Renderer.hpp"
+#include "ResourceManager.hpp"
 #include "Scene.hpp"
 #include "Shader.hpp"
 #include "InputHandler.hpp"
@@ -36,41 +37,43 @@ int main(int argc, char** argv)
         0.05f,                                  // near
         1000.0f);                               // far
 
-    Shader* tex_shader = new Shader("shaders/texture.vert", "shaders/texture.frag");
-    scene.give_shader("texture", tex_shader);
-    Shader* ls_shader = new Shader("shaders/landscape.vert", "shaders/landscape.frag");
-    scene.give_shader("landscape", ls_shader);
+    // Create resources.
+    ResourceManager resources;
 
+    // Create shaders.
+    resources.give_shader(
+        "texture", new Shader("shaders/texture.vert", "shaders/texture.frag"));
+    resources.give_shader(
+        "landscape", new Shader("shaders/landscape.vert", "shaders/landscape.frag"));
+    
+    // Create meshes.
+    resources.give_mesh(
+        "Pine01",
+        renderer.create_materials(
+            renderer.assign_vao(
+                Mesh::load_obj("models/tree/", "PineTree03.obj"))));
+    resources.give_mesh(
+        "Pine02",
+        renderer.create_materials(
+            renderer.assign_vao(
+                Mesh::load_obj("models/pine/", "PineTransp.obj"))));
+
+    // Generate landscape.
     TerrainGenerator tg;
     Landscape* landscape = tg.generate();
-    renderer.assign_vao(landscape);
-    scene.give_landscape(landscape, "landscape");
+    landscape = renderer.assign_vao(landscape);
+    scene.give_landscape(landscape, resources.get_shader("landscape"));
 
-    Mesh* mesh_pine1 = Mesh::load_obj("models/tree/", "PineTree03.obj");
-    Mesh* mesh_pine2 = Mesh::load_obj("models/pine/", "PineTransp.obj");
-    renderer.assign_vao(mesh_pine1);
-    renderer.assign_vao(mesh_pine2);
-    renderer.create_materials(mesh_pine1);
-    renderer.create_materials(mesh_pine2);
-    scene.give_mesh("Pine1", mesh_pine1);
-    scene.give_mesh("Pine2", mesh_pine2);
-
+    // Create objects.
     scene.give_object(new Object(
-        scene.get_mesh("Pine1"),                    // mesh
+        resources.get_mesh("Pine01"),                    // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),                // position
-        scene.get_shader("texture")->program_id     // shader id
+        resources.get_shader("texture")     // shader id
     ));
-
     scene.give_object(new Object(
-        scene.get_mesh("Pine2"),                    // mesh
+        resources.get_mesh("Pine02"),                    // mesh
         glm::vec3(2.0f, 0.0f, 1.0f),                // position
-        scene.get_shader("texture")->program_id     // shader id
-    ));
-
-    scene.give_object(new Object(
-        scene.get_mesh("Pine1"),                    // mesh
-        glm::vec3(-3.0f, 0.0f, 6.0f),               // position
-        scene.get_shader("texture")->program_id     // shader id
+        resources.get_shader("texture")     // shader id
     ));
 
     // Rendering loop

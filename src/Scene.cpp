@@ -81,10 +81,10 @@ void Scene::give_object(Object* object)
     owned_objects.push_back(std::unique_ptr<Object>(object));
 }
 
-void Scene::give_landscape(Landscape* landscape, const std::string& shader_name)
+void Scene::give_landscape(Landscape* landscape, Shader* shader)
 {
     this->landscape.reset(landscape);
-    this->landscape_shader = get_shader(shader_name)->program_id;
+    this->landscape_shader = shader;
 
     // Give the Landscape's objects to the Scene.
     for (auto object: landscape->objects)
@@ -97,43 +97,4 @@ Landscape* Scene::get_landscape()
 {
     return landscape.get();
 }
-
-void Scene::give_mesh(const std::string& name, Mesh* mesh)
-{
-    meshes[name] = std::unique_ptr<Mesh>(mesh);
-}
-
-Mesh* Scene::get_mesh(const std::string& name)
-{
-    if (meshes.find(name) == meshes.end())
-    {
-        // 'name' not in meshes
-        throw std::runtime_error("Invalid mesh name '" + name + "'.");
-    }
-    return meshes[name].get();
-}
-
-void Scene::give_shader(const std::string& name, Shader* shader) {
-    owned_shaders[name] = std::unique_ptr<Shader>(shader);
-    shaders.push_back(shader);
-    
-    glUseProgram(shader->program_id);
-    warn_if(
-        glGetUniformLocation(shader->program_id, "ProjectionMatrix") == -1,
-        "Scene given invalid shader with name '" + name + "'");
-}
-
-void Scene::give_shader(Shader* shader) {
-    give_shader(shader->name, shader);
-}
-
-Shader* Scene::get_shader(const std::string& name) {
-    if (owned_shaders.find(name) == owned_shaders.end())
-    {
-        // 'name' not in meshes
-        throw std::runtime_error("Invalid shader name '" + name + "'.");
-    }
-    return owned_shaders[name].get();
-}
-
 

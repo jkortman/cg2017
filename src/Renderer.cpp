@@ -122,7 +122,7 @@ void assign_generic_vao(
 }
 
 // Generate and assign a VAO to a landscape object.
-bool Renderer::assign_vao(Landscape* landscape)
+Landscape* Renderer::assign_vao(Landscape* landscape)
 {
     glGenVertexArrays(1, &landscape->vao);
     assign_generic_vao(
@@ -131,11 +131,11 @@ bool Renderer::assign_vao(Landscape* landscape)
         landscape->normals,
         std::vector<float>(),
         landscape->indices);
-    return true;
+    return landscape;
 }
 
 // Generate and assign a VAO to a mesh object.
-bool Renderer::assign_vao(Mesh* mesh)
+Mesh* Renderer::assign_vao(Mesh* mesh)
 {
     mesh->vaos.resize(mesh->num_shapes);
     glGenVertexArrays(mesh->num_shapes, mesh->vaos.data());
@@ -150,7 +150,7 @@ bool Renderer::assign_vao(Mesh* mesh)
             mesh->shapes[i].mesh.indices);
     }
 
-    return true;
+    return mesh;
 }
 
 // Forward declare helper functions for material loading.
@@ -159,7 +159,7 @@ static ImageFormat get_image_type(const std::string& path);
 static void load_texture(const std::string& path);
 
 // Read and load mesh textures onto the GPU.
-bool Renderer::create_materials(Mesh* mesh)
+Mesh* Renderer::create_materials(Mesh* mesh)
 {
     glActiveTexture(GL_TEXTURE0);
 
@@ -213,7 +213,7 @@ bool Renderer::create_materials(Mesh* mesh)
         mesh->textureIDs.push_back(texID);
     }
 
-    return 0;
+    return mesh;
 }
 
 static void draw_object(const RenderUnit& ru)
@@ -253,43 +253,42 @@ static void draw_object(const RenderUnit& ru)
     }
 }
 
+void init_shader(const Scene& scene, Shader* shader) {
+    glUseProgram(shader->program_id);
+
+    // Load projection matrix
+    // TODO - this doesn't need to happen every time!
+    shader->assert_existence("ProjectionMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+        1, false, glm::value_ptr(scene.camera.projection));
+
+    // Load view matrix
+    shader->assert_existence("ViewMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ViewMatrix"),
+        1, false, glm::value_ptr(scene.camera.view));
+
+    // Load light sources.
+    // TODO
+
+    // Load view position.
+    glUniform4fv(
+        glGetUniformLocation(shader->program_id, "ViewPos"),
+        1, glm::value_ptr(scene.camera.position));
+}
+
 // Render a scene.
 void Renderer::render(const Scene& scene)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Load uniforms that are constant for every object into each shader program.
-    for (const auto& shader : scene.shaders)
-    {
-        glUseProgram(shader->program_id);
-
-        // Load projection matrix
-        // TODO - this doesn't need to happen every time!
-        shader->assert_existence("ProjectionMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-            1, false, glm::value_ptr(scene.camera.projection));
-
-        // Load view matrix
-        shader->assert_existence("ViewMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ViewMatrix"),
-            1, false, glm::value_ptr(scene.camera.view));
-
-        // Load light sources.
-        // TODO
-
-        // Load view position.
-        glUniform4fv(
-            glGetUniformLocation(shader->program_id, "ViewPos"),
-            1, glm::value_ptr(scene.camera.position));
-    }
-
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
     {
-        glUseProgram(scene.landscape_shader);
+        glUseProgram(scene.landscape_shader->program_id);
+        init_shader(scene, scene.landscape_shader);
 
         // Load model and normal matrices.
         /*
@@ -314,6 +313,7 @@ void Renderer::render(const Scene& scene)
     {
         const RenderUnit& render_unit = object->render_unit;
         glUseProgram(render_unit.program_id);
+        init_shader(scene, object->shader);
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
