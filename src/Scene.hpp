@@ -34,9 +34,6 @@ public:
     LightSource world_light_night;
     // Point light sources.
     std::vector<LightSource> lights;
-    // Access for the shaders required by the scene,
-    // to be iterated over by a Renderer.
-    std::vector<Shader*> shaders;
     // The landscape.
     std::unique_ptr<Landscape> landscape;
     Shader* landscape_shader;

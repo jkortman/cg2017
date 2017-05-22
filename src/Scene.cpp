@@ -115,7 +115,6 @@ Mesh* Scene::get_mesh(const std::string& name)
 
 void Scene::give_shader(const std::string& name, Shader* shader) {
     owned_shaders[name] = std::unique_ptr<Shader>(shader);
-    shaders.push_back(shader);
     
     glUseProgram(shader->program_id);
     warn_if(

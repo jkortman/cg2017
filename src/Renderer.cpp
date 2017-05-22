@@ -283,12 +283,6 @@ void Renderer::render(const Scene& scene)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Load uniforms that are constant for every object into each shader program.
-    for (const auto& shader : scene.shaders)
-    {
-        //init_shader(scene, shader);
-    }
-
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
