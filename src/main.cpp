@@ -1,6 +1,7 @@
 // Main function for CG 2017 final project.
 
 #include <cassert>
+#include <chrono>
 
 #define MAIN_FILE
 #include "core.hpp"
@@ -90,9 +91,17 @@ int main(int argc, char** argv)
     ));
 
     // Rendering loop
-    float dt = 0.0f;
+    auto current_time = std::chrono::steady_clock::now();
     while (!renderer.should_end())
     {
+        // Calculate time difference between now and prev. frame
+        // dt is in seconds ???
+        auto frame_start_time = std::chrono::steady_clock::now();
+        float dt = std::chrono::duration_cast
+            <std::chrono::duration<float>>
+            (frame_start_time - current_time).count();
+        current_time = frame_start_time;
+
         InputHandler::update();
         scene.update(dt);
         renderer.render(scene);

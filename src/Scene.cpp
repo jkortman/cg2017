@@ -61,11 +61,22 @@ void Scene::update(float dt)
         player.direction,
         rotate_factor * float(-InputHandler::mouse_dy),
         right_direction);
-    //player.direction = glm::normalize(player.direction);
 
+    // Match camera to player.
     camera.position = player.position;
     camera.direction = player.direction;
     camera.update_view();
+
+    // Rotate the day lighting.
+    const float day_cycle_factor = 10.0f;
+    auto daylight_dir = glm::vec3(world_light_day.position);
+    daylight_dir = glm::rotate(
+        daylight_dir,
+        rotate_factor * float(dt * day_cycle_factor),
+        AXIS_X),
+    world_light_day.position.x = daylight_dir.x;
+    world_light_day.position.y = daylight_dir.y;
+    world_light_day.position.z = daylight_dir.z;
 
     // Update the model and normal matrices for each object.
     for (auto& object : objects)
