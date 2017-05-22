@@ -122,7 +122,7 @@ void assign_generic_vao(
 }
 
 // Generate and assign a VAO to a landscape object.
-bool Renderer::assign_vao(Landscape* landscape)
+Landscape* Renderer::assign_vao(Landscape* landscape)
 {
     glGenVertexArrays(1, &landscape->vao);
     assign_generic_vao(
@@ -131,11 +131,11 @@ bool Renderer::assign_vao(Landscape* landscape)
         landscape->normals,
         std::vector<float>(),
         landscape->indices);
-    return true;
+    return landscape;
 }
 
 // Generate and assign a VAO to a mesh object.
-bool Renderer::assign_vao(Mesh* mesh)
+Mesh* Renderer::assign_vao(Mesh* mesh)
 {
     mesh->vaos.resize(mesh->num_shapes);
     glGenVertexArrays(mesh->num_shapes, mesh->vaos.data());
@@ -150,7 +150,7 @@ bool Renderer::assign_vao(Mesh* mesh)
             mesh->shapes[i].mesh.indices);
     }
 
-    return true;
+    return mesh;
 }
 
 // Forward declare helper functions for material loading.
@@ -159,7 +159,7 @@ static ImageFormat get_image_type(const std::string& path);
 static void load_texture(const std::string& path);
 
 // Read and load mesh textures onto the GPU.
-bool Renderer::create_materials(Mesh* mesh)
+Mesh* Renderer::create_materials(Mesh* mesh)
 {
     glActiveTexture(GL_TEXTURE0);
 
@@ -213,7 +213,7 @@ bool Renderer::create_materials(Mesh* mesh)
         mesh->textureIDs.push_back(texID);
     }
 
-    return 0;
+    return mesh;
 }
 
 static void draw_object(const RenderUnit& ru)

@@ -25,11 +25,11 @@ public:
     // Register InputHandler functions as callbacks.
     void set_callbacks();
     // Generate and assign a VAO to a landscape object.
-    bool assign_vao(Landscape* landscape);
+    Landscape* assign_vao(Landscape* landscape);
     // Generate and assign a VAO to a mesh object.
-    bool assign_vao(Mesh* mesh);
+    Mesh* assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.
-    bool create_materials(Mesh* mesh);
+    Mesh* create_materials(Mesh* mesh);
     // Render a scene.
     void render(const Scene& scene);
     // Cleanup after a single render cycle
