@@ -30,12 +30,12 @@ int main(int argc, char** argv)
     scene.player.position = glm::vec3(0.0, 0.0, 3.0);
     scene.player.direction = glm::vec3(0.0, 0.0, -1.0);
     scene.camera = Camera(
-        glm::vec3(0.0, 0.0, 3.0),          // position
-        scene.player.direction, // target
-        DEFAULT_FOV,                            // fov
-        DEFAULT_ASPECT,                         // aspect
-        0.05f,                                  // near
-        1000.0f);                               // far
+        glm::vec3(0.0, 0.0, 3.0),   // position
+        scene.player.direction,     // target
+        DEFAULT_FOV,                // fov
+        DEFAULT_ASPECT,             // aspect
+        0.05f,                      // near
+        1000.0f);                   // far
 
     // Create resources.
     ResourceManager resources;
@@ -74,17 +74,16 @@ int main(int argc, char** argv)
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
-    TerrainGenerator tg;
-    Landscape* landscape = tg.generate();
-    landscape = renderer.assign_vao(landscape);
+    TerrainGenerator tg(500, 400.0f);
+    Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
 
     // Create objects.
-    /*scene.give_object(new Object(
+    scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),      // position
         resources.get_shader("bplight")   // shader
-    ));*/
+    ));
 
     // Rendering loop
     auto current_time = std::chrono::steady_clock::now();

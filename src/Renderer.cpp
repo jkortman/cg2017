@@ -19,7 +19,7 @@ static void error_callback(int error, const char* description)
 }
 
 // Setup the OpenGL environment and settings.
-void Renderer::initialize()
+void Renderer::initialize(bool wireframe)
 {
     glfwSetErrorCallback(error_callback);
     fatal_if(!glfwInit(), "Failed to initialise GLFW");
@@ -43,6 +43,8 @@ void Renderer::initialize()
     // Initialize GLEW.
     glewExperimental = true;
     fatal_if(glewInit() != GLEW_OK, "Failed to initialise GLEW");
+
+    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Setup OpenGL.
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);

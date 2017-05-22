@@ -21,7 +21,7 @@ class Renderer
 public:
     Renderer();
     // Setup the OpenGL environment and settings.
-    void initialize();
+    void initialize(bool wireframe = false);
     // Register InputHandler functions as callbacks.
     void set_callbacks();
     // Generate and assign a VAO to a landscape object.
