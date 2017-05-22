@@ -49,19 +49,6 @@ public:
     // Get the owned landscape.
     Landscape* get_landscape();
 
-    // Give the scene a mesh to own.
-    void give_mesh(const std::string& name, Mesh* mesh);
-    // Get a mesh owned by the scene by name.
-    // Throws std::runtime_error on failure.
-    Mesh* get_mesh(const std::string& name);
-
-    // Give the scene a shader to own.
-    void give_shader(const std::string& name, Shader* shader);
-    void give_shader(Shader* shader);
-    // Get a shader owned by the scene by name.
-    // Throws std::runtime_error on failure.
-    Shader* get_shader(const std::string& name);
-
 private:
     // The meshes, stored as owning pointers hashed by name.
     std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
