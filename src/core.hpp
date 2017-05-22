@@ -28,6 +28,7 @@ using ShaderID = unsigned int;
 const int       VALS_PER_VERT           = 3;
 const int       VALS_PER_TEX            = 2;
 const int       VALS_PER_NORMAL         = 3;
+const int       VALS_PER_COLOUR         = 3;
 const ShaderID  SHADER_NONE             = -1;
 const glm::vec3 AXIS_X                  = glm::vec3(1.0f, 0.0f, 0.0f);
 const glm::vec3 AXIS_Y                  = glm::vec3(0.0f, 1.0f, 0.0f);

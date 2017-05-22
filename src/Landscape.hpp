@@ -21,6 +21,7 @@ struct Landscape
     // which then owns the contents of the Landscape.
     std::vector<float> positions;
     std::vector<float> normals;
+    std::vector<float> colours;
     std::vector<unsigned int> indices;
     std::vector<Object*> objects;
     unsigned int vao;

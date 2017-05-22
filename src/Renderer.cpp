@@ -125,12 +125,51 @@ void assign_generic_vao(
 Landscape* Renderer::assign_vao(Landscape* landscape)
 {
     glGenVertexArrays(1, &landscape->vao);
-    assign_generic_vao(
-        landscape->vao,
-        landscape->positions,
-        landscape->normals,
-        std::vector<float>(),
-        landscape->indices);
+
+    glBindVertexArray(landscape->vao);
+
+    // Create buffers for positions, normals, texcoords, indices
+    unsigned int buffer[4];
+    glGenBuffers(4, buffer);
+
+    // Set vertex position attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * landscape->positions.size(),
+        landscape->positions.data(),
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set normal attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * landscape->normals.size(),
+        landscape->normals.data(),
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set texcoord attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * landscape->colours.size(),
+        landscape->colours.data(),
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, VALS_PER_COLOUR, GL_FLOAT, GL_FALSE, 0, 0);\
+
+    // Set vertex indices attrib
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[3]);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(float) * landscape->indices.size(),
+        landscape->indices.data(),
+        GL_STATIC_DRAW);
+
     return landscape;
 }
 

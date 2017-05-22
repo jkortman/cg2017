@@ -50,6 +50,9 @@ int main(int argc, char** argv)
         "landscape",
         new Shader("shaders/landscape.vert", "shaders/landscape.frag"));
     resources.give_shader(
+        "landscape-light",
+        new Shader("shaders/landscape-light.vert", "shaders/landscape-light.frag"));
+    resources.give_shader(
         "bplight",
         new Shader("shaders/bplight.vert", "shaders/bplight.frag"));
     
@@ -76,20 +79,15 @@ int main(int argc, char** argv)
     TerrainGenerator tg;
     Landscape* landscape = tg.generate();
     landscape = renderer.assign_vao(landscape);
-    //scene.give_landscape(landscape, resources.get_shader("landscape"));
-    scene.give_landscape(landscape, resources.get_shader("bplight"));
+    scene.give_landscape(landscape, resources.get_shader("landscape-light"));
+    //scene.give_landscape(landscape, resources.get_shader("bplight"));
 
     // Create objects.
-    scene.give_object(new Object(
+    /*scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),      // position
         resources.get_shader("bplight")   // shader
-    ));
-    scene.give_object(new Object(
-        resources.get_mesh("Pine02"),     // mesh
-        glm::vec3(2.0f, 0.0f, 1.0f),      // position
-        resources.get_shader("bplight")   // shader
-    ));
+    ));*/
 
     // Rendering loop
     auto current_time = std::chrono::steady_clock::now();

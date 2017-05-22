@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -95,11 +96,12 @@ Landscape* TerrainGenerator::generate_flat()
 
 Landscape* TerrainGenerator::generate()
 {
-    const float size = 200.0f;
-    Heightmap hm = generate_heightmap(400, 60.0f, 6.0f);
+    const float size = 400.0f;
+    Heightmap hm = generate_heightmap(500, 100.0f, 40.0f);
 
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colours;
     std::vector<std::array<unsigned int, 3>> indices;
 
     // Build positions.
@@ -157,6 +159,33 @@ Landscape* TerrainGenerator::generate()
         }
     }
 
+    // Build colours.
+    const glm::vec3 grass_colour(0.0f, 0.6f, 0.3f);
+    const glm::vec3 rock_colour(0.44f, 0.4f, 0.48f);
+    const glm::vec3 snow_colour(0.95f, 0.95f, 1.0f);
+    for (int row = 0; row < hm.width; row += 1)
+    {
+        for (int col = 0; col < hm.width; col += 1)
+        {
+            // Get the angle with the y-axis and normal.
+            float yangle =
+                (180 / 3.142)
+                * acos(glm::dot(
+                    AXIS_Y,
+                    normals[row * hm.width + col]));
+            float height = positions[row * hm.width + col].y;
+
+            // If the angle is large (>40), colour as rock.
+            glm::vec3 colour;
+            if (yangle > 30.0f) colour = rock_colour;
+            else if (height > 5.0) colour = snow_colour;
+            else colour = grass_colour;
+
+            //fprintf(stderr, " yangle: %f, height: %f -> colour: %f %f %f\n", yangle, height, colour.x, colour.y, colour.z);
+            colours.push_back(colour);
+        }
+    }
+
     // Build indices.
     // For each vertex except the lowest row and furthest left column,
     // connect positions into two triangles:
@@ -198,6 +227,9 @@ Landscape* TerrainGenerator::generate()
         landscape->normals.push_back(normals[i].x);
         landscape->normals.push_back(normals[i].y);
         landscape->normals.push_back(normals[i].z);
+        landscape->colours.push_back(colours[i].x);
+        landscape->colours.push_back(colours[i].y);
+        landscape->colours.push_back(colours[i].z);
     }
     for (int i = 0; i < indices.size(); i += 1)
     {
@@ -209,7 +241,9 @@ Landscape* TerrainGenerator::generate()
     landscape->material.ambient   = glm::vec3(0.1, 0.5, 0.2);
     landscape->material.diffuse   = glm::vec3(0.4, 0.8, 0.6);
     landscape->material.specular  = glm::vec3(0.3, 0.7, 0.3);
-    landscape->material.shininess = 100.0f;
+    landscape->material.shininess = 4.0f;
+
+    // Populate landscape with objects.
 
     return landscape;
     return nullptr;
