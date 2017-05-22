@@ -2,6 +2,9 @@
 
 #include "ResourceManager.hpp"
 
+ResourceManager::ResourceManager()
+{}
+
 void ResourceManager::give_mesh(const std::string& name, Mesh* mesh)
 {
     owned_meshes[name] = std::unique_ptr<Mesh>(mesh);

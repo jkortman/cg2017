@@ -45,7 +45,7 @@ public:
     void give_object(Object* object);
 
     // Give the scene a landscape to own.
-    void give_landscape(Landscape* landscape, const std::string& shader_name);
+    void give_landscape(Landscape* landscape, Shader* shader);
     // Get the owned landscape.
     Landscape* get_landscape();
 

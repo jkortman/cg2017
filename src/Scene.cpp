@@ -81,10 +81,10 @@ void Scene::give_object(Object* object)
     owned_objects.push_back(std::unique_ptr<Object>(object));
 }
 
-void Scene::give_landscape(Landscape* landscape, const std::string& shader_name)
+void Scene::give_landscape(Landscape* landscape, Shader* shader)
 {
     this->landscape.reset(landscape);
-    this->landscape_shader = get_shader(shader_name);
+    this->landscape_shader = shader;
 
     // Give the Landscape's objects to the Scene.
     for (auto object: landscape->objects)
