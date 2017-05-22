@@ -97,10 +97,10 @@ private:
     // ----------------------------------
     // -- Processing utility functions --
     // ----------------------------------
-    enum Property { Positions, Normals };
+    enum Property { Positions, Normals, Colours };
     // Blur a property of a vertex on the map by some ammount.
     // (1.0f = full blur, 0.0f = no blur)
-    void blur_value(
+    glm::vec3 blur_value(
         Property property, int row, int col, float amt, int kernel_size=1);
 };
 

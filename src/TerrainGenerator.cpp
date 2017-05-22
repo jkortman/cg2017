@@ -104,10 +104,49 @@ void TerrainGenerator::set_colour(int row, int col, glm::vec3 colour)
 // Calls all of the core generator functions in order to create a terrain.
 void TerrainGenerator::generate()
 {
-    generate_heightmap(40.0f, 100.0f);
+    const float height_limit = 40.0f;
+
+    generate_heightmap(height_limit, 100.0f);
     generate_positions();
+
+    // Blur positions based on height.
+    // This make the mountains craggier and the valleys smoother.
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            // Height_factor is 1.0 and decreases as it gets higher.
+            // (negative blur ammounts are clamped to 0.0).
+            float height = get_position(row, col).y;
+            float height_factor =
+                (height_limit - 3.0f * height) / height_limit;
+            set_position(
+                row, col, blur_value(Positions, row, col, height_factor, 5));
+        }
+    }
+
     generate_normals();
+
+    // Blur normals. This makes the landscape look visually smoother.
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            set_normal(row, col, blur_value(Normals, row, col, 0.6f, 3));
+        }
+    }
+
     generate_materials();
+
+    // Blur colours. This also makes the landscape look visually smoother.
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            set_colour(row, col, blur_value(Colours, row, col, 0.8f, 1));
+        }
+    }
+
     generate_indices();
 }
 
@@ -282,9 +321,42 @@ void TerrainGenerator::generate_indices()
 // -- Processing utility functions --
 // ----------------------------------
 // Blur a property of a vertex on the map by some ammount.
-void TerrainGenerator::blur_value(
+glm::vec3 TerrainGenerator::blur_value(
     Property property, int row, int col, float amt, int kernel_size)
-{}
+{
+    // Clamp amt to [0, 1].
+    if (amt < 0.0f) amt = 0.0f;
+    if (amt > 1.0f) amt = 1.0f;
+
+    // Determine the property vector to blur.
+    std::vector<glm::vec3>* properties = nullptr;
+    switch (property)
+    {
+    case Positions: properties = &positions; break;
+    case Normals:   properties = &normals;   break;
+    case Colours:   properties = &colours;   break;
+    default:
+        fatal("TerrainGenerator::blur_value was passed an invalid property");
+    }
+
+    // Average the values over the kernel.
+    glm::vec3 sum(0.0f, 0.0f, 0.0f);
+    int num_values = 0;
+    for (int i = row - kernel_size; i <= row + kernel_size; i += 1)
+    {
+        for (int j = col - kernel_size; j <= col + kernel_size; j += 1)
+        {
+            if (i >= 0 && j >= 0 && i < size && j < size)
+            {
+                sum += properties->at(size * i + j);
+                num_values += 1;
+            }
+        }
+    }
+    // Return the blurred ammount.
+    return (1.0f - amt) * properties->at(size * row + col)
+                 + amt  * sum * (1.0f / num_values);
+}
 
 // ----------------------------------------------------
 // -- Implementation for TerrainGenerator::Heightmap -- 
