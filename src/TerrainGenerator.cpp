@@ -44,11 +44,22 @@ static Heightmap generate_heightmap(int width, float scale, float height_scale)
     {
         for (int col = 0; col < hm.width; col += 1)
         {
+            #if 0
             float height = stb_perlin_noise3(
-                float(row) / scale,
-                float(col) / scale,
-                0.0f,
-                0, 0, 0);
+                float(row) / scale,     // x
+                float(col) / scale,     // y
+                0.0f,                   // z
+                0, 0, 0);               // wrapping - ignore.
+            #endif
+            float height = stb_perlin_ridge_noise3(
+                float(row) / scale,     // x
+                float(col) / scale,     // y
+                0.0f,                   // z
+                2.0f,                   // lacunarity
+                0.5f,                   // gain
+                1.0f,                   // offset
+                6,                      // octaves
+                0, 0, 0);               // wrapping - ignore.
             hm.set(row, col, height_scale * height);
         }
     }
@@ -92,6 +103,38 @@ Landscape* TerrainGenerator::generate_flat()
     landscape->material.shininess = 100.0f;
 
     return landscape;
+}
+
+// Blur values by taking the mean of the values and their neightbours.
+// kernel_size is the radius of the kernel - 1 will take into consideration
+// all adjacent values.
+void blur(std::vector<glm::vec3>& values, int size, int kernel_size)
+{
+    auto blur_element = [&](int row, int col)
+    {
+        glm::vec3 sum(0.0f, 0.0f, 0.0f);
+        int num_values = 0;
+        for (int i = row - kernel_size; i <= row + kernel_size; i += 1)
+        {
+            for (int j = col - kernel_size; j <= col + kernel_size; j += 1)
+            {
+                if (i >= 0 && j >= 0 && i < size && j < size)
+                {
+                    sum += values[size * i + j];
+                    num_values += 1;
+                }
+            }
+        }
+        values[size * row + col] = sum * (1.0f / num_values);
+    };
+
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            blur_element(row, col);
+        }
+    }
 }
 
 Landscape* TerrainGenerator::generate()
@@ -159,10 +202,15 @@ Landscape* TerrainGenerator::generate()
         }
     }
 
+    // Blur normals.
+    blur(normals, hm.width, 1);
+
     // Build colours.
-    const glm::vec3 grass_colour(0.0f, 0.6f, 0.3f);
-    const glm::vec3 rock_colour(0.44f, 0.4f, 0.48f);
-    const glm::vec3 snow_colour(0.95f, 0.95f, 1.0f);
+    const glm::vec3 colour_dirt(0.4f, 0.2f, 0.03f);
+    const glm::vec3 colour_grass(0.1f, 0.5f, 0.2f);
+    const glm::vec3 colour_rock(0.44f, 0.4f, 0.48f);
+    const glm::vec3 colour_snow(0.95f, 0.95f, 1.0f);
+
     for (int row = 0; row < hm.width; row += 1)
     {
         for (int col = 0; col < hm.width; col += 1)
@@ -175,16 +223,23 @@ Landscape* TerrainGenerator::generate()
                     normals[row * hm.width + col]));
             float height = positions[row * hm.width + col].y;
 
-            // If the angle is large (>40), colour as rock.
+            // Pick the colour.
             glm::vec3 colour;
-            if (yangle > 30.0f) colour = rock_colour;
-            else if (height > 5.0) colour = snow_colour;
-            else colour = grass_colour;
 
+            if (height < 8.0f) colour = colour_dirt;
+            else if (height < 24.0f) colour = colour_grass;
+            else if (height < 31.0f) {
+                if (yangle > 30.0f) colour = colour_rock;
+                else colour = colour_snow;
+            } else colour = colour_snow;
+            
             //fprintf(stderr, " yangle: %f, height: %f -> colour: %f %f %f\n", yangle, height, colour.x, colour.y, colour.z);
             colours.push_back(colour);
         }
     }
+
+    // Blur colours.
+    blur(colours, hm.width, 3);
 
     // Build indices.
     // For each vertex except the lowest row and furthest left column,
@@ -238,9 +293,11 @@ Landscape* TerrainGenerator::generate()
         landscape->indices.push_back(indices[i][2]);
     }
 
-    landscape->material.ambient   = glm::vec3(0.1, 0.5, 0.2);
-    landscape->material.diffuse   = glm::vec3(0.4, 0.8, 0.6);
-    landscape->material.specular  = glm::vec3(0.3, 0.7, 0.3);
+    // Note that ambient and diffuse probably aren't used in the shader,
+    // in favor of the per-vertex colours.
+    landscape->material.ambient   = glm::vec3(0.1f, 0.5f, 0.2f);
+    landscape->material.diffuse   = glm::vec3(0.3f, 0.3f, 0.3f);
+    landscape->material.specular  = glm::vec3(0.4f, 0.4f, 0.4f);
     landscape->material.shininess = 4.0f;
 
     // Populate landscape with objects.
