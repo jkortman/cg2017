@@ -7,9 +7,12 @@
 #include "Mesh.hpp"
 #include "Landscape.hpp"
 
+#include "stb_perlin.h"
+
 class TerrainGenerator
 {
 public:
+    Landscape* generate_flat();
     Landscape* generate();
 private:
 };
