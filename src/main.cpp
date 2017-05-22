@@ -17,8 +17,6 @@
 
 int main(int argc, char** argv)
 {
-    std::printf("starting\n");
-
     Renderer renderer;
     Scene scene;
 
@@ -71,8 +69,8 @@ int main(int argc, char** argv)
     // Create lights.
     scene.world_light_day = LightSource(
         glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
-        glm::vec3(0.5f, 0.5f, 0.5f),
-        glm::vec3(0.8f, 0.8f, 0.5f),
+        glm::vec3(0.2f, 0.2f, 0.2f),
+        glm::vec3(0.5f, 0.5f, 0.2f),
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
@@ -80,7 +78,6 @@ int main(int argc, char** argv)
     Landscape* landscape = tg.generate();
     landscape = renderer.assign_vao(landscape);
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
-    //scene.give_landscape(landscape, resources.get_shader("bplight"));
 
     // Create objects.
     /*scene.give_object(new Object(
