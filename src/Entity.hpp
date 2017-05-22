@@ -9,7 +9,7 @@
 class Entity
 {
 public:
-    glm::vec4 position;
+    glm::vec3 position;
 };
 
 #endif // ENTITY_H

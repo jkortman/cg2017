@@ -4,6 +4,7 @@
 
 #define MAIN_FILE
 #include "core.hpp"
+#include "LightSource.hpp"
 #include "Mesh.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
@@ -58,6 +59,10 @@ int main(int argc, char** argv)
             renderer.assign_vao(
                 Mesh::load_obj("models/pine/", "PineTransp.obj"))));
 
+    // Create lights.
+    scene.world_light_day = LightSource(
+        glm::vec4(0.0f, -1.0f, 0.0f, 0.0f));
+
     // Generate landscape.
     TerrainGenerator tg;
     Landscape* landscape = tg.generate();
@@ -66,14 +71,14 @@ int main(int argc, char** argv)
 
     // Create objects.
     scene.give_object(new Object(
-        resources.get_mesh("Pine01"),                    // mesh
-        glm::vec3(0.0f, 0.0f, 0.0f),                // position
-        resources.get_shader("texture")     // shader id
+        resources.get_mesh("Pine01"),     // mesh
+        glm::vec3(0.0f, 0.0f, 0.0f),      // position
+        resources.get_shader("texture")   // shader
     ));
     scene.give_object(new Object(
-        resources.get_mesh("Pine02"),                    // mesh
-        glm::vec3(2.0f, 0.0f, 1.0f),                // position
-        resources.get_shader("texture")     // shader id
+        resources.get_mesh("Pine02"),     // mesh
+        glm::vec3(2.0f, 0.0f, 1.0f),      // position
+        resources.get_shader("texture")   // shader
     ));
 
     // Rendering loop
