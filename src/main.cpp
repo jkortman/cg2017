@@ -6,6 +6,7 @@
 #include "core.hpp"
 #include "Mesh.hpp"
 #include "Renderer.hpp"
+#include "ResourceManager.hpp"
 #include "Scene.hpp"
 #include "Shader.hpp"
 #include "InputHandler.hpp"
@@ -58,19 +59,19 @@ int main(int argc, char** argv)
     scene.give_object(new Object(
         scene.get_mesh("Pine1"),                    // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),                // position
-        scene.get_shader("texture")->program_id     // shader id
+        scene.get_shader("texture")     // shader id
     ));
 
     scene.give_object(new Object(
         scene.get_mesh("Pine2"),                    // mesh
         glm::vec3(2.0f, 0.0f, 1.0f),                // position
-        scene.get_shader("texture")->program_id     // shader id
+        scene.get_shader("texture")     // shader id
     ));
 
     scene.give_object(new Object(
         scene.get_mesh("Pine1"),                    // mesh
         glm::vec3(-3.0f, 0.0f, 6.0f),               // position
-        scene.get_shader("texture")->program_id     // shader id
+        scene.get_shader("texture")     // shader id
     ));
 
     // Rendering loop

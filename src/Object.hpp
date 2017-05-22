@@ -9,6 +9,7 @@
 #include "Entity.hpp"
 #include "core.hpp"
 #include "RenderUnit.hpp"
+#include "Shader.hpp"
 
 class Object: public Entity
 {
@@ -17,11 +18,7 @@ public:
     Object(
         Mesh* mesh,
         const glm::vec3& position,
-        ShaderID program_id=SHADER_NONE);
-    Object(
-        Mesh* mesh,
-        const glm::vec4& position,
-        ShaderID program_id=SHADER_NONE);
+        Shader* shader);
 
     // Functions to update and retrieve data.
     const RenderUnit& get_render_unit();
@@ -37,8 +34,9 @@ public:
     float       y_rotation;
     float       z_rotation;
     RenderUnit  render_unit;
+    Shader* shader;
 private:
-    void initialize(Mesh* mesh, const glm::vec4& position, ShaderID program_id);
+    void initialize(Mesh* mesh, const glm::vec4& position, Shader* shader);
 };
 
 #endif

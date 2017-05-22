@@ -253,6 +253,31 @@ static void draw_object(const RenderUnit& ru)
     }
 }
 
+void init_shader(const Scene& scene, Shader* shader) {
+    glUseProgram(shader->program_id);
+
+    // Load projection matrix
+    // TODO - this doesn't need to happen every time!
+    shader->assert_existence("ProjectionMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+        1, false, glm::value_ptr(scene.camera.projection));
+
+    // Load view matrix
+    shader->assert_existence("ViewMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ViewMatrix"),
+        1, false, glm::value_ptr(scene.camera.view));
+
+    // Load light sources.
+    // TODO
+
+    // Load view position.
+    glUniform4fv(
+        glGetUniformLocation(shader->program_id, "ViewPos"),
+        1, glm::value_ptr(scene.camera.position));
+}
+
 // Render a scene.
 void Renderer::render(const Scene& scene)
 {
@@ -261,35 +286,15 @@ void Renderer::render(const Scene& scene)
     // Load uniforms that are constant for every object into each shader program.
     for (const auto& shader : scene.shaders)
     {
-        glUseProgram(shader->program_id);
-
-        // Load projection matrix
-        // TODO - this doesn't need to happen every time!
-        shader->assert_existence("ProjectionMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-            1, false, glm::value_ptr(scene.camera.projection));
-
-        // Load view matrix
-        shader->assert_existence("ViewMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ViewMatrix"),
-            1, false, glm::value_ptr(scene.camera.view));
-
-        // Load light sources.
-        // TODO
-
-        // Load view position.
-        glUniform4fv(
-            glGetUniformLocation(shader->program_id, "ViewPos"),
-            1, glm::value_ptr(scene.camera.position));
+        //init_shader(scene, shader);
     }
 
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
     {
-        glUseProgram(scene.landscape_shader);
+        glUseProgram(scene.landscape_shader->program_id);
+        init_shader(scene, scene.landscape_shader);
 
         // Load model and normal matrices.
         /*
@@ -314,6 +319,7 @@ void Renderer::render(const Scene& scene)
     {
         const RenderUnit& render_unit = object->render_unit;
         glUseProgram(render_unit.program_id);
+        init_shader(scene, object->shader);
 
         // Load model and normal matrices.
         glUniformMatrix4fv(

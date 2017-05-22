@@ -34,11 +34,12 @@ public:
     LightSource world_light_night;
     // Point light sources.
     std::vector<LightSource> lights;
-    // Access for the shaders required by the scene.
+    // Access for the shaders required by the scene,
+    // to be iterated over by a Renderer.
     std::vector<Shader*> shaders;
     // The landscape.
     std::unique_ptr<Landscape> landscape;
-    ShaderID landscape_shader;
+    Shader* landscape_shader;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
@@ -63,11 +64,6 @@ public:
     // Get a shader owned by the scene by name.
     // Throws std::runtime_error on failure.
     Shader* get_shader(const std::string& name);
-
-    // Input handlers
-    void inform_key(int key, int action);
-    void inform_mouse_button(int button, int action);
-    void inform_mouse_motion(double xpos, double ypos);
 
 private:
     // The meshes, stored as owning pointers hashed by name.
