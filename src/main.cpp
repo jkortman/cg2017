@@ -43,9 +43,14 @@ int main(int argc, char** argv)
 
     // Create shaders.
     resources.give_shader(
-        "texture", new Shader("shaders/texture.vert", "shaders/texture.frag"));
+        "texture",
+        new Shader("shaders/texture.vert", "shaders/texture.frag"));
     resources.give_shader(
-        "landscape", new Shader("shaders/landscape.vert", "shaders/landscape.frag"));
+        "landscape",
+        new Shader("shaders/landscape.vert", "shaders/landscape.frag"));
+    resources.give_shader(
+        "bplight",
+        new Shader("shaders/bplight.vert", "shaders/bplight.frag"));
     
     // Create meshes.
     resources.give_mesh(
@@ -61,24 +66,27 @@ int main(int argc, char** argv)
 
     // Create lights.
     scene.world_light_day = LightSource(
-        glm::vec4(0.0f, -1.0f, 0.0f, 0.0f));
+        glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        glm::vec3(0.8f, 0.8f, 0.5f),
+        glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
     TerrainGenerator tg;
     Landscape* landscape = tg.generate();
     landscape = renderer.assign_vao(landscape);
-    scene.give_landscape(landscape, resources.get_shader("landscape"));
+    scene.give_landscape(landscape, resources.get_shader("bplight"));
 
     // Create objects.
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(0.0f, 0.0f, 0.0f),      // position
-        resources.get_shader("texture")   // shader
+        resources.get_shader("bplight")   // shader
     ));
     scene.give_object(new Object(
         resources.get_mesh("Pine02"),     // mesh
         glm::vec3(2.0f, 0.0f, 1.0f),      // position
-        resources.get_shader("texture")   // shader
+        resources.get_shader("bplight")   // shader
     ));
 
     // Rendering loop

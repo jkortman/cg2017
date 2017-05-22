@@ -270,10 +270,21 @@ void init_shader(const Scene& scene, Shader* shader) {
         1, false, glm::value_ptr(scene.camera.view));
 
     // Load light sources.
-    // TODO
+    glUniform4fv(
+        glGetUniformLocation(shader->program_id, "LightDay.position"),
+        1, glm::value_ptr(scene.world_light_day.position));
+    glUniform3fv(
+        glGetUniformLocation(shader->program_id, "LightDay.ambient"),
+        1, glm::value_ptr(scene.world_light_day.ambient));
+    glUniform3fv(
+        glGetUniformLocation(shader->program_id, "LightDay.diffuse"),
+        1, glm::value_ptr(scene.world_light_day.diffuse));
+    glUniform3fv(
+        glGetUniformLocation(shader->program_id, "LightDay.specular"),
+        1, glm::value_ptr(scene.world_light_day.specular));
 
     // Load view position.
-    glUniform4fv(
+    glUniform3fv(
         glGetUniformLocation(shader->program_id, "ViewPos"),
         1, glm::value_ptr(scene.camera.position));
 }
@@ -291,14 +302,26 @@ void Renderer::render(const Scene& scene)
         init_shader(scene, scene.landscape_shader);
 
         // Load model and normal matrices.
-        /*
         glUniformMatrix4fv(
-            glGetUniformLocation(render_unit.program_id, "ModelMatrix"),
-            1, false, glm::value_ptr(render_unit.model_matrix));
+            glGetUniformLocation(scene.landscape_shader->program_id, "ModelMatrix"),
+            1, false, glm::value_ptr(landscape->model_matrix));
         glUniformMatrix3fv(
-            glGetUniformLocation(render_unit.program_id, "NormalMatrix"),
-            1, false, glm::value_ptr(render_unit.normal_matrix));
-        */
+            glGetUniformLocation(scene.landscape_shader->program_id, "NormalMatrix"),
+            1, false, glm::value_ptr(landscape->normal_matrix));
+        // Load the shape material properties into the shader.
+        glUniform3fv(
+            glGetUniformLocation(scene.landscape_shader->program_id, "MtlAmbient"),
+            1, glm::value_ptr(landscape->material.ambient));
+        glUniform3fv(
+            glGetUniformLocation(scene.landscape_shader->program_id, "MtlDiffuse"),
+            1, glm::value_ptr(landscape->material.diffuse));
+        glUniform3fv(
+            glGetUniformLocation(scene.landscape_shader->program_id, "MtlSpecular"),
+            1, glm::value_ptr(landscape->material.specular));
+        glUniform1f(
+            glGetUniformLocation(scene.landscape_shader->program_id, "MtlShininess"),
+            landscape->material.shininess);
+
         glBindVertexArray(landscape->vao);
         glDrawElements(
             GL_TRIANGLES,
