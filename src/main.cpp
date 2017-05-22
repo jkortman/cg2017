@@ -76,6 +76,7 @@ int main(int argc, char** argv)
     TerrainGenerator tg;
     Landscape* landscape = tg.generate();
     landscape = renderer.assign_vao(landscape);
+    //scene.give_landscape(landscape, resources.get_shader("landscape"));
     scene.give_landscape(landscape, resources.get_shader("bplight"));
 
     // Create objects.

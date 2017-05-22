@@ -9,11 +9,13 @@ uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 uniform mat3 NormalMatrix;
 
-out vec4 colour;
+out vec4 Colour;
+out vec3 Normal;
 
 void main() {
     vec4 base_colour = vec4(0.0, 0.7, 0.1, 1.0);
-    colour = vec4(vec3(base_colour) + vec3(a_Position.y / 4.0), 1.0);
+    Colour = vec4(vec3(base_colour) + vec3(a_Position.y / 4.0), 1.0);
+    Normal = NormalMatrix * a_Normal;
     gl_Position =
         ProjectionMatrix
         * ViewMatrix
