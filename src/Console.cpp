@@ -97,7 +97,7 @@ void Console::parse()
                 output =  "Usage: " + name;
                 if (container.writable) 
                 {
-                    output .append(" <");
+                    output.append(" <");
                     switch(container.type)
                     {
                         case VarType::Float:
@@ -149,9 +149,9 @@ void Console::parse()
 
 
 
-void Console::register_var(std::string name, VarType type, void* ptr, std::string what, bool writable)
+void Console::register_var(std::string name, VarType type, void* ptr, int size, std::string what, bool writable)
 {
-    Var h = {name, type, ptr, what, writable};
+    Var h = {name, type, ptr, size, what, writable};
     variables[name] = h;
 };
 
@@ -172,7 +172,19 @@ void Console::get_var(Var container)
         case VarType::Float:
         {
             float* ptr = (float*)container.pointer;
-            output.append(std::to_string(*ptr));
+            if (container.size == 1)
+            {
+                output.append(std::to_string(*ptr));
+            } else if (container.size > 1)
+            {
+                output += "(";
+                for (int i = 0; i < container.size; i++)
+                {
+                    output.append(std::to_string(ptr[i]));
+                    if (i != container.size -1) output.append(", ");
+                }
+                output += ")";
+            }  
         }
         break;
         case VarType::Int:
@@ -195,6 +207,18 @@ void Console::get_var(Var container)
     std::cout << output << "\n";
 }
 
+int to_float(float* ptr, std::string val)
+{
+    if (val == "*") return 0;
+    else
+    {
+        try {*ptr = std::stof(val);}
+        catch (std::invalid_argument ia) {return -1;} 
+        catch (std::out_of_range oor) {return -2;} 
+    }
+    return 0;
+}
+
 void Console::set_var(Var container, std::vector<std::string> values)
 {
     std::string output;
@@ -206,21 +230,68 @@ void Console::set_var(Var container, std::vector<std::string> values)
             case VarType::Float:
             {
                 float* ptr = (float*)container.pointer;
-                try
+                int err;
+                if (container.size == 1)
                 {
-                    *ptr = std::stof(values.at(0));
-                }
-                catch (std::invalid_argument ia)
+                    err = to_float(ptr,values.at(0));
+                    switch(err)
+                    {
+                        case 0:
+                        {
+                            output.append(std::to_string(*ptr));
+                        }
+                        break;
+                        case -1:
+                        {
+                            output = values.at(0) + " not recognized as a float.";
+                        }
+                        break;
+                        case -2:
+                        {
+                           output = values.at(0) + " is out of range.";
+                        }
+                        break; 
+                    }
+                } else if (container.size > 1)
                 {
-                    output = values.at(0) + " not recognized as a float.";
-                    break; 
+                    std::vector<float> converted_vals;
+
+                    output.append("(");
+
+                    if (values.size() != container.size)
+                    {
+                        output = "Expected " + std::to_string(container.size);
+                        output.append("input(s). Got ");
+                        output += std::to_string(values.size()) + ".";
+                    } else
+                    {
+                        for (int i = 0; i < values.size(); i++)
+                        {
+                            err = to_float(&(ptr[i]),values.at(i));
+                            switch(err)
+                            {
+                                case 0:
+                                {
+                                    output.append(std::to_string(ptr[i]));
+                                    if (i != container.size -1) output.append(", ");
+                                }
+                                break;
+                                case -1:
+                                {
+                                    output = values.at(i) + " not recognized as a float.";
+                                }
+                                break;
+                                case -2:
+                                {
+                                   output = values.at(i) + " is out of range.";
+                                }
+                                break; 
+                            }
+                            if (err < 0) break;
+                        }
+                        if ( err == 0) output += ")";
+                    }
                 }
-                catch (std::out_of_range oor) 
-                {
-                    output = values.at(0) + " is out of range.";
-                    break;
-                }
-                output.append(std::to_string(*ptr));
             }
             break;
             case VarType::Int:
