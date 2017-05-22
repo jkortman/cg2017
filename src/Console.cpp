@@ -31,18 +31,21 @@ Input tokenize(std::string str, const std::string delims)
     return tokens;
 }
 
-int Console::parse()
+void Console::parse()
 {
-    std::cout << "Entering Console" << std::endl;
+    std::string output;
+    std::cout << "\nEntering Console\n";
     bool isRunning = true;
     while (isRunning)
     {
         std::cout << ">>";
+
         // Load input
         std::string input_string;
         getline(std::cin, input_string);
 
-        if ( input_string.size() == 0) return -1; // No input
+
+        if ( input_string.size() == 0) continue; // No input
 
         // Strip leading/trailing spaces
         int start = input_string.find_first_not_of(" ");
@@ -51,79 +54,97 @@ int Console::parse()
         if (end == -1) end = 0;     // No trailing spaces
         input_string = input_string.substr(start,end-start+1);
 
-        if ( input_string.size() == 1) return -1; // Only spaces
+        if ( input_string.size() == 1) continue; // Only spaces
 
         // Tokenise input
         Input input = tokenize(input_string, " "); // Input = {string command, vector<string> values }
 
         // Handle input
         Var container;
-        //std::string cmd = InputStorage.at(0);
         std::string name;
+
         //Special commands
         if (input.command == "continue")
         {
             isRunning = false;
             std::cout << "Returning to game" << std::endl;
+            continue;
         } else if (input.command == "quit")
         {
             isRunning = false;
             std::cout << "Shutting down program" << std::endl;
+            // Do something to cause window to shutdown?
+            continue;
         } else if (input.command == "help")
         {
-            std::cout << "Availible commands:" << std::endl;
-            std::cout << "help - prints out this." << std::endl;
-            std::cout << "continue - unpauses game and ends terminal command session." << std::endl;
-            std::cout << "quit - ends terminal command session." << std::endl;
-            std::cout << "whatis <var> - describes var (if registered)." << std::endl;
-            std::cout << "noclip - toggles collisions and separates camera from player." << std::endl;
-            std::cout << "<var> - returns value of variable (if registered)." << std::endl;
-            std::cout << "<var> <value> - sets value of variable (if registered and writable)." << std::endl << std::endl;
-            // Print Help
+            output = "Availible commands:\n";
+            output += "help - prints out this.\n";
+            output += "continue - unpauses game and ends terminal command session.\n";
+            output += "quit - ends terminal command session.\n";
+            output += "whatis <var> - describes var (if registered).\n";
+            output += "noclip - toggles collisions and separates camera from player.\n";
+            output += "<var> - returns value of variable (if registered).\n";
+            output += "<var> <value> - sets value of variable (if registered and writable).\n";
+            std::cout << output << "\n";
+            continue;
         } else if (input.command == "whatis")
         {
             name = input.values.at(0);
-            container = variables[name];
-            if (container.type != Invalid)
+            
+            if (variables.find(name) != variables.end())
             {
-                std::cout << "Usage: " << name;
-                if (container.writable) std::cout << " <" << container.type << ">";
-                //std::cout << "variables[\"" << InputStorage.at(0) <<"\"] = {VarType = " <<  container.type << "; ptr = " << container.pointer <<"; writable = " << container.writable << "; what = "<< container.what <<"}" << std::endl;
-                std::cout << " - " << container.what << std::endl;
+                container = variables[name];
+                output =  "Usage: " + name;
+                if (container.writable) 
+                {
+                    output .append(" <");
+                    switch(container.type)
+                    {
+                        case VarType::Float:
+                        {
+                            output.append("float");
+                        }
+                        break;
+                        case VarType::Int:
+                        {
+                            output.append("int");
+                        }
+                        break;
+                        case VarType::Bool:
+                        {
+                            output.append("bool");
+                        }
+                        break;
+                    }
+                    output.append(">");
+                }
+                output += " - " + container.what;
             } else
             {
-                std::cout << name << " is not a registered variable." << std::endl;
+                output = name + " is not a registered variable.";
             }
-            
+            std::cout << output << "\n";
         } else if (input.command == "noclip")
         {
             // Set noclip flag
-        } 
-
-        // Variable Set/Get commands
-        container = variables[input.command];
-        if (container.type != Invalid)
-        {
+        } else if (variables.find(input.command) != variables.end())
+        {   
+            container = variables[input.command];
             if (input.values.size() == 0)
             {
                 get_var(container);
-                //std::cout << cmd << " = " << "value" << std::endl;    
             } else if (input.values.size() > 0)
             {
-                //std::cout << cmd << " has been set to " << InputStorage.at(1) << std::endl;
                 set_var(container, input.values);
             }
         } else
         {
+            std::cout << "Command not recognized." << std::endl;
             // Error
         }
-
-        //        
-        
+        //              
     }
-    
-    
-    return 0;
+
 }
 
 
@@ -145,74 +166,98 @@ void Console::initialize()
 
 void Console::get_var(Var container)
 {
-    std::cout << container.name << " = ";// << (container.pointer) <<std::endl;
-    if (container.type == Float)
-    {
-        float* ptr = (float*)container.pointer;
-        std::cout << *ptr << std::endl;
-    }
+    std::string output = container.name + " = ";
     switch(container.type)
     {
         case VarType::Float:
         {
             float* ptr = (float*)container.pointer;
-            std::cout << *ptr << std::endl;
+            output.append(std::to_string(*ptr));
         }
         break;
         case VarType::Int:
         {
             int* ptr = (int*)container.pointer;
-            std::cout << *ptr << std::endl;
-            
+            output.append(std::to_string(*ptr));
         }
         break;
         case VarType::Bool:
         {
             bool* ptr = (bool*)container.pointer;
-            
-            //*ptr = stob(values.at(0));
-            std::cout << *ptr << std::endl;
-            
+            if (*ptr == true) output.append("true");
+            else if (*ptr == false) output.append("false");
         }
         break;
-        case VarType::Invalid:
         default:
             //error
         break;
-
     }
+    std::cout << output << "\n";
 }
 
 void Console::set_var(Var container, std::vector<std::string> values)
 {
+    std::string output;
     if (container.writable)
     {
-        std::cout << "Set " << container.name << " to ";
+        output = "Set " + container.name + " to ";
         switch(container.type)
         {
             case VarType::Float:
             {
                 float* ptr = (float*)container.pointer;
-                *ptr = std::stof(values.at(0));
-                std::cout << *ptr << std::endl;
+                try
+                {
+                    *ptr = std::stof(values.at(0));
+                }
+                catch (std::invalid_argument ia)
+                {
+                    output = values.at(0) + " not recognized as a float.";
+                    break; 
+                }
+                catch (std::out_of_range oor) 
+                {
+                    output = values.at(0) + " is out of range.";
+                    break;
+                }
+                output.append(std::to_string(*ptr));
             }
             break;
             case VarType::Int:
             {
                 int* ptr = (int*)container.pointer;
-                *ptr = std::stoi(values.at(0));
-                std::cout << values.at(0) << std::endl;
+                try
+                {
+                    *ptr = std::stoi(values.at(0));
+                }
+                catch (std::invalid_argument ia)
+                {
+                    output = values.at(0) + " not recognized as a int.";
+                    break; 
+                }
+                catch (std::out_of_range oor) 
+                {
+                    output = values.at(0) + " is out of range.";
+                    break;
+                }
+                output.append(std::to_string(*ptr));
             }
             break;
             case VarType::Bool:
             {
                 bool* ptr = (bool*)container.pointer;
-                if ((values.at(0) == "0") || (values.at(0) == "false")) *ptr = false;
-                else if ((values.at(0) == "1") || (values.at(0) == "true")) *ptr = true;
-                std::cout << *ptr << std::endl;        
+                if ((values.at(0) == "0") || (values.at(0) == "false"))
+                {
+                    *ptr = false;
+                    output.append("false");
+                }
+                else if ((values.at(0) == "1") || (values.at(0) == "true"))
+                {
+                    *ptr = true;
+                    output.append("true");
+                }
             }
             break;
-            case VarType::Invalid:
             default:
                 //error
             break;
@@ -220,7 +265,8 @@ void Console::set_var(Var container, std::vector<std::string> values)
     }
     else
     {
-        std::cout << "Error: " << container.name << " is not writable. Value not set." << std::endl;
+       output = "Error: " + container.name + " is not writable. Value not set.";
     }
+    std::cout << output << "\n";
     
 }
