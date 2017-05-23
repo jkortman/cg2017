@@ -51,8 +51,10 @@ const float     DEFAULT_FAR             = 10.0;
 #else
     extern GLFWwindow* window;
 #endif
-EXTERN int         window_width;
-EXTERN int         window_height;
+EXTERN int window_width;
+EXTERN int window_height;
+class Console;
+EXTERN Console* console;
 
 // ---------------------------------
 // -- Warning and error functions --

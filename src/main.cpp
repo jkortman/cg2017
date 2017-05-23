@@ -6,6 +6,7 @@
 #define MAIN_FILE
 #include "core.hpp"
 #include "LightSource.hpp"
+#include "Console.hpp"
 #include "Mesh.hpp"
 #include "Renderer.hpp"
 #include "ResourceManager.hpp"
@@ -17,6 +18,9 @@
 
 int main(int argc, char** argv)
 {
+    Console console;
+    console.initialize();
+    
     Renderer renderer;
     Scene scene;
 

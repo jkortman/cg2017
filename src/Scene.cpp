@@ -9,8 +9,23 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <stdexcept>
 
+#include "Console.hpp"
+
 Scene::Scene()
-{}
+{
+    console->register_var(
+        "player.pos",
+        Float,
+        &player.position[0],
+        3,
+        "The player position");
+    console->register_var(
+        "player.dir",
+        Float,
+        &player.direction[0],
+        3,
+        "The player direction");
+}
 
 void Scene::update(float dt)
 {
@@ -102,6 +117,14 @@ void Scene::give_landscape(Landscape* landscape, Shader* shader)
     {
         this->give_object(object);
     }
+
+    // Register landscape variables.
+    console->register_var(
+        "landscape_shine",
+        Float,
+        &landscape->material.shininess,
+        1, 
+        "The shininess of the landscape");
 }
 
 Landscape* Scene::get_landscape()

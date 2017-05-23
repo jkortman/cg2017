@@ -2,6 +2,8 @@
 
 #include "InputHandler.hpp"
 
+#include "Console.hpp"
+
 // Declaration of statics.
 std::array<bool, 1024> InputHandler::keys; 
 std::array<bool, 8>    InputHandler::mouse_buttons;
@@ -36,6 +38,11 @@ void InputHandler::key_callback(
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+
+    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
+    {
+        console->parse();
     }
 
     if (key >= 0 && key < 1024)

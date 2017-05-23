@@ -7,7 +7,6 @@
 
 #include "Console.hpp"
 
-
 Input tokenize(std::string str, const std::string delims)
 {
     Input tokens;
@@ -147,8 +146,6 @@ void Console::parse()
 
 }
 
-
-
 void Console::register_var(std::string name, VarType type, void* ptr, int size, std::string what, bool writable)
 {
     Var h = {name, type, ptr, size, what, writable};
@@ -160,7 +157,7 @@ void Console::register_var(std::string name, VarType type, void* ptr, int size, 
 void Console::initialize()
 {
     //Register necessary console commands here.
-
+    console = this;
 }
 
 
