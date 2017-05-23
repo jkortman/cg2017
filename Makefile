@@ -12,7 +12,7 @@ endif
 ifeq ($(UNAME),Darwin)
 	LIB = `pkg-config --static --libs glfw3` -lGLEW -framework OpenGL
 endif
-INC = -I include
+INC = -I include -I external_files
 
 all: $(TARGET)
 
