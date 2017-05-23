@@ -30,8 +30,8 @@ Landscape* TerrainGenerator::landscape()
 {
     // Initialize landscape object.
     Landscape* landscape = new Landscape;
-    landscape->width   = edge;
-    landscape->breadth = edge;
+    landscape->edge = edge;
+    landscape->size = size;
     
     // Copy values into landscape.
     for (int i = 0; i < positions.size(); i += 1)

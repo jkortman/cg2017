@@ -16,14 +16,26 @@ struct Landscape
 {
     Landscape();
 
-    // Pointed-to objects are not owned!
-    // Landscapes should be consumed by a Scene after being generated,
-    // which then owns the contents of the Landscape.
+    // Mesh details for rendering.
     std::vector<float> positions;
     std::vector<float> normals;
     std::vector<float> colours;
     std::vector<unsigned int> indices;
+
+    // Geometery details.
+    // The length of an edge in world coordinates
+    // (generated landscapes are square).
+    float edge;
+    // The number of vertices along an edge.
+    float size;
+
+    // Pointed-to objects are not owned!
+    // Landscapes should be consumed by a Scene after being generated,
+    // which then owns the contents of the Landscape.
     std::vector<Object*> objects;
+
+    // Rendering details.
+    // The Landscape must be assigned VAO by a Renderer.
     unsigned int vao;
     glm::mat4 model_matrix;
     glm::mat3 normal_matrix;
@@ -33,9 +45,6 @@ struct Landscape
         glm::vec3 specular;
         float shininess;
     } material;
-    float width,    // x-size
-          breadth,  // y-size
-          height;   // z-size
 };
 
 #endif // LANDSCAPE_HPP
