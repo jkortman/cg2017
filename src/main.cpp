@@ -16,6 +16,8 @@
 #include "Landscape.hpp"
 #include "TerrainGenerator.hpp"
 
+const bool WIREFRAME_MODE = false;
+
 int main(int argc, char** argv)
 {
     Console console;
@@ -25,7 +27,7 @@ int main(int argc, char** argv)
     Scene scene;
 
     // Renderer setup
-    renderer.initialize();
+    renderer.initialize(WIREFRAME_MODE);
     renderer.set_callbacks();
     
     InputHandler::initialize();
@@ -74,11 +76,11 @@ int main(int argc, char** argv)
     scene.world_light_day = LightSource(
         glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
         glm::vec3(0.2f, 0.2f, 0.2f),
-        glm::vec3(0.5f, 0.5f, 0.2f),
+        glm::vec3(0.5f, 0.5f, 0.48f),
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
-    TerrainGenerator tg(500, 400.0f);
+    TerrainGenerator tg(50, 100.0f);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
 

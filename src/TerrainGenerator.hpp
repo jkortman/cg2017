@@ -28,14 +28,19 @@ private:
     // --------------------
     // -- Internal types --
     // --------------------
+    // Biomes: Coast, Dirt, Rock, DarkGrass, LightGrass, Forest, Snow.
+    enum Biome { C=0, D=1, R=2, V=3, G=4, F=5, S=6, num_biomes=7 };
     // A heightmap is a matrix of heights (floats).
     // width is leftwards, breadth is downwards.
-    struct Heightmap {
-        Heightmap();
-        Heightmap(int size);
+    struct ValueMap {
+        ValueMap();
+        ValueMap(int size);
         float get(int row, int col);
-        void set(int row, int col, float height);
+        void set(int row, int col, float value);
+        void normalize(float norm_min, float norm_max);
         int size;
+        float min;
+        float max;
         std::vector<float> map;
     };
 
@@ -47,7 +52,9 @@ private:
     // The length of each edge.
     float edge;
     // The heightmap for the terrain.
-    Heightmap heightmap;
+    ValueMap heightmap;
+    // Maps for biome components.
+    ValueMap biome_map;
     // The vertex data.
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
@@ -63,6 +70,7 @@ private:
     void        set_position    (int row, int col, glm::vec3 pos);
     void        set_normal      (int row, int col, glm::vec3 norm);
     void        set_colour      (int row, int col, glm::vec3 colour);
+    Biome       get_biome       (int row, int col);
 
     // ---------------------------------------
     // -- Core terrain generation functions --
@@ -82,7 +90,7 @@ private:
     // noise function(s). Heights will be normalized to range <0, max_height>.
     // scale is the distance it takes for the noise function to take on a unique
     // point. (these are interpolated between)
-    void generate_heightmap(float height_limit, float scale);
+    void generate_base_map(float height_limit);
     // Stage 2: Convert the heightmap into positions.
     void generate_positions();
     // Stage 3: Generate normals.
