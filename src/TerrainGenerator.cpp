@@ -208,9 +208,9 @@ void TerrainGenerator::generate_positions()
         for (int col = 0; col < size; col += 1)
         {
             glm::vec3 position(
-                -size / 2.0f + edge * row / (size - 1),
+                -edge / 2.0f + edge * float(row) / (size - 1),
                 heightmap.get(row, col),
-                -size / 2.0f + edge * col / (size - 1));
+                -edge / 2.0f + edge * float(col) / (size - 1));
 
             set_position(row, col, position);
         }
