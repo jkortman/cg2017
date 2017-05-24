@@ -155,9 +155,21 @@ void TerrainGenerator::generate_base_map()
     // -- Generate component maps --
     // Altitude and Moisture maps are normalized to [0, 1],
     // and are used to determine the biome of the vertex.
-    ValueMap altitude_map(size);
-    ValueMap mountain_map(size);
-    ValueMap moisture_map(size);
+    ValueMap altitude_map(size);            // The base altitude
+    ValueMap altitude_coastmod_map(size);   // Force coast modifications
+    ValueMap mountain_map(size);            // Mountain component
+    ValueMap moisture_map(size);            // Moisture for biomes
+
+    // The altitude is modified to force a coast look using a quarter-circle.
+    auto alt_modifier = [=](int row, int col) {
+        float x = float(row) / (size - 1);
+        float y = float(col) / (size - 1);
+        float radius = std::sqrt(x*x + y*y);
+        if (radius < 1.0f) return 1.0f;
+        // scale 1.0f to 1.0f and 1.4 (approx sqrt(2)) to 0.0f.
+        // uses a line between (1.0, 1.0) and (1.4, 0.0)
+        return 3.5f - 2.5f * radius;
+    };
 
     for (int row = 0; row < size; row += 1)
     {
@@ -168,6 +180,7 @@ void TerrainGenerator::generate_base_map()
                 float(col) / 128.0f,
                 0.0f,
                 0, 0, 0);
+            float coastmod = alt_modifier(row, col);
             float mountain = stb_perlin_ridge_noise3(
                 float(row) / 100.0f,
                 float(col) / 100.0f,
@@ -180,6 +193,7 @@ void TerrainGenerator::generate_base_map()
                 1.0f,
                 0, 0, 0);
             altitude_map.set(row, col, base_altitude);
+            altitude_coastmod_map.set(row, col, coastmod);
             mountain_map.set(row, col, mountain);
             moisture_map.set(row, col, moisture);
         }
@@ -195,6 +209,7 @@ void TerrainGenerator::generate_base_map()
         {
             altitude_map.set(row, col, 
                 altitude_map.get(row, col)
+                * altitude_coastmod_map.get(row, col)
                 * mountain_map.get(row, col));
         }
     }
