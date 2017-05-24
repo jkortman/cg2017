@@ -146,6 +146,25 @@ void Scene::give_landscape(Landscape* landscape, Shader* shader)
         "The shininess of the landscape");
 }
 
+Water* Scene::get_water()
+{
+    return water.get();
+}
+
+void Scene::give_water(Water* water, Shader* shader)
+{
+    this->water.reset(water);
+    this->water_shader = shader;
+
+    // Register landscape variables.
+    console->register_var(
+        "water_shine",
+        Float,
+        &water->material.shininess,
+        1, 
+        "The shininess of the ocean");
+}
+
 Landscape* Scene::get_landscape()
 {
     return landscape.get();

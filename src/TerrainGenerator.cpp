@@ -23,7 +23,8 @@ TerrainGenerator::TerrainGenerator(int size, float edge)
     normals.resize(size * size);
     colours.resize(size * size);
     biomes.resize(size * size);
-    generate();
+    int seed = 200;
+    generate(seed);
 }
 
 // Convert the contained terrain data into a landscape object.
@@ -113,20 +114,40 @@ void TerrainGenerator::set_biome(int row, int col, Biome biome)
 // ---------------------------------------
 
 // Calls all of the core generator functions in order to create a terrain.
-void TerrainGenerator::generate()
+void TerrainGenerator::generate(int seed)
 {
     const float height_limit = 32.0f;
 
-    generate_base_map();
+    generate_base_map(seed);
     generate_positions();
     generate_normals();
+
+    // Blur normals
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            blur_value(Normals, row, col, 0.8f, 2);
+        }
+    }
+
     generate_materials();
+
+    // Blur colours
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            blur_value(Colours, row, col, 1.0f, 1);
+        }
+    }
+
     generate_indices();
 }
 
 // Stage 1: Use noise functions to generate a heightmap according to some
 // noise function(s);
-void TerrainGenerator::generate_base_map()
+void TerrainGenerator::generate_base_map(int seed)
 {
     heightmap = ValueMap(size);
 
@@ -161,15 +182,48 @@ void TerrainGenerator::generate_base_map()
     ValueMap moisture_map(size);            // Moisture for biomes
 
     // The altitude is modified to force a coast look using a quarter-circle.
-    auto alt_modifier = [=](int row, int col) {
-        float x = float(row) / (size - 1);
-        float y = float(col) / (size - 1);
-        float radius = std::sqrt(x*x + y*y);
-        if (radius < 1.0f) return 1.0f;
-        // scale 1.0f to 1.0f and 1.4 (approx sqrt(2)) to 0.0f.
-        // uses a line between (1.0, 1.0) and (1.4, 0.0)
-        return 3.5f - 2.5f * radius;
+    auto interpol = [](float x, float x0, float x1, float y0, float y1)
+    {
+        return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     };
+    auto circular_modifier = [=](int row, int col)
+    {
+        float x = 2.0f * ((-float(size - 1) / 2.0f) + float(row)) / (size - 1); // -1 to 1
+        float y = 2.0f * ((-float(size - 1) / 2.0f) + float(col)) / (size - 1); // -1 to 1
+
+        float radius = std::sqrt(x*x + y*y);
+
+        // Using the radius, we divide the region into ocean, coast, plains, and mountains.
+        float mod;
+        // ocean
+        if      (radius > 0.95f)    mod = 0.0f;
+        //coast
+        else if (radius > 0.85f)    mod = interpol(radius, 0.95f, 0.85f, 0.0f, 0.4f);
+        else if (radius > 0.45f)    mod = 0.4f;
+        else if (radius > 0.30f)    mod = interpol(radius, 0.45f, 0.30f, 0.4f, 1.0f);
+        else                        mod = 1.0f;
+        return mod;
+    };
+    auto dist_from_corner_modifier = [=](int row, int col)
+    {
+        float x = float(row) / (size - 1); // -1 to 1
+        float y = float(col) / (size - 1); // -1 to 1
+
+        float dist = std::sqrt(x*x + y*y);
+
+        // Using the radius, we divide the region into ocean, coast, plains, and mountains.
+        float mod;
+        // ocean
+        if      (dist >= 0.99f)    mod = 0.0f;
+        //coast
+        else if (dist >= 0.80f)    mod = interpol(dist, 0.99f, 0.80f, 0.0f, 0.4f);
+        else if (dist >= 0.50f)    mod = 0.4f;
+        else if (dist >= 0.20f)    mod = interpol(dist, 0.50f, 0.20f, 0.4f, 1.0f);
+        else                       mod = 1.0f;
+
+        return mod;
+    };
+    auto altitude_modifier = dist_from_corner_modifier;
 
     for (int row = 0; row < size; row += 1)
     {
@@ -178,19 +232,19 @@ void TerrainGenerator::generate_base_map()
             float base_altitude = stb_perlin_noise3(
                 float(row) / 128.0f,
                 float(col) / 128.0f,
-                0.0f,
+                float(seed) + 0.0f,
                 0, 0, 0);
-            float coastmod = alt_modifier(row, col);
+            float coastmod = altitude_modifier(row, col);
             float mountain = stb_perlin_ridge_noise3(
                 float(row) / 100.0f,
                 float(col) / 100.0f,
-                0.0f,
+                float(seed) + 1.0f,
                 2.0f, 0.5f, 1.0f, 6,
                 0, 0, 0);
             float moisture = stb_perlin_noise3(
                 float(row) / 164.0f,
                 float(col) / 164.0f,
-                1.0f,
+                float(seed) + 2.0f,
                 0, 0, 0);
             altitude_map.set(row, col, base_altitude);
             altitude_coastmod_map.set(row, col, coastmod);
@@ -199,7 +253,21 @@ void TerrainGenerator::generate_base_map()
         }
     }
 
+    #if 0
+    fprintf(stderr, "Coast modifier:\n");
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            float coastmod = altitude_coastmod_map.get(row, col);
+            fprintf(stderr, "%f ", coastmod);
+        }
+        fprintf(stderr, "\n");
+    }
+    #endif
+
     altitude_map.normalize(0.0f, 1.0f);
+    altitude_coastmod_map.normalize(0.0f, 1.0f);
     mountain_map.normalize(0.0f, 1.0f);
     moisture_map.normalize(0.0f, 1.0f);
 
@@ -207,10 +275,14 @@ void TerrainGenerator::generate_base_map()
     {
         for (int col = 0; col < size; col += 1)
         {
+            
             altitude_map.set(row, col, 
                 altitude_map.get(row, col)
                 * altitude_coastmod_map.get(row, col)
                 * mountain_map.get(row, col));
+                
+            //altitude_map.set(row, col, 
+            //    altitude_coastmod_map.get(row, col));
         }
     }
 
@@ -242,7 +314,8 @@ void TerrainGenerator::generate_base_map()
     }
     
     // -- Generate vertex heights --
-    const float alt_multiplier = 96.0f;
+    const float alt_multiplier = 128.0f;
+    //const float alt_multiplier = 1.0f;
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
@@ -352,7 +425,9 @@ void TerrainGenerator::generate_materials()
             //fprintf(stderr, "Biome: %d\n", int(get_biome(row, col)));
             glm::vec3 colour;
             colour = biome_colours[int(get_biome(row, col))];
-            //colour = randomize_shade(colour, 0.1f);
+            if (get_biome(row, col) != Ocean) {
+                colour = randomize_shade(colour, 0.2f);
+            }
             set_colour(row, col, colour);
         }
     }
@@ -460,15 +535,22 @@ void TerrainGenerator::ValueMap::set(int row, int col, float value)
 
 void TerrainGenerator::ValueMap::normalize(float norm_min, float norm_max)
 {
+    
     // For each value, map it from range <min, max> to <norm_min, norm_max>.
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
         {
-            float value = map[size * row + col];
-            float prop = (value - min) / (max - min);
-            float norm_value = norm_min + prop * (norm_max - norm_min);
-            map[size * row + col] = norm_value;
+            if (this->min >= this->max)
+            {
+                map[size * row + col] = norm_min;
+            } else
+            {
+                float value = map[size * row + col];
+                float prop = (value - min) / (max - min);
+                float norm_value = norm_min + prop * (norm_max - norm_min);
+                map[size * row + col] = norm_value;
+            }
         }
     }
 

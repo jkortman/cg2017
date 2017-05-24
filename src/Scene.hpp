@@ -18,6 +18,7 @@
 #include "Shader.hpp"
 #include "InputHandler.hpp"
 #include "Landscape.hpp"
+#include "Water.hpp"
 
 class Scene
 {
@@ -37,6 +38,9 @@ public:
     // The landscape.
     std::unique_ptr<Landscape> landscape;
     Shader* landscape_shader;
+    // The water.
+    std::unique_ptr<Water> water;
+    Shader* water_shader;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
@@ -48,6 +52,11 @@ public:
     void give_landscape(Landscape* landscape, Shader* shader);
     // Get the owned landscape.
     Landscape* get_landscape();
+
+    // Give the scene a body of water to own.
+    void give_water(Water* water, Shader* shader);
+    // Get the owned landscape.
+    Water* get_water();
 
     glm::vec3 check_collisions(glm::vec3 current, glm::vec3 proposed);
 

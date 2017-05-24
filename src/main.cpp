@@ -15,6 +15,7 @@
 #include "InputHandler.hpp"
 #include "Landscape.hpp"
 #include "TerrainGenerator.hpp"
+#include "Water.hpp"
 
 const bool WIREFRAME_MODE = false;
 
@@ -58,6 +59,9 @@ int main(int argc, char** argv)
         "landscape-light",
         new Shader("shaders/landscape-light.vert", "shaders/landscape-light.frag"));
     resources.give_shader(
+        "water",
+        new Shader("shaders/water.vert", "shaders/water.frag"));
+    resources.give_shader(
         "bplight",
         new Shader("shaders/bplight.vert", "shaders/bplight.frag"));
     
@@ -81,9 +85,14 @@ int main(int argc, char** argv)
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
-    TerrainGenerator tg(400, 400.0f);
+    TerrainGenerator tg(600, 400.0f);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
+
+    // Create ocean.
+    Water* ocean = new Water(2, 1000.0f, 0.05f * 128.0f);
+    ocean = renderer.assign_vao(ocean);
+    scene.give_water(ocean, resources.get_shader("water"));
 
     // Create objects.
     scene.give_object(new Object(

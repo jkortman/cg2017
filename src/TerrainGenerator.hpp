@@ -97,12 +97,12 @@ private:
     // With any required processing functions (see below) called between stages.
 
     // Calls all of the core generator functions in order to create a terrain.
-    void generate();
+    void generate(int seed);
     // Stage 1: Use noise functions to generate a heightmap according to some
     // noise function(s). Heights will be normalized to range <0, max_height>.
     // scale is the distance it takes for the noise function to take on a unique
     // point. (these are interpolated between)
-    void generate_base_map();
+    void generate_base_map(int seed);
     // Stage 2: Convert the heightmap into positions.
     void generate_positions();
     // Stage 3: Generate normals.

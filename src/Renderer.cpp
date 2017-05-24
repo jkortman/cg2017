@@ -154,7 +154,7 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
 
-    // Set texcoord attribute
+    // Set colour attribute
     glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -173,6 +173,63 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
         GL_STATIC_DRAW);
 
     return landscape;
+}
+
+Water* Renderer::assign_vao(Water* water)
+{
+    glGenVertexArrays(1, &water->vao);
+
+    glBindVertexArray(water->vao);
+
+    // Create buffers for positions, normals, texcoords, indices
+    unsigned int buffer[4];
+    glGenBuffers(4, buffer);
+
+    // Set vertex position attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * 3 * water->positions.size(),
+        &water->positions[0].x,
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set normal attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * 3* water->normals.size(),
+        &water->normals[0].x,
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set colour attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * 3 * water->colours.size(),
+        &water->colours[0].x,
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, VALS_PER_COLOUR, GL_FLOAT, GL_FALSE, 0, 0);\
+
+    // Set vertex indices attrib
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[3]);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(float) * 3 * water->indices.size(),
+        water->indices.data(),
+        GL_STATIC_DRAW);
+
+    return water;
+}
+
+// Update the VAO of a water object, after hass has changed.
+void Renderer::update_vao(Water* water)
+{
+    // ?
 }
 
 // Generate and assign a VAO to a mesh object.
@@ -372,6 +429,34 @@ void Renderer::render(const Scene& scene)
         glBindVertexArray(0);
     }
 
+    // Render ocean.
+    Water* water = scene.water.get();
+    if (water != nullptr)
+    {
+        glUseProgram(scene.water_shader->program_id);
+        init_shader(scene, scene.water_shader);
+
+        // Load model and normal matrices.
+        glUniformMatrix4fv(
+            glGetUniformLocation(scene.water_shader->program_id, "ModelMatrix"),
+            1, false, glm::value_ptr(water->model_matrix));
+        glUniformMatrix3fv(
+            glGetUniformLocation(scene.water_shader->program_id, "NormalMatrix"),
+            1, false, glm::value_ptr(water->normal_matrix));
+        // Load the shape material properties into the shader.
+        glUniform1f(
+            glGetUniformLocation(scene.water_shader->program_id, "MtlShininess"),
+            water->material.shininess);
+
+        glBindVertexArray(water->vao);
+        glDrawElements(
+            GL_TRIANGLES,
+            3 * water->indices.size(),
+            GL_UNSIGNED_INT,
+            0);
+        glBindVertexArray(0);
+    }
+
     // Load and draw each object in the scene.
     for (const auto& object : scene.objects)
     {
@@ -442,7 +527,7 @@ static void load_texture(const std::string& path)
         warn("No path to image '" + path  + "'");
 
         // A red texture to be used when no texture is provided.
-        const std::array<unsigned char, 3> error_texture({255, 0, 0});
+        const std::array<unsigned char, 3> error_texture({{255, 0, 0}});
 
         glTexImage2D(
             GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB,
