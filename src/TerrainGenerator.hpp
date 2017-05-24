@@ -61,6 +61,8 @@ private:
     int size;
     // The length of each edge.
     float edge;
+    // The sealevel.
+    float sealevel;
     // The heightmap for the terrain.
     ValueMap heightmap;
     // Maps for biome components.

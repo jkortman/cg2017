@@ -324,6 +324,7 @@ void TerrainGenerator::generate_base_map(int seed)
             heightmap.set(row, col, alt_multiplier * altitude);
         }
     }
+    sealevel = 0.05f * alt_multiplier;
 }
 
 // Stage 2: Convert the heightmap into positions.
@@ -439,27 +440,39 @@ void TerrainGenerator::generate_indices()
     // Build indices.
     // For each vertex except the lowest row and furthest left column,
     // connect positions into two triangles:
-    // current vertex r, c -> .___. <- r, c+1
+    // current vertex r, c -> a___b <- r, c+1
     //                        |  /|
     //                        | / |
     //                        |/  |
-    //               r+1,c -> .___. <- r+1, c+1
+    //               r+1,c -> c___d <- r+1, c+1
     for (int row = 0; row < size - 1; row += 1)
     {
         for (int col = 0; col < size - 1; col += 1)
         {
+            unsigned int a = ( row      * size + col);
+            unsigned int b = ( row      * size + col + 1);
+            unsigned int c = ((row + 1) * size + col);
+            unsigned int d = (unsigned int)((row + 1) * size + col + 1);
+            float a_height = get_position(row, col).y;
+            float b_height = get_position(row, col + 1).y;
+            float c_height = get_position(row + 1, col).y;
+            float d_height = get_position(row + 1, col + 1).y;
+
+            // Only render a triangle if at least one vert is above sea level.
             // First triangle (upper-left on diagram).
-            indices.push_back(std::array<unsigned int, 3>({{
-                (unsigned int)( row      * size + col),
-                (unsigned int)( row      * size + col + 1),
-                (unsigned int)((row + 1) * size + col),
-            }}));
+            if (a_height    >= sealevel
+                || b_height >= sealevel
+                || c_height >= sealevel)
+            {
+                indices.push_back({{a, b, c}});
+            }
             // Second triangle (lower-right on diagram).
-            indices.push_back({{
-                (unsigned int)((row + 1) * size + col),
-                (unsigned int)( row      * size + col + 1),
-                (unsigned int)((row + 1) * size + col + 1),
-            }});
+            if (c_height    >= sealevel
+                || b_height >= sealevel
+                || d_height >= sealevel)
+            {
+                indices.push_back({{c, b, d}});
+            }
         }
     }
 }
