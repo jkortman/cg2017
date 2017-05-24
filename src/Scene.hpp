@@ -49,12 +49,15 @@ public:
     // Get the owned landscape.
     Landscape* get_landscape();
 
+    glm::vec3 check_collisions(glm::vec3 current, glm::vec3 proposed);
+
 private:
     // The meshes, stored as owning pointers hashed by name.
     std::unordered_map<std::string, std::unique_ptr<Mesh>> meshes;
     // The owned shaders.
     std::unordered_map<std::string, std::unique_ptr<Shader>> owned_shaders;
     std::vector<std::unique_ptr<Object>> owned_objects;
+    bool no_clip;
 };
 
 #endif // SCENE_H

@@ -11,6 +11,7 @@ class Player: public Entity
 public:
     glm::vec3 position;
     glm::vec3 direction;
+    float height;
 };
 
 #endif // PLAYER_H

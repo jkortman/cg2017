@@ -13,6 +13,7 @@
 
 Scene::Scene()
 {
+    no_clip = true;
     console->register_var(
         "player.pos",
         Float,
@@ -25,6 +26,12 @@ Scene::Scene()
         &player.direction[0],
         3,
         "The player direction");
+    console->register_var(
+        "noclip",
+        Bool,
+        &no_clip,
+        1,
+        "Toggles noclip");
 }
 
 void Scene::update(float dt)
@@ -34,38 +41,50 @@ void Scene::update(float dt)
 
     glm::vec3 right_direction = glm::cross(player.direction, AXIS_Y);
 
+
+    glm::vec3 movement = player.position;
+
     if (InputHandler::keys[GLFW_KEY_W])
     {
-        player.position.x += move_speed * player.direction.x;
+        movement.x += move_speed * player.direction.x;
         //player.position.y += move_speed * player.direction.y;
-        player.position.z += move_speed * player.direction.z;
+        movement.z += move_speed * player.direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_S])
     {
-        player.position.x -= move_speed * player.direction.x;
+        movement.x -= move_speed * player.direction.x;
         //player.position.y -= move_speed * player.direction.y;
-        player.position.z -= move_speed * player.direction.z;
+        movement.z -= move_speed * player.direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_A])
     {
-        player.position.x -= move_speed * right_direction.x;
+        movement.x -= move_speed * right_direction.x;
         //player.position.y -= move_speed * right_direction.y;
-        player.position.z -= move_speed * right_direction.z;
+        movement.z -= move_speed * right_direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_D])
     {
-        player.position.x += move_speed * right_direction.x;
+        movement.x += move_speed * right_direction.x;
         //player.position.y += move_speed * right_direction.y;
-        player.position.z += move_speed * right_direction.z;
+        movement.z += move_speed * right_direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_SPACE])
     {
-        player.position.y += move_speed;
+        movement.y += move_speed;
     }
     if (InputHandler::keys[GLFW_KEY_LEFT_SHIFT])
     {
-        player.position.y -= move_speed;
+        movement.y -= move_speed; 
     }
+
+    // Toggle off for noclip / camera modes
+    if (!no_clip) movement.y += (landscape->get_pos_at(movement)).y - (landscape->get_pos_at(player.position)).y;
+
+    player.position = check_collisions(player.position, movement);
+
+
+
+    
 
     // Rotations
     player.direction = glm::rotate(
@@ -132,3 +151,22 @@ Landscape* Scene::get_landscape()
     return landscape.get();
 }
 
+
+glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
+{
+    if (no_clip) return proposed;
+    float radius = 2;
+    // Check terrain
+    if ( (landscape->get_pos_at(proposed)).y + player.height > current.y) 
+    {
+        current.y *= 1.05;
+        return current;
+    }    
+
+    // Check objects
+    for (auto& object : objects)
+    {
+        if ( glm::length(object->position - glm::vec4(proposed, 0.0f)) < radius) return current;
+    }
+    return proposed;
+}
