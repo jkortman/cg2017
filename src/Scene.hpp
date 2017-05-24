@@ -41,6 +41,8 @@ public:
     // The water.
     std::unique_ptr<Water> water;
     Shader* water_shader;
+    // The elapsed time.
+    float time_elapsed;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);

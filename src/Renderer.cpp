@@ -447,6 +447,14 @@ void Renderer::render(const Scene& scene)
         glUniform1f(
             glGetUniformLocation(scene.water_shader->program_id, "MtlShininess"),
             water->material.shininess);
+        // Load time elapsed into the shader.
+        glUniform1f(
+            glGetUniformLocation(scene.water_shader->program_id, "Time"),
+            scene.time_elapsed);
+        // Load the distance between vertices into the shader.
+        glUniform1f(
+            glGetUniformLocation(scene.water_shader->program_id, "VertDist"),
+            water->vert_dist());
 
         glBindVertexArray(water->vao);
         glDrawElements(

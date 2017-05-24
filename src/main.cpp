@@ -85,12 +85,13 @@ int main(int argc, char** argv)
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
-    TerrainGenerator tg(600, 400.0f);
+    const float max_height = 128.0f;    // Needs to be consistent with water.vert.
+    TerrainGenerator tg(600, 400.0f, max_height);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
 
     // Create ocean.
-    Water* ocean = new Water(2, 1000.0f, 0.05f * 128.0f);
+    Water* ocean = new Water(300, 1000.0f, 0.05f * max_height);
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
 

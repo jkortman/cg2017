@@ -16,15 +16,15 @@
 // Create a new TerrainGenerator.
 // The terrain will consist of size*size vertices, and will have
 // dimensions edge*edge.
-TerrainGenerator::TerrainGenerator(int size, float edge)
-    : size(size), edge(edge)
+TerrainGenerator::TerrainGenerator(int size, float edge, float max_height)
+    : size(size), edge(edge), max_height(max_height)
 {
     positions.resize(size * size);
     normals.resize(size * size);
     colours.resize(size * size);
     biomes.resize(size * size);
     int seed = 200;
-    generate(seed);
+    generate(seed, max_height);
 }
 
 // Convert the contained terrain data into a landscape object.
@@ -114,11 +114,9 @@ void TerrainGenerator::set_biome(int row, int col, Biome biome)
 // ---------------------------------------
 
 // Calls all of the core generator functions in order to create a terrain.
-void TerrainGenerator::generate(int seed)
+void TerrainGenerator::generate(int seed, float max_height)
 {
-    const float height_limit = 32.0f;
-
-    generate_base_map(seed);
+    generate_base_map(seed, max_height);
     generate_positions();
     generate_normals();
 
@@ -147,7 +145,7 @@ void TerrainGenerator::generate(int seed)
 
 // Stage 1: Use noise functions to generate a heightmap according to some
 // noise function(s);
-void TerrainGenerator::generate_base_map(int seed)
+void TerrainGenerator::generate_base_map(int seed, float max_height)
 {
     heightmap = ValueMap(size);
 
@@ -314,17 +312,16 @@ void TerrainGenerator::generate_base_map(int seed)
     }
     
     // -- Generate vertex heights --
-    const float alt_multiplier = 128.0f;
     //const float alt_multiplier = 1.0f;
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
         {
             float altitude = altitude_map.get(row, col);
-            heightmap.set(row, col, alt_multiplier * altitude);
+            heightmap.set(row, col, max_height * altitude);
         }
     }
-    sealevel = 0.05f * alt_multiplier;
+    sealevel = 0.05f * max_height;
 }
 
 // Stage 2: Convert the heightmap into positions.

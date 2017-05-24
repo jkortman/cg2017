@@ -19,7 +19,7 @@ public:
     // Create a new TerrainGenerator.
     // The terrain will consist of size*size vertices, and will have
     // dimensions edge*edge.
-    TerrainGenerator(int size, float edge);
+    TerrainGenerator(int size, float edge, float max_height);
     TerrainGenerator() = delete;
 
     // Convert the contained terrain data into a landscape object.
@@ -67,6 +67,8 @@ private:
     ValueMap heightmap;
     // Maps for biome components.
     ValueMap biome_map;
+    // The maximum height of the landscape.
+    float max_height;
     // The vertex data.
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
@@ -99,12 +101,12 @@ private:
     // With any required processing functions (see below) called between stages.
 
     // Calls all of the core generator functions in order to create a terrain.
-    void generate(int seed);
+    void generate(int seed, float max_height);
     // Stage 1: Use noise functions to generate a heightmap according to some
     // noise function(s). Heights will be normalized to range <0, max_height>.
     // scale is the distance it takes for the noise function to take on a unique
     // point. (these are interpolated between)
-    void generate_base_map(int seed);
+    void generate_base_map(int seed, float max_height);
     // Stage 2: Convert the heightmap into positions.
     void generate_positions();
     // Stage 3: Generate normals.

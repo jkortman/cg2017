@@ -23,6 +23,11 @@ void Water::update(float dt)
     //calculate_normals();
 }
 
+float Water::vert_dist()
+{
+    return edge / size;
+}
+
 void Water::initialize()
 { 
     // Initialize positions and colours.

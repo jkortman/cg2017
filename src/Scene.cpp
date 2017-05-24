@@ -12,6 +12,7 @@
 #include "Console.hpp"
 
 Scene::Scene()
+    : time_elapsed(0.0f)
 {
     no_clip = true;
     console->register_var(
@@ -36,6 +37,7 @@ Scene::Scene()
 
 void Scene::update(float dt)
 {
+    time_elapsed += dt;
     const float rotate_factor = 0.006f;
     const float move_speed = 0.13f;
 

@@ -13,6 +13,9 @@ struct Water
     Water(int size, float edge, float level);
     void update(float dt);
 
+    // Get the distance between vertices.
+    float vert_dist();
+
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec3> colours;

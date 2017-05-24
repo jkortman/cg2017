@@ -11,6 +11,7 @@ uniform vec3    MtlAmbient;     // Not used!
 uniform vec3    MtlDiffuse;     // Not used!
 uniform vec3    MtlSpecular;
 uniform float   MtlShininess;
+uniform float Time;
 
 uniform vec3 ViewPos;
 
@@ -44,7 +45,7 @@ vec4 calculate_lighting(in LightSource light) {
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
     float spec = pow(max(dot(norm, halfway_dir), 0.0), 100.0);
-    vec3 specular = MtlSpecular * light.specular * spec;
+    vec3 specular = light.specular * spec;
 
     return vec4(ambient + diffuse + specular, 1.0);
 }
@@ -52,6 +53,4 @@ vec4 calculate_lighting(in LightSource light) {
 void main()
 {
     FragColour = calculate_lighting(LightDay);
-    //FragColour = vec4(Normal / 2.0 + 0.5, 1.0);
-    //FragColour = vec4(MtlShininess, 0.0, 0.0, 1.0);
 }
