@@ -31,8 +31,9 @@ int main(int argc, char** argv)
     InputHandler::initialize();
 
     // Scene setup
-    scene.player.position = glm::vec3(0.0, 0.0, 3.0);
+    scene.player.position = glm::vec3(0.0, 20.0, 3.0);
     scene.player.direction = glm::vec3(0.0, 0.0, -1.0);
+    scene.player.height = 2.0f;
     scene.camera = Camera(
         glm::vec3(0.0, 0.0, 3.0),   // position
         scene.player.direction,     // target
@@ -85,7 +86,7 @@ int main(int argc, char** argv)
     // Create objects.
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
-        glm::vec3(0.0f, 0.0f, 0.0f),      // position
+        glm::vec3(0.0f, 20.0f, 0.0f),      // position
         resources.get_shader("bplight")   // shader
     ));
 
