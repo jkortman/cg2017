@@ -15,6 +15,7 @@
 struct Landscape
 {
     Landscape();
+    glm::vec3 get_pos_at(glm::vec3 player_pos);
 
     // Mesh details for rendering.
     std::vector<float> positions;
