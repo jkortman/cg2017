@@ -80,7 +80,7 @@ int main(int argc, char** argv)
         glm::vec3(1.0f, 1.0f, 1.0f));
 
     // Generate landscape.
-    TerrainGenerator tg(50, 100.0f);
+    TerrainGenerator tg(400, 400.0f);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
 
