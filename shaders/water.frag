@@ -39,7 +39,7 @@ vec4 calculate_lighting(in LightSource light) {
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
-    vec3 diffuse = diff * Colour * light.diffuse;
+    vec3 diffuse = diff * Colour;// * light.diffuse;
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
