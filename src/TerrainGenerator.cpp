@@ -401,9 +401,9 @@ void TerrainGenerator::generate_materials()
     // Build colours.
     const std::vector<glm::vec3> biome_colours = {
         glm::vec3(1.00f, 0.00f, 0.00f), // error (red)
-        glm::vec3(0.30f, 0.30f, 1.00f), // ocean 
+        glm::vec3(0.70f, 0.60f, 0.20f), // ocean (sand)
         glm::vec3(0.70f, 0.55f, 0.03f), // coast (sand)
-        glm::vec3(0.50f, 0.40f, 0.40f),  // dirt
+        glm::vec3(0.50f, 0.40f, 0.40f), // dirt
         glm::vec3(0.44f, 0.40f, 0.48f), // rock
         glm::vec3(0.07f, 0.40f, 0.15f), // dark grass
         glm::vec3(0.14f, 0.60f, 0.28f), // light grass

@@ -43,7 +43,7 @@ vec4 calculate_lighting(in LightSource light) {
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
-    float spec = pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
+    float spec = pow(max(dot(norm, halfway_dir), 0.0), 100.0);
     vec3 specular = MtlSpecular * light.specular * spec;
 
     return vec4(ambient + diffuse + specular, 1.0);
@@ -52,4 +52,6 @@ vec4 calculate_lighting(in LightSource light) {
 void main()
 {
     FragColour = calculate_lighting(LightDay);
+    //FragColour = vec4(Normal / 2.0 + 0.5, 1.0);
+    //FragColour = vec4(MtlShininess, 0.0, 0.0, 1.0);
 }
