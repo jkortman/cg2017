@@ -58,6 +58,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Shader>> owned_shaders;
     std::vector<std::unique_ptr<Object>> owned_objects;
     bool no_clip;
+    bool camera_mode;
 };
 
 #endif // SCENE_H
