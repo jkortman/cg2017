@@ -32,7 +32,7 @@ Input tokenize(std::string str, const std::string delims)
 
 void Console::parse()
 {
-    std::string output;
+    std::string output = "";
     std::cout << "\nEntering Console\n";
     bool isRunning = true;
     while (isRunning)
@@ -63,7 +63,7 @@ void Console::parse()
         std::string name;
 
         //Special commands
-        if (input.command == "continue")
+        if (input.command == "go")
         {
             isRunning = false;
             std::cout << "Returning to game" << std::endl;
@@ -86,7 +86,7 @@ void Console::parse()
             output += "<var> <value> - sets value of variable (if registered and writable).\n";
             std::cout << output << "\n";
             continue;
-        } else if (input.command == "whatis")
+        } else if (input.command == "whatis" )
         {
             name = input.values.at(0);
             
@@ -123,9 +123,22 @@ void Console::parse()
                 output = name + " is not a registered variable.";
             }
             std::cout << output << "\n";
-        } else if (input.command == "noclip")
+        } else if (input.command == "noclip" || input.command == "tcl")
         {
-            // Set noclip flag
+            output = "collisions turned ";
+            container = variables["noclip"];
+            bool* ptr = (bool*)container.pointer;
+            if (*ptr == false)
+            {
+                *ptr = true;
+                output.append("off.");
+            }
+            else
+            {
+                *ptr = false;
+                output.append("on.");
+            }
+            std::cout << output << "\n";
         } else if (variables.find(input.command) != variables.end())
         {   
             container = variables[input.command];
