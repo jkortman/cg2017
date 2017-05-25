@@ -103,16 +103,58 @@ float linearize(float z)
 void main()
 {
     // -- Edge detection -- 
+    const int no_edge = 0, simple = 1, sobel = 2;
+    int edge_method = no_edge;
+
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0); 
-    float d_s = 4.0 / 640.0;
-    float d_t = 4.0 / 480.0;
-    float above = linearize(texture(DepthMap, vec2(st.s, st.t - d_t)).x); 
-    float left  = linearize(texture(DepthMap, vec2(st.s - d_s, st.t)).x); 
-    float depth = linearize(texture(DepthMap, st).x);
-    const float line_dark = 10.0;
-    float grad = 1.0 - line_dark * (2.0 * depth - above - left);
+    const float d_s = 0.5 * 1.0 / 640.0;
+    const float d_t = 0.5 * 1.0 / 480.0;
+    float grad;
+
+    if (edge_method == no_edge)
+    {
+        grad = 1.0;
+    }
+    else if (edge_method == simple)
+    {
+        float above = linearize(texture(DepthMap, vec2(st.s, st.t - d_t)).x); 
+        float left  = linearize(texture(DepthMap, vec2(st.s - d_s, st.t)).x); 
+        float depth = linearize(texture(DepthMap, st).x);
+        const float line_dark = 10.0;
+        grad = 1.0 - line_dark * (2.0 * depth - above - left);
+    }
+    else if (edge_method == sobel)
+    {
+        mat3 Mx = mat3( 
+             1.0,  2.0,  1.0, 
+             0.0,  0.0,  0.0, 
+            -1.0, -2.0, -1.0);
+        mat3 My = mat3( 
+            1.0,  0.0, -1.0, 
+            2.0,  0.0, -2.0, 
+            1.0,  0.0, -1.0);
+        mat3 samples;
+        for (int i = -1; i <= 1; i += 1)
+        {
+            for (int j = -1; j <= 1; j += 1)
+            {
+                samples[i+1][j+1] = linearize(
+                    texture(
+                        DepthMap,
+                        vec2(st.s - j * d_s, st.t - i * d_t))
+                    .x);
+            }
+        }
+
+        float gx = dot(Mx[0], samples[0]) + dot(Mx[1], samples[1]) + dot(Mx[2], samples[2]); 
+        float gy = dot(My[0], samples[0]) + dot(My[1], samples[1]) + dot(My[2], samples[2]);
+        
+        const float line_dark = 10.0;
+        grad = 1.0 - line_dark * (abs(gx) + abs(gy));             // manhattan dist
+        //grad = 1.0 - line_dark * sqrt(gx*gx + gy*gy); // geometric distance
+    }
 
     // -- Fragment colour processing --
     vec3 colour = match_to_palette(Colour);
