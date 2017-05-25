@@ -40,6 +40,9 @@ public:
     void cleanup();
     // Check if the rendering process should end.
     bool should_end();
+private:
+    enum class RenderMode { Scene, Depth };
+    void draw_scene(const Scene& scene, RenderMode render_mode);
 };
 
 #endif // RENDERER_HPP

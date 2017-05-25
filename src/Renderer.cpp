@@ -381,11 +381,8 @@ void init_shader(const Scene& scene, Shader* shader) {
         1, glm::value_ptr(scene.camera.position));
 }
 
-// Render a scene.
-void Renderer::render(const Scene& scene)
+void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
@@ -477,6 +474,14 @@ void Renderer::render(const Scene& scene)
         // Render the object.
         draw_object(render_unit);
     }
+}
+
+// Render a scene.
+void Renderer::render(const Scene& scene)
+{
+    glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    draw_scene(scene, RenderMode::Scene);   
 }
 
 // Cleanup after a single render
