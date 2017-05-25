@@ -43,6 +43,10 @@ public:
 private:
     enum class RenderMode { Scene, Depth };
     void draw_scene(const Scene& scene, RenderMode render_mode);
+
+    GLuint depth_buffer;
+    GLuint depth_texture;
+    const unsigned int depth_tex_size = 512;
 };
 
 #endif // RENDERER_HPP

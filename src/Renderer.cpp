@@ -50,14 +50,55 @@ void Renderer::initialize(bool wireframe)
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+
+    // -----------------------------------------
+    // -- FBO initialization for depth buffer --
+    // -----------------------------------------
+    glGenFramebuffers(1, &depth_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+
+    glGenTextures(1, &depth_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+        
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    // Attach depth_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D,
+        depth_texture, 0);
+
+    // Instruct openGL that we won't bind a color texture with the current FBO
+    glDrawBuffer(GL_NONE); // default here would be GL_FRONT
+    glReadBuffer(GL_NONE); // default here would be GL_BACK
+
+    // Always check that our framebuffer is ok
+    GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    
+    fatal_if(
+        fb_status != GL_FRAMEBUFFER_COMPLETE,
+        "Frame buffer error, status: " + std::to_string(fb_status));
 }
 
 // Callback for window resize
-void reshape_callback(GLFWwindow *window, int x, int y) 
+void reshape(int width, int height) 
 {
-    window_width = x;
-    window_height = y;
-    glViewport(0, 0, x, y);
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+    window_width = width;
+    window_height = height;
+
+    // TODO: Update projection matrix.
 }
 
 // Register InputHandler functions as callbacks.
@@ -66,7 +107,7 @@ void Renderer::set_callbacks()
     glfwSetKeyCallback              (window, InputHandler::key_callback);
     glfwSetCursorPosCallback        (window, InputHandler::mouse_motion_callback);
     glfwSetMouseButtonCallback      (window, InputHandler::mouse_button_callback);
-    glfwSetFramebufferSizeCallback  (window, reshape_callback);
+    //glfwSetFramebufferSizeCallback  (window, reshape_callback);
 }
 
 void assign_generic_vao(
@@ -383,6 +424,10 @@ void init_shader(const Scene& scene, Shader* shader) {
 
 void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 {
+    if (render_mode == RenderMode::Scene) {
+        reshape(window_width, window_height);
+    }
+
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
@@ -479,8 +524,14 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 // Render a scene.
 void Renderer::render(const Scene& scene)
 {
+    // -- Pass 1: Render depth buffer. --
+
+    // -- Pass 2: Render scene. --
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, window_width, window_height);
+    //glBindTexture(GL_TEXTURE_2D, depthTexture);
     draw_scene(scene, RenderMode::Scene);   
 }
 
