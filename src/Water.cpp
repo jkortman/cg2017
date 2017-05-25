@@ -82,10 +82,6 @@ void Water::initialize()
             }});
         }
     }
-
-    fprintf(stderr, "positions: %zu, indices: %zu\n",
-        positions.size(), indices.size());
-
 }
 
 void Water::calculate_normals()
