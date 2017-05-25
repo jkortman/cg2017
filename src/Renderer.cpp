@@ -65,7 +65,7 @@ void Renderer::initialize(bool wireframe)
         GL_TEXTURE_2D,
         0, GL_DEPTH_COMPONENT, 512, 512, //depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-        
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -82,12 +82,13 @@ void Renderer::initialize(bool wireframe)
     glDrawBuffer(GL_NONE); // default here would be GL_FRONT
     glReadBuffer(GL_NONE); // default here would be GL_BACK
 
-    // Always check that our framebuffer is ok
+    // Check that the framebuffer generated correctly
     GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    
     fatal_if(
         fb_status != GL_FRAMEBUFFER_COMPLETE,
         "Frame buffer error, status: " + std::to_string(fb_status));
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Callback for window resize
@@ -349,7 +350,7 @@ Mesh* Renderer::create_materials(Mesh* mesh)
     return mesh;
 }
 
-static void draw_object(const RenderUnit& ru)
+static void draw_object(const RenderUnit& ru, const unsigned int current_program)
 {
     // Draw each shape in the object.
     for (int i = 0; i < ru.mesh->shapes.size(); i += 1) {
@@ -358,16 +359,16 @@ static void draw_object(const RenderUnit& ru)
 
         // Load the shape material properties into the shader.
         glUniform3fv(
-            glGetUniformLocation(ru.program_id, "MtlAmbient"),
+            glGetUniformLocation(current_program, "MtlAmbient"),
             1, ru.mesh->materials[matID].ambient);
         glUniform3fv(
-            glGetUniformLocation(ru.program_id, "MtlDiffuse"),
+            glGetUniformLocation(current_program, "MtlDiffuse"),
             1, ru.mesh->materials[matID].diffuse);
         glUniform3fv(
-            glGetUniformLocation(ru.program_id, "MtlSpecular"),
+            glGetUniformLocation(current_program, "MtlSpecular"),
             1, ru.mesh->materials[matID].specular);
         glUniform1f(
-            glGetUniformLocation(ru.program_id, "MtlShininess"),
+            glGetUniformLocation(current_program, "MtlShininess"),
             ru.mesh->materials[matID].shininess);
 
         // Load the shape material texture into the shader.
@@ -424,13 +425,15 @@ void init_shader(const Scene& scene, Shader* shader) {
 
 void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 {
+    unsigned int current_program;
     if (render_mode == RenderMode::Scene)
     {
         reshape(window_width, window_height);
     }
     else if (render_mode == RenderMode::Depth)
     {
-        glUseProgram(scene.depth_shader->program_id);
+        current_program = scene.depth_shader->program_id;
+        glUseProgram(current_program);
         init_shader(scene, scene.depth_shader);
     }
 
@@ -440,29 +443,30 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     {
         if (render_mode == RenderMode::Scene)
         {
-            glUseProgram(scene.landscape_shader->program_id);
+            current_program = scene.landscape_shader->program_id;
+            glUseProgram(current_program);
             init_shader(scene, scene.landscape_shader);
         }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
-            glGetUniformLocation(scene.landscape_shader->program_id, "ModelMatrix"),
+            glGetUniformLocation(current_program, "ModelMatrix"),
             1, false, glm::value_ptr(landscape->model_matrix));
         glUniformMatrix3fv(
-            glGetUniformLocation(scene.landscape_shader->program_id, "NormalMatrix"),
+            glGetUniformLocation(current_program, "NormalMatrix"),
             1, false, glm::value_ptr(landscape->normal_matrix));
         // Load the shape material properties into the shader.
         glUniform3fv(
-            glGetUniformLocation(scene.landscape_shader->program_id, "MtlAmbient"),
+            glGetUniformLocation(current_program, "MtlAmbient"),
             1, glm::value_ptr(landscape->material.ambient));
         glUniform3fv(
-            glGetUniformLocation(scene.landscape_shader->program_id, "MtlDiffuse"),
+            glGetUniformLocation(current_program, "MtlDiffuse"),
             1, glm::value_ptr(landscape->material.diffuse));
         glUniform3fv(
-            glGetUniformLocation(scene.landscape_shader->program_id, "MtlSpecular"),
+            glGetUniformLocation(current_program, "MtlSpecular"),
             1, glm::value_ptr(landscape->material.specular));
         glUniform1f(
-            glGetUniformLocation(scene.landscape_shader->program_id, "MtlShininess"),
+            glGetUniformLocation(current_program, "MtlShininess"),
             landscape->material.shininess);
 
         glBindVertexArray(landscape->vao);
@@ -480,28 +484,29 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     {
         if (render_mode == RenderMode::Scene)
         {
-            glUseProgram(scene.water_shader->program_id);
+            current_program = scene.water_shader->program_id;
+            glUseProgram(current_program);
             init_shader(scene, scene.water_shader);
         }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
-            glGetUniformLocation(scene.water_shader->program_id, "ModelMatrix"),
+            glGetUniformLocation(current_program, "ModelMatrix"),
             1, false, glm::value_ptr(water->model_matrix));
         glUniformMatrix3fv(
-            glGetUniformLocation(scene.water_shader->program_id, "NormalMatrix"),
+            glGetUniformLocation(current_program, "NormalMatrix"),
             1, false, glm::value_ptr(water->normal_matrix));
         // Load the shape material properties into the shader.
         glUniform1f(
-            glGetUniformLocation(scene.water_shader->program_id, "MtlShininess"),
+            glGetUniformLocation(current_program, "MtlShininess"),
             water->material.shininess);
         // Load time elapsed into the shader.
         glUniform1f(
-            glGetUniformLocation(scene.water_shader->program_id, "Time"),
+            glGetUniformLocation(current_program, "Time"),
             scene.time_elapsed);
         // Load the distance between vertices into the shader.
         glUniform1f(
-            glGetUniformLocation(scene.water_shader->program_id, "VertDist"),
+            glGetUniformLocation(current_program, "VertDist"),
             water->vert_dist());
 
         glBindVertexArray(water->vao);
@@ -519,20 +524,21 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         const RenderUnit& render_unit = object->render_unit;
         if (render_mode == RenderMode::Scene)
         {
-            glUseProgram(render_unit.program_id);
+            current_program = render_unit.program_id;
+            glUseProgram(current_program);
             init_shader(scene, object->shader);
         }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
-            glGetUniformLocation(render_unit.program_id, "ModelMatrix"),
+            glGetUniformLocation(current_program, "ModelMatrix"),
             1, false, glm::value_ptr(render_unit.model_matrix));
         glUniformMatrix3fv(
-            glGetUniformLocation(render_unit.program_id, "NormalMatrix"),
+            glGetUniformLocation(current_program, "NormalMatrix"),
             1, false, glm::value_ptr(render_unit.normal_matrix));
 
         // Render the object.
-        draw_object(render_unit);
+        draw_object(render_unit, current_program);
     }
 }
 
