@@ -43,6 +43,8 @@ public:
     Shader* water_shader;
     // The elapsed time.
     float time_elapsed;
+    // The shader for the depth pass.
+    Shader* depth_shader;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);

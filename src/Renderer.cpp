@@ -63,11 +63,11 @@ void Renderer::initialize(bool wireframe)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT, 512, 512, //depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
         
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -111,7 +111,7 @@ void Renderer::set_callbacks()
 }
 
 void assign_generic_vao(
-    unsigned int vao,                           // A generated VAO.
+    unsigned int vao, // A generated VAO.
     const std::vector<float>        positions,
     const std::vector<float>        normals,
     const std::vector<float>        texcoords,
@@ -372,7 +372,7 @@ static void draw_object(const RenderUnit& ru)
 
         // Load the shape material texture into the shader.
         GLuint texID = ru.mesh->textureIDs[i];
-        glBindTexture(GL_TEXTURE_2D, texID);
+        //glBindTexture(GL_TEXTURE_2D, texID);
 
         // Render the shape.
         glBindVertexArray(ru.mesh->vaos[i]);
@@ -382,7 +382,7 @@ static void draw_object(const RenderUnit& ru)
             GL_UNSIGNED_INT,
             0);
         glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        //glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
 
@@ -424,16 +424,25 @@ void init_shader(const Scene& scene, Shader* shader) {
 
 void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 {
-    if (render_mode == RenderMode::Scene) {
+    if (render_mode == RenderMode::Scene)
+    {
         reshape(window_width, window_height);
+    }
+    else if (render_mode == RenderMode::Depth)
+    {
+        glUseProgram(scene.depth_shader->program_id);
+        init_shader(scene, scene.depth_shader);
     }
 
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
     {
-        glUseProgram(scene.landscape_shader->program_id);
-        init_shader(scene, scene.landscape_shader);
+        if (render_mode == RenderMode::Scene)
+        {
+            glUseProgram(scene.landscape_shader->program_id);
+            init_shader(scene, scene.landscape_shader);
+        }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
@@ -469,8 +478,11 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     Water* water = scene.water.get();
     if (water != nullptr)
     {
-        glUseProgram(scene.water_shader->program_id);
-        init_shader(scene, scene.water_shader);
+        if (render_mode == RenderMode::Scene)
+        {
+            glUseProgram(scene.water_shader->program_id);
+            init_shader(scene, scene.water_shader);
+        }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
@@ -505,8 +517,11 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     for (const auto& object : scene.objects)
     {
         const RenderUnit& render_unit = object->render_unit;
-        glUseProgram(render_unit.program_id);
-        init_shader(scene, object->shader);
+        if (render_mode == RenderMode::Scene)
+        {
+            glUseProgram(render_unit.program_id);
+            init_shader(scene, object->shader);
+        }
 
         // Load model and normal matrices.
         glUniformMatrix4fv(
@@ -524,22 +539,38 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 // Render a scene.
 void Renderer::render(const Scene& scene)
 {
+    // ----------------------------------
     // -- Pass 1: Render depth buffer. --
+    // ----------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, depth_tex_size, depth_tex_size);
+    draw_scene(scene, RenderMode::Depth);
 
+    GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    fatal_if(
+        fb_status != GL_FRAMEBUFFER_COMPLETE,
+        "Frame buffer error, status: " + std::to_string(fb_status));
+
+    // ---------------------------
     // -- Pass 2: Render scene. --
+    // ---------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-    //glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
     draw_scene(scene, RenderMode::Scene);   
 }
 
 // Cleanup after a single render
 void Renderer::postrender()
 {
+    glBindVertexArray(0);
     glfwSwapBuffers(window);
     glfwPollEvents();
+    glFlush();
 }
 
 // Cleanup OpenGL environent.

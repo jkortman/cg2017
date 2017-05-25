@@ -74,8 +74,13 @@ vec4 match_to_palette(vec4 colour) {
 
 void main()
 {
-    //if (crest > 0.0) FragColour = vec4(1.0, 1.0, 1.0, 0.0);
-     
-    FragColour = match_to_palette(calculate_lighting(LightDay));
+    // If max_height is updated in main, it needs to be updated here too.
+    const float max_height = 128.0;
+    const float water_level = 0.05 * max_height;
+
+    // Colour very slightly by depth to give indication of water level.
+    float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
+    FragColour = colour_mod * match_to_palette(calculate_lighting(LightDay));
+
     //FragColour = vec4(vec3(float(PaletteSize)/10), 1.0);
 }

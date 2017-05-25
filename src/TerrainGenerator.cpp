@@ -75,7 +75,7 @@ Landscape* TerrainGenerator::landscape()
     landscape->material.ambient   = glm::vec3(0.1f, 0.5f, 0.2f);
     landscape->material.diffuse   = glm::vec3(0.3f, 0.3f, 0.3f);
     landscape->material.specular  = glm::vec3(0.4f, 0.4f, 0.4f);
-    landscape->material.shininess = 4.0f;
+    landscape->material.shininess = 0.05f;
 
     // Copy the palette over to the landscape.
     landscape->palette = std::vector<glm::vec3>(
@@ -452,27 +452,28 @@ void TerrainGenerator::generate_indices()
     {
         for (int col = 0; col < size - 1; col += 1)
         {
-            unsigned int a = ( row      * size + col);
-            unsigned int b = ( row      * size + col + 1);
-            unsigned int c = ((row + 1) * size + col);
-            unsigned int d = (unsigned int)((row + 1) * size + col + 1);
-            float a_height = get_position(row, col).y;
-            float b_height = get_position(row, col + 1).y;
-            float c_height = get_position(row + 1, col).y;
-            float d_height = get_position(row + 1, col + 1).y;
+            const unsigned int a = ( row      * size + col);
+            const unsigned int b = ( row      * size + col + 1);
+            const unsigned int c = ((row + 1) * size + col);
+            const unsigned int d = (unsigned int)((row + 1) * size + col + 1);
+            const float a_height = get_position(row, col).y;
+            const float b_height = get_position(row, col + 1).y;
+            const float c_height = get_position(row + 1, col).y;
+            const float d_height = get_position(row + 1, col + 1).y;
 
             // Only render a triangle if at least one vert is above sea level.
             // First triangle (upper-left on diagram).
-            if (a_height    >= sealevel
-                || b_height >= sealevel
-                || c_height >= sealevel)
+            const float cull_height = sealevel * 0.5;
+            if (a_height    >= cull_height
+                || b_height >= cull_height
+                || c_height >= cull_height)
             {
                 indices.push_back({{a, b, c}});
             }
             // Second triangle (lower-right on diagram).
-            if (c_height    >= sealevel
-                || b_height >= sealevel
-                || d_height >= sealevel)
+            if (c_height    >= cull_height
+                || b_height >= cull_height
+                || d_height >= cull_height)
             {
                 indices.push_back({{c, b, d}});
             }

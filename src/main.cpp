@@ -64,6 +64,10 @@ int main(int argc, char** argv)
     resources.give_shader(
         "bplight",
         new Shader("shaders/bplight.vert", "shaders/bplight.frag"));
+    resources.give_shader(
+        "depth",
+        new Shader("shaders/depth.vert", "shaders/depth.frag"));
+    scene.depth_shader = resources.get_shader("depth");
     
     // Create meshes.
     resources.give_mesh(

@@ -18,34 +18,19 @@ out float crest;
 
 const float pi = 3.1415;
 
-float cnoise(vec2 P);
+float cnoise(in vec2 P);
 
 vec3 wave(vec3 pos, float time)
 {
-    float radius = pow(pos.x, 2) + pow(pos.y, 2);
-    // Wave component 1: Constant per time frame to simulate slow tides.
-    // Low frequency
-    float wave1 = sin(Time / (10.0 * pi));   // 5 seconds per cycle
-
-    // Wave component 2: A large-scale noise.
-    float scale2 = 1.0;
-    float st2 = 0.5*pi + scale2 *  Time / (9.0 * pi);
-    float sx2 = 0.25*pi + scale2 * pos.x / (6.0 * pi);
-    float sz2 = scale2 * pos.z / (5.0 * pi);
-    float wave2 =
-        cnoise(vec2(st2, st2))
-        * cnoise(vec2(st2, sz2));
-
-    // Wave component 3: A small-scale noise.
-    float scale3 = 3.0;
-    float st3 = 0.5*pi + scale3 *  Time / (5.0 * pi);
-    float sx3 = 0.25*pi + scale3 * pos.x / (4.0 * pi);
-    float sz3 = scale3 * pos.z / (3.0 * pi);
-    float wave3 =
-        cnoise(vec2(sx3, st3))
-        * cnoise(vec2(sz3, st3));
-
-    float height = pos.y + 1.0 * wave3;
+    vec2 coord = pos.xz * 0.02;
+    const float height_variance = 0.6;
+    float a = cnoise(coord + 0.05 * time);
+    float b = cnoise(coord + 1.0);
+    float c = cnoise(coord + a + 0.07 * time);
+    float d = cnoise(coord + b + 0.09 * time);
+    float e = cnoise(vec2(a + b, c + d));
+    float height_mod = e;
+    float height = pos.y + height_variance * (height_mod - 0.5);
     return vec3(pos.x, height, pos.z);
 }
 
@@ -54,8 +39,6 @@ void main()
     // If max_height is updated in main, it needs to be updated here too.
     const float max_height = 128.0;
     const float water_level = 0.05 * max_height;
-    FragPos = vec3(ModelMatrix * vec4(a_Position, 1.0));
-
     vec3 pos = wave(a_Position, Time);
 
     // Recalculate normal.
@@ -103,7 +86,8 @@ void main()
     }
 
     // Colour slightly by height.
-    Colour = a_Colour + 0.2 * (pos.y - water_level);
+    Colour = a_Colour;
+    FragPos = vec3(ModelMatrix * vec4(pos, 1.0));
 
     gl_Position =
         ProjectionMatrix
@@ -150,6 +134,47 @@ float cnoise(vec2 P)
     vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
     vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
     Pi = mod289(Pi); // To avoid truncation effects in permutation
+    vec4 ix = Pi.xzxz;
+    vec4 iy = Pi.yyww;
+    vec4 fx = Pf.xzxz;
+    vec4 fy = Pf.yyww;
+    
+    vec4 i = permute(permute(ix) + iy);
+    
+    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
+    vec4 gy = abs(gx) - 0.5 ;
+    vec4 tx = floor(gx + 0.5);
+    gx = gx - tx;
+    
+    vec2 g00 = vec2(gx.x,gy.x);
+    vec2 g10 = vec2(gx.y,gy.y);
+    vec2 g01 = vec2(gx.z,gy.z);
+    vec2 g11 = vec2(gx.w,gy.w);
+    
+    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
+    g00 *= norm.x;
+    g01 *= norm.y;
+    g10 *= norm.z;
+    g11 *= norm.w;
+    
+    float n00 = dot(g00, vec2(fx.x, fy.x));
+    float n10 = dot(g10, vec2(fx.y, fy.y));
+    float n01 = dot(g01, vec2(fx.z, fy.z));
+    float n11 = dot(g11, vec2(fx.w, fy.w));
+    
+    vec2 fade_xy = fade(Pf.xy);
+    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
+    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
+    return 2.3 * n_xy;
+}
+
+// Classic Perlin noise, periodic variant
+float pnoise(vec2 P, vec2 rep)
+{
+    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
+    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
+    Pi = mod(Pi, rep.xyxy); // To create noise with explicit period
+    Pi = mod289(Pi);        // To avoid truncation effects in permutation
     vec4 ix = Pi.xzxz;
     vec4 iy = Pi.yyww;
     vec4 fx = Pf.xzxz;

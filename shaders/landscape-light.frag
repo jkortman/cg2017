@@ -14,6 +14,8 @@ uniform float   MtlShininess;
 
 uniform vec3 ViewPos;
 
+uniform sampler2D DepthMap;
+
 struct LightSource
 {
     vec4 position;
@@ -91,19 +93,37 @@ float discretize(float value)
     else                        return 1.33;
 }
 
+float linearize(float z)
+{
+    const float near = 0.05;
+    const float far = 1000.0;
+    return (2.0 * near) / (far + near - z * (far - near));
+}
 
 void main()
 {
     // Determine the base colour of the fragment.
     vec3 colour = match_to_palette(Colour);
     vec2 light_intensity = calculate_lighting(LightDay);
-    float diff = light_intensity.y;
+    float diff = light_intensity.x;
     float spec = light_intensity.y;
 
-
     FragColour = vec4(
-            colour * discretize(diff + 1.5 * spec),
+            //colour * discretize(diff),
+            colour * discretize(0.8 * diff + 0.3 * spec),   // TODO: Replace these with material properties added by TerrainGenerator
             1.0);
+
+    // Depth buffer testing
+    /*
+    vec2 dt_coord = vec2(
+        float(gl_FragCoord.x) / 640.0,
+        float(gl_FragCoord.y) / 480.0);
+    // the sampled texture is always (1,0,0)?
+    float depth = linearize(texture(DepthMap, dt_coord).x); 
+    FragColour = vec4(vec3(depth), 1.0);
+
+    //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
+    */
 }
 
 
