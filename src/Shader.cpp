@@ -8,6 +8,7 @@
 #include <fstream>
 
 #include <GL/glew.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Shader.hpp"
 
@@ -53,6 +54,24 @@ void Shader::assert_existence(const std::string& uniform)
     if (glGetUniformLocation(program_id, uniform.c_str()) == -1)
     {
         fatal("Uniform '" + uniform + "' does not exist");
+    }
+}
+
+void Shader::set_palette(const std::vector<glm::vec3>& palette, int offset)
+{
+    glUseProgram(program_id);
+    int palette_size = palette.size() - offset;
+    glUniform1i(
+        glGetUniformLocation(program_id, "PaletteSize"),
+        palette_size);
+
+    for (int i = 0; i < palette_size; i += 1)
+    {
+        // copy palette[i + offset] into shader program.
+        std::string uniform_name = "Palette[" + std::to_string(i) + "]";
+        glUniform3fv(
+            glGetUniformLocation(program_id, uniform_name.c_str()),
+            1, glm::value_ptr(palette[i + offset]));
     }
 }
 

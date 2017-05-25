@@ -75,6 +75,8 @@ private:
     std::vector<glm::vec3> colours;
     std::vector<Biome> biomes;
     std::vector<std::array<unsigned int, 3>> indices;
+    // The per-biome colours.
+    std::vector<glm::vec3> biome_colours;
 
     // ---------------------------
     // -- Data access functions --

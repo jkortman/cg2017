@@ -3,6 +3,7 @@
 in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
+in float crest;
 
 out vec4 FragColour;
 
@@ -23,6 +24,9 @@ struct LightSource
     vec3 specular;
 };
 uniform LightSource LightDay;
+
+uniform vec3 Palette[16];
+uniform int PaletteSize;
 
 vec4 calculate_lighting(in LightSource light) {
     vec3 norm = normalize(Normal);
@@ -50,7 +54,28 @@ vec4 calculate_lighting(in LightSource light) {
     return vec4(ambient + diffuse + specular, 1.0);
 }
 
+vec4 match_to_palette(vec4 colour) {
+    float min_dist = 1.0 / 0.0; // infinity
+    int min_index = 0;
+
+    for (int i = 0; i < PaletteSize; i += 1) {
+        float dist =
+            (pow(Palette[i].r - colour.r, 2)
+            + pow(Palette[i].g - colour.g, 2)
+            + pow(Palette[i].b - colour.b, 2));
+        if (dist < min_dist) {
+            min_dist = dist;
+            min_index = i;
+        }
+    }
+
+    return vec4(Palette[min_index], colour.a);
+}
+
 void main()
 {
-    FragColour = calculate_lighting(LightDay);
+    //if (crest > 0.0) FragColour = vec4(1.0, 1.0, 1.0, 0.0);
+     
+    FragColour = match_to_palette(calculate_lighting(LightDay));
+    //FragColour = vec4(vec3(float(PaletteSize)/10), 1.0);
 }

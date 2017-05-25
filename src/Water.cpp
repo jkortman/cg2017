@@ -15,12 +15,19 @@ Water::Water(int size, float edge, float level)
     normals.resize(size * size);
     colours.resize(size * size);
     material.shininess = 20.0f;
-    initialize();
-}
 
-void Water::update(float dt)
-{
-    //calculate_normals();
+    // Generate palette.
+    base_colour = glm::vec3(0.30f, 0.30f, 1.00f);
+    palette = {{
+        glm::vec3(0.90f, 0.90f, 1.00f),
+        glm::vec3(0.75f, 0.75f, 1.00f),
+        glm::vec3(0.60f, 0.60f, 1.00f),
+        glm::vec3(0.30f, 0.30f, 1.00f),
+        glm::vec3(0.23f, 0.24f, 0.75f),
+        glm::vec3(0.16f, 0.16f, 0.5f),
+        glm::vec3(0.10f, 0.10f, 0.33f),
+    }};
+    initialize();
 }
 
 float Water::vert_dist()
@@ -42,8 +49,7 @@ void Water::initialize()
                 -edge / 2.0f + edge * float(col) / (size - 1));
             set_position(row, col, position);
 
-            glm::vec3 colour(0.30f, 0.30f, 1.00f);
-            set_colour(row, col, colour);
+            set_colour(row, col, base_colour);
         }
     }
 

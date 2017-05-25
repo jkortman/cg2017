@@ -10,8 +10,8 @@
 
 struct Water
 {
+    // Create the water mesh.
     Water(int size, float edge, float level);
-    void update(float dt);
 
     // Get the distance between vertices.
     float vert_dist();
@@ -26,6 +26,9 @@ struct Water
     unsigned int vao;
     glm::mat4 model_matrix;
     glm::mat3 normal_matrix;
+
+    glm::vec3 base_colour;
+    std::vector<glm::vec3> palette;
 
 private:
     const int size;

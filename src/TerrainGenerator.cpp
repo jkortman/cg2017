@@ -23,6 +23,20 @@ TerrainGenerator::TerrainGenerator(int size, float edge, float max_height)
     normals.resize(size * size);
     colours.resize(size * size);
     biomes.resize(size * size);
+
+    // Build colours.
+    biome_colours = {
+        glm::vec3(1.00f, 0.00f, 0.00f), // error (red)
+        glm::vec3(0.70f, 0.60f, 0.20f), // ocean (sand)
+        glm::vec3(0.70f, 0.55f, 0.03f), // coast (sand)
+        glm::vec3(0.50f, 0.40f, 0.40f), // dirt
+        glm::vec3(0.44f, 0.40f, 0.48f), // rock
+        glm::vec3(0.07f, 0.40f, 0.15f), // dark grass
+        glm::vec3(0.14f, 0.60f, 0.28f), // light grass
+        glm::vec3(0.04f, 0.60f, 0.40f), // forest
+        glm::vec3(1.00f, 1.00f, 1.00f), // snow
+    };
+
     int seed = 200;
     generate(seed, max_height);
 }
@@ -62,6 +76,11 @@ Landscape* TerrainGenerator::landscape()
     landscape->material.diffuse   = glm::vec3(0.3f, 0.3f, 0.3f);
     landscape->material.specular  = glm::vec3(0.4f, 0.4f, 0.4f);
     landscape->material.shininess = 4.0f;
+
+    // Copy the palette over to the landscape.
+    landscape->palette = std::vector<glm::vec3>(
+        biome_colours.begin() + 1,  // skip error colour
+        biome_colours.end());
 
     return landscape;
 }
@@ -136,7 +155,7 @@ void TerrainGenerator::generate(int seed, float max_height)
     {
         for (int col = 0; col < size; col += 1)
         {
-            blur_value(Colours, row, col, 1.0f, 1);
+            blur_value(Colours, row, col, 1.0f, 4);
         }
     }
 
@@ -396,19 +415,6 @@ glm::vec3 randomize_shade(glm::vec3 colour, float amt)
 // Stage 4: Generate materials accociated with each position.
 void TerrainGenerator::generate_materials()
 {
-    // Build colours.
-    const std::vector<glm::vec3> biome_colours = {
-        glm::vec3(1.00f, 0.00f, 0.00f), // error (red)
-        glm::vec3(0.70f, 0.60f, 0.20f), // ocean (sand)
-        glm::vec3(0.70f, 0.55f, 0.03f), // coast (sand)
-        glm::vec3(0.50f, 0.40f, 0.40f), // dirt
-        glm::vec3(0.44f, 0.40f, 0.48f), // rock
-        glm::vec3(0.07f, 0.40f, 0.15f), // dark grass
-        glm::vec3(0.14f, 0.60f, 0.28f), // light grass
-        glm::vec3(0.04f, 0.60f, 0.40f), // forest
-        glm::vec3(1.00f, 1.00f, 1.00f), // snow
-    };
-
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
@@ -424,7 +430,7 @@ void TerrainGenerator::generate_materials()
             glm::vec3 colour;
             colour = biome_colours[int(get_biome(row, col))];
             if (get_biome(row, col) != Ocean) {
-                colour = randomize_shade(colour, 0.2f);
+                //colour = randomize_shade(colour, 0.2f);
             }
             set_colour(row, col, colour);
         }

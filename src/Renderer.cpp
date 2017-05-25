@@ -226,12 +226,6 @@ Water* Renderer::assign_vao(Water* water)
     return water;
 }
 
-// Update the VAO of a water object, after hass has changed.
-void Renderer::update_vao(Water* water)
-{
-    // ?
-}
-
 // Generate and assign a VAO to a mesh object.
 Mesh* Renderer::assign_vao(Mesh* mesh)
 {

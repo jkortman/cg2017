@@ -89,11 +89,13 @@ int main(int argc, char** argv)
     TerrainGenerator tg(600, 400.0f, max_height);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
+    resources.get_shader("landscape-light")->set_palette(landscape->palette);
 
     // Create ocean.
     Water* ocean = new Water(300, 1000.0f, 0.05f * max_height);
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
+    resources.get_shader("water")->set_palette(ocean->palette);
 
     // Create objects.
     scene.give_object(new Object(

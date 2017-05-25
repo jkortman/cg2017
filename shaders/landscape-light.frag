@@ -23,7 +23,10 @@ struct LightSource
 };
 uniform LightSource LightDay;
 
-vec4 calculate_lighting(in LightSource light) {
+uniform vec3 Palette[16];
+uniform int PaletteSize;
+
+vec4 calculate_lighting(in LightSource light, in vec3 colour) {
     vec3 norm = normalize(Normal);
 
     vec3 light_dir;
@@ -34,11 +37,11 @@ vec4 calculate_lighting(in LightSource light) {
     }
 
     // Calculate ambient component.
-    vec3 ambient = Colour * light.ambient;
+    vec3 ambient = colour * light.ambient;
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
-    vec3 diffuse = diff * Colour * light.diffuse;
+    vec3 diffuse = diff * colour * light.diffuse;
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
@@ -49,7 +52,26 @@ vec4 calculate_lighting(in LightSource light) {
     return vec4(ambient + diffuse + specular, 1.0);
 }
 
+vec3 match_to_palette(vec3 colour) {
+    float min_dist = 1.0 / 0.0; // infinity
+    int min_index = 0;
+
+    for (int i = 0; i < PaletteSize; i += 1) {
+        float dist =
+            (pow(Palette[i].r - colour.r, 2)
+            + pow(Palette[i].g - colour.g, 2)
+            + pow(Palette[i].b - colour.b, 2));
+        if (dist < min_dist) {
+            min_dist = dist;
+            min_index = i;
+        }
+    }
+
+    return Palette[min_index];
+}
+
+
 void main()
 {
-    FragColour = calculate_lighting(LightDay);
+    FragColour = calculate_lighting(LightDay, match_to_palette(Colour));
 }

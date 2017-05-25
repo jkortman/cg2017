@@ -23,6 +23,10 @@ struct Landscape
     std::vector<float> colours;
     std::vector<unsigned int> indices;
 
+    // The colour palette used by the landscape.
+    // May be required for a shader program.
+    std::vector<glm::vec3> palette;
+
     // Geometery details.
     // The length of an edge in world coordinates
     // (generated landscapes are square).

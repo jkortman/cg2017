@@ -14,6 +14,7 @@ uniform float VertDist;
 out vec3 Colour;
 out vec3 Normal;
 out vec3 FragPos;
+out float crest;
 
 const float pi = 3.1415;
 
@@ -38,11 +39,11 @@ vec3 wave(vec3 pos, float time)
     // Wave component 3: A small-scale noise.
     float scale3 = 3.0;
     float st3 = 0.5*pi + scale3 *  Time / (5.0 * pi);
-    float sx3 = 0.8 + scale3 * pos.x / (4.0 * pi);
+    float sx3 = 0.25*pi + scale3 * pos.x / (4.0 * pi);
     float sz3 = scale3 * pos.z / (3.0 * pi);
     float wave3 =
-        cnoise(vec2(st3, st3))
-        * cnoise(vec2(sx3, sz3));
+        cnoise(vec2(sx3, st3))
+        * cnoise(vec2(sz3, st3));
 
     float height = pos.y + 1.0 * wave3;
     return vec3(pos.x, height, pos.z);
@@ -74,9 +75,32 @@ void main()
             a_Position.y,
             a_Position.z),
         Time);
+    vec3 above = wave(vec3(
+            a_Position.x,
+            a_Position.y,
+            a_Position.z - VertDist),
+        Time);
+    vec3 left = wave(vec3(
+            a_Position.x + VertDist,
+            a_Position.y,
+            a_Position.z),
+        Time);
+
     vec3 downward = below - a_Position;
     vec3 rightward = right - a_Position;
     Normal = NormalMatrix * cross(rightward, downward);
+
+    // Cresting: If this point is higher than it's neighbours, it is a crest.
+    if (a_Position.y > below.y
+        && a_Position.y > above.y
+        && a_Position.y > right.y
+        && a_Position.y > left.y)
+    {
+        crest = 1.0;
+    } else
+    {
+        crest = 0.0;
+    }
 
     // Colour slightly by height.
     Colour = a_Colour + 0.2 * (pos.y - water_level);

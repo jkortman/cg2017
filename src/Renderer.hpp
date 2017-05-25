@@ -29,8 +29,6 @@ public:
     // Generate and assign a VAO to a Water object.
     Water* assign_vao(Water* water);
     // Update the VAO of a water object, after hass has changed.
-    void update_vao(Water* water);
-    // Generate and assign a VAO to a mesh object.
     Mesh* assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.
     Mesh* create_materials(Mesh* mesh);
