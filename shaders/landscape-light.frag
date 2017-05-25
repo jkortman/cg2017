@@ -102,8 +102,19 @@ float linearize(float z)
 
 void main()
 {
-    /*
-    // Determine the base colour of the fragment.
+    // -- Edge detection -- 
+    vec2 st = 0.5 * vec2(
+        float(gl_FragCoord.x) / 640.0,
+        float(gl_FragCoord.y) / 480.0); 
+    float d_s = 4.0 / 640.0;
+    float d_t = 4.0 / 480.0;
+    float above = linearize(texture(DepthMap, vec2(st.s, st.t - d_t)).x); 
+    float left  = linearize(texture(DepthMap, vec2(st.s - d_s, st.t)).x); 
+    float depth = linearize(texture(DepthMap, st).x);
+    const float line_dark = 10.0;
+    float grad = 1.0 - line_dark * (2.0 * depth - above - left);
+
+    // -- Fragment colour processing --
     vec3 colour = match_to_palette(Colour);
     vec2 light_intensity = calculate_lighting(LightDay);
     float diff = light_intensity.x;
@@ -111,17 +122,13 @@ void main()
 
     FragColour = vec4(
             //colour * discretize(diff),
-            colour * discretize(0.8 * diff + 0.3 * spec),   // TODO: Replace these with material properties added by TerrainGenerator
+            grad * colour * discretize(0.8 * diff + 0.3 * spec),   // TODO: Replace these with material properties added by TerrainGenerator
             1.0);
-    */
+
 
     // Depth buffer testing
-    vec2 dt_coord = vec2(
-        float(gl_FragCoord.x) / 640.0,
-        float(gl_FragCoord.y) / 480.0);
     // the sampled texture is always (1,0,0)?
-    float depth = linearize(texture(DepthMap, 0.5 * dt_coord).x); 
-    FragColour = vec4(vec3(depth), 1.0);
+    //FragColour = vec4(vec3(grad), 1.0);
     //FragColour = vec4(dt_coord.x, dt_coord.y, depth, 1.0);
     //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
 }

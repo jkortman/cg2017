@@ -10,5 +10,5 @@ float linearize(float z)
 }
 
 void main() {
-    FragDepth = 0.5;//gl_FragCoord.z;
+    FragDepth = gl_FragCoord.z;
 }
