@@ -104,13 +104,13 @@ void main()
 {
     // -- Edge detection -- 
     const int no_edge = 0, simple = 1, sobel = 2;
-    int edge_method = no_edge;
+    int edge_method = sobel;
 
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0); 
-    const float d_s = 0.5 * 1.0 / 640.0;
-    const float d_t = 0.5 * 1.0 / 480.0;
+    const float d_s = 0.75 / 640.0;
+    const float d_t = 0.75 / 480.0;
     float grad;
 
     if (edge_method == no_edge)
@@ -151,7 +151,7 @@ void main()
         float gx = dot(Mx[0], samples[0]) + dot(Mx[1], samples[1]) + dot(Mx[2], samples[2]); 
         float gy = dot(My[0], samples[0]) + dot(My[1], samples[1]) + dot(My[2], samples[2]);
         
-        const float line_dark = 10.0;
+        const float line_dark = 5.0;
         grad = 1.0 - line_dark * (abs(gx) + abs(gy));             // manhattan dist
         //grad = 1.0 - line_dark * sqrt(gx*gx + gy*gy); // geometric distance
     }
