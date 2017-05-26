@@ -5,6 +5,7 @@
 #include <array>
 #include <cstdio>
 #include <unordered_map>
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -489,6 +490,10 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             current_program = scene.skybox_shader->program_id;
             glUseProgram(current_program);
             init_shader(scene, scene.skybox_shader);
+
+            glUniform1f(glGetUniformLocation(current_program, "Time"),
+                scene.time_elapsed);
+           
 
             // Load model and normal matrices.
             glUniformMatrix4fv(

@@ -72,6 +72,10 @@ int main(int argc, char** argv)
     resources.give_shader(
         "sky-shader",
         new Shader("shaders/simple-sky.vert", "shaders/simple-sky.frag"));
+    resources.give_shader(
+        "skybox",
+        new Shader("shaders/skybox.vert", "shaders/skybox.frag"));
+
 
     scene.depth_shader = resources.get_shader("depth");
     
@@ -124,7 +128,7 @@ int main(int argc, char** argv)
     //             d    by sqrt(3).
     Skybox* skybox = renderer.assign_vao(
         new Skybox((far_dist - 1.0f) / std::sqrt(3)));
-    scene.give_skybox(skybox, resources.get_shader("sky-shader"));
+    scene.give_skybox(skybox, resources.get_shader("skybox"));
 
     // Create objects.
     scene.give_object(new Object(
