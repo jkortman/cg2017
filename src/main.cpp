@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     resources.get_shader("landscape-light")->set_palette(landscape->palette);
 
     // Create ocean.
-    Water* ocean = new Water(75, 1000.0f, 0.05f * max_height, glm::vec2(-200.0f, -200.0f));
+    Water* ocean = new Water(75, 1000.0f, 0.05f * max_height);
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
     resources.get_shader("water")->set_palette(ocean->palette);

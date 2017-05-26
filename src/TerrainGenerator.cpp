@@ -233,14 +233,15 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         // ocean
         if      (dist >= 0.99f)    mod = 0.0f;
         //coast
-        else if (dist >= 0.80f)    mod = interpol(dist, 0.99f, 0.80f, 0.0f, 0.4f);
-        else if (dist >= 0.50f)    mod = 0.4f;
-        else if (dist >= 0.20f)    mod = interpol(dist, 0.50f, 0.20f, 0.4f, 1.0f);
+        else if (dist >= 0.80f)    mod = interpol(dist, 0.99f, 0.80f, 0.0f, 0.3f);
+        else if (dist >= 0.40f)    mod = 0.3f;
+        else if (dist >= 0.10f)    mod = interpol(dist, 0.40f, 0.10f, 0.3f, 1.0f);
         else                       mod = 1.0f;
 
-        return mod;
+        //return mod;
+        return float(pow(mod, 1.5));
     };
-    auto altitude_modifier = dist_from_corner_modifier;
+    auto altitude_modifier = circular_modifier;
 
     for (int row = 0; row < size; row += 1)
     {

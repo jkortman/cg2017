@@ -17,8 +17,8 @@ struct Water
         float edge,
         float level,
         glm::vec2 min = glm::vec2(
-            std::numeric_limits<float>::min(),
-            std::numeric_limits<float>::min()),
+            std::numeric_limits<float>::lowest(),
+            std::numeric_limits<float>::lowest()),
         glm::vec2 max = glm::vec2(
             std::numeric_limits<float>::max(),
             std::numeric_limits<float>::max()));
