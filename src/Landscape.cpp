@@ -13,9 +13,9 @@ Landscape::Landscape()
 
 glm::vec3 Landscape::get_pos_at(glm::vec3 player_pos)
 {
-	float step = (2 * edge)/(-1 + size * 2);
+    float step = (2 * edge)/(-1 + size * 2);
     int row_x = (player_pos.x + edge/2)/step;
     int row_z = (player_pos.z + edge/2)/step;
-    int index = 3 * (size * row_x + row_z);
-    return glm::vec3(positions.at(index), positions.at(index+1), positions.at(index+2));
+    int index = size * row_x + row_z;
+    return glm::vec3(positions.at(index));
 }

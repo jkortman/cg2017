@@ -18,9 +18,9 @@ struct Landscape
     glm::vec3 get_pos_at(glm::vec3 player_pos);
 
     // Mesh details for rendering.
-    std::vector<float> positions;
-    std::vector<float> normals;
-    std::vector<float> colours;
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec3> colours;
     std::vector<unsigned int> indices;
 
     // The colour palette used by the landscape.

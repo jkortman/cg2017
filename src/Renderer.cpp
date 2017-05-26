@@ -181,7 +181,7 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
     glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(float) * landscape->positions.size(),
+        sizeof(float) * 3 * landscape->positions.size(),
         landscape->positions.data(),
         GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
@@ -191,7 +191,7 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
     glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(float) * landscape->normals.size(),
+        sizeof(float) * 3 * landscape->normals.size(),
         landscape->normals.data(),
         GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
@@ -201,7 +201,7 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
     glBindBuffer(GL_ARRAY_BUFFER, buffer[2]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(float) * landscape->colours.size(),
+        sizeof(float) * 3 * landscape->colours.size(),
         landscape->colours.data(),
         GL_STATIC_DRAW);
     glEnableVertexAttribArray(2);
