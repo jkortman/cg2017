@@ -80,13 +80,10 @@ void Scene::update(float dt)
     }
 
     // Toggle off for noclip / camera modes
-    if (!no_clip) movement.y += (landscape->get_pos_at(movement)).y - (landscape->get_pos_at(player.position)).y;
-
+    if (!no_clip) movement.y +=
+        (landscape->get_pos_at(movement)).y
+        - (landscape->get_pos_at(player.position)).y;
     player.position = check_collisions(player.position, movement);
-
-
-
-    
 
     // Rotations
     player.direction = glm::rotate(
@@ -97,6 +94,10 @@ void Scene::update(float dt)
         player.direction,
         rotate_factor * float(-InputHandler::mouse_dy),
         right_direction);
+
+    // Update skybox position.
+    skybox->update_model_matrix(player.position);
+    //skybox->update_model_matrix(glm::vec3(0.0, 30.0, 0.0));
 
     // Match camera to player.
     camera.position = player.position;
@@ -165,6 +166,17 @@ void Scene::give_water(Water* water, Shader* shader)
         &water->material.shininess,
         1, 
         "The shininess of the ocean");
+}
+
+Skybox* Scene::get_skybox()
+{
+    return skybox.get();
+}
+
+void Scene::give_skybox(Skybox* skybox, Shader* shader)
+{
+    this->skybox.reset(skybox);
+    this->skybox_shader = shader;
 }
 
 Landscape* Scene::get_landscape()

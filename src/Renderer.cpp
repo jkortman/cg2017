@@ -255,7 +255,7 @@ Water* Renderer::assign_vao(Water* water)
         &water->colours[0].x,
         GL_STATIC_DRAW);
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, VALS_PER_COLOUR, GL_FLOAT, GL_FALSE, 0, 0);\
+    glVertexAttribPointer(2, VALS_PER_COLOUR, GL_FLOAT, GL_FALSE, 0, 0);
 
     // Set vertex indices attrib
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[3]);
@@ -266,6 +266,47 @@ Water* Renderer::assign_vao(Water* water)
         GL_STATIC_DRAW);
 
     return water;
+}
+
+Skybox* Renderer::assign_vao(Skybox* skybox)
+{
+    glGenVertexArrays(1, &skybox->vao);
+
+    glBindVertexArray(skybox->vao);
+
+    // Create buffers for positions, normals, texcoords, indices
+    unsigned int buffer[3];
+    glGenBuffers(3, buffer);
+
+    // Set vertex position attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[0]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * 3 * skybox->positions.size(),
+        &skybox->positions[0].x,
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set normal attribute
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(float) * 3* skybox->normals.size(),
+        &skybox->normals[0].x,
+        GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, VALS_PER_NORMAL, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Set vertex indices attrib
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer[2]);
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(float) * 3 * skybox->indices.size(),
+        skybox->indices.data(),
+        GL_STATIC_DRAW);
+
+    return skybox;
 }
 
 // Generate and assign a VAO to a mesh object.
@@ -435,6 +476,33 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         current_program = scene.depth_shader->program_id;
         glUseProgram(current_program);
         init_shader(scene, scene.depth_shader);
+    }
+
+    // Render skybox.
+    // We don't need the skybox to be rendered when checking depth,
+    // as it should be really close to the far plane anyway.
+    if (render_mode == RenderMode::Scene)
+    {
+        Skybox* skybox = scene.skybox.get();
+        if (skybox != nullptr)
+        {
+            current_program = scene.skybox_shader->program_id;
+            glUseProgram(current_program);
+            init_shader(scene, scene.skybox_shader);
+
+            // Load model and normal matrices.
+            glUniformMatrix4fv(
+                glGetUniformLocation(current_program, "ModelMatrix"),
+                1, false, glm::value_ptr(skybox->model_matrix));
+
+            glBindVertexArray(skybox->vao);
+            glDrawElements(
+                GL_TRIANGLES,
+                3 * skybox->indices.size(),
+                GL_UNSIGNED_INT,
+                0);
+            glBindVertexArray(0);
+        }
     }
 
     // Render the landscape.

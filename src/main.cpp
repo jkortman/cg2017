@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     InputHandler::initialize();
 
     // Scene setup
+    const float far_dist = 1200.0f;
     scene.player.position = glm::vec3(0.0, 20.0, 3.0);
     scene.player.direction = glm::vec3(0.0, 0.0, -1.0);
     scene.player.height = 2.0f;
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
         DEFAULT_FOV,                // fov
         DEFAULT_ASPECT,             // aspect
         0.05f,                      // near
-        1000.0f);                   // far
+        far_dist);                  // far
 
     // Create resources.
     ResourceManager resources;
@@ -67,6 +68,9 @@ int main(int argc, char** argv)
     resources.give_shader(
         "obj-cel",
         new Shader("shaders/obj-cel.vert", "shaders/obj-cel.frag"));
+    resources.give_shader(
+        "sky-shader",
+        new Shader("shaders/simple-sky.vert", "shaders/simple-sky.frag"));
 
     scene.depth_shader = resources.get_shader("depth");
     
@@ -108,6 +112,18 @@ int main(int argc, char** argv)
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
     resources.get_shader("water")->set_palette(ocean->palette);
+
+    // Create skybox.
+    // The skybox must be inside the far plane, meaning the corners
+    // of the box must be slightly less than that distance.
+    //           __     If we have a circle with radius d, we need
+    //          |  --.  a square with radius d/sqrt(2) to stay within
+    //        d |  .  \ the bounds of the circle.
+    //          |.____|
+    //             d
+    // For some reason this doesn't quite work, so I'm using 1.8 as a divide factor.
+    Skybox* skybox = renderer.assign_vao(new Skybox((far_dist - 10.0f) / 1.8));
+    scene.give_skybox(skybox, resources.get_shader("sky-shader"));
 
     // Create objects.
     scene.give_object(new Object(

@@ -15,6 +15,10 @@
 #include "core.hpp"
 #include "Scene.hpp"
 #include "InputHandler.hpp"
+#include "Landscape.hpp"
+#include "Water.hpp"
+#include "Mesh.hpp"
+#include "Skybox.hpp"
 
 class Renderer
 {
@@ -24,11 +28,10 @@ public:
     void initialize(bool wireframe = false);
     // Register InputHandler functions as callbacks.
     void set_callbacks();
-    // Generate and assign a VAO to a landscape object.
+    // Functions to generate and assign VAOs to renderables.
     Landscape* assign_vao(Landscape* landscape);
-    // Generate and assign a VAO to a Water object.
     Water* assign_vao(Water* water);
-    // Update the VAO of a water object, after hass has changed.
+    Skybox* assign_vao(Skybox* skybox);
     Mesh* assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.
     Mesh* create_materials(Mesh* mesh);

@@ -19,6 +19,7 @@
 #include "InputHandler.hpp"
 #include "Landscape.hpp"
 #include "Water.hpp"
+#include "Skybox.hpp"
 
 class Scene
 {
@@ -41,6 +42,9 @@ public:
     // The water.
     std::unique_ptr<Water> water;
     Shader* water_shader;
+    // The skybox.
+    std::unique_ptr<Skybox> skybox;
+    Shader* skybox_shader;
     // The elapsed time.
     float time_elapsed;
     // The shader for the depth pass.
@@ -61,6 +65,11 @@ public:
     void give_water(Water* water, Shader* shader);
     // Get the owned landscape.
     Water* get_water();
+
+    // Give the scene a skybox to own.
+    void give_skybox(Skybox* skybox, Shader* shader);
+    // Get the owned landscape.
+    Skybox* get_skybox();
 
     glm::vec3 check_collisions(glm::vec3 current, glm::vec3 proposed);
 
