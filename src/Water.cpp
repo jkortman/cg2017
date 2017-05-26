@@ -2,11 +2,13 @@
 
 #include "Water.hpp"
 
-Water::Water(int size, float edge, float level)
+Water::Water(int size, float edge, float level, glm::vec2 min, glm::vec2 max)
     : model_matrix(glm::mat4(1.0f)), 
       size(size),
       edge(edge),
-      level(level)
+      level(level),
+      min(min),
+      max(max)
 {
     normal_matrix = glm::mat3(
         glm::transpose(glm::inverse(model_matrix)));
@@ -64,22 +66,57 @@ void Water::initialize()
     //                        | / |
     //                        |/  |
     //               r+1,c -> .___. <- r+1, c+1
+    auto radius = [](float x, float y) { return std::sqrt(x*x + y*y); };
+    const float max_radius = 0.5 * edge;
     for (int row = 0; row < size - 1; row += 1)
     {
         for (int col = 0; col < size - 1; col += 1)
         {
+            // Count the number of verts outside of the max_radius provided.
+            int num_outside_radius = 0;
+            if (radius(get_position(row, col).x,
+                       get_position(row, col).z)
+                > max_radius) num_outside_radius += 1;
+            if (radius(get_position(row, col + 1).x,
+                       get_position(row, col + 1).z)
+                > max_radius) num_outside_radius += 1;
+            if (radius(get_position(row + 1, col).x,
+                       get_position(row + 1, col).z)
+                > max_radius) num_outside_radius += 1;
+            if (radius(get_position(row + 1, col + 1).x,
+                       get_position(row + 1, col + 1).z)
+                > max_radius) num_outside_radius += 1;
+
+            // Check if any verts are outside of the bounds provided.
+            auto in_bounds = [=](float x, float y)
+            {
+                return x >= min.x && y >= min.y && x <= max.x && y <= max.y;
+            };
+            int num_outside_bounds = 0;
+            if (!in_bounds(get_position(    row,     col).x,
+                           get_position(    row,     col).z)) num_outside_bounds += 1;
+            if (!in_bounds(get_position(    row, col + 1).x,
+                           get_position(    row, col + 1).z)) num_outside_bounds += 1;
+            if (!in_bounds(get_position(row + 1,     col).x,
+                           get_position(row + 1,     col).z)) num_outside_bounds += 1;
+            if (!in_bounds(get_position(row + 1, col + 1).x,
+                           get_position(row + 1, col + 1).z)) num_outside_bounds += 1;
+
             // First triangle (upper-left on diagram).
-            indices.push_back(std::array<unsigned int, 3>({{
-                (unsigned int)( row      * size + col),
-                (unsigned int)( row      * size + col + 1),
-                (unsigned int)((row + 1) * size + col),
-            }}));
-            // Second triangle (lower-right on diagram).
-            indices.push_back({{
-                (unsigned int)((row + 1) * size + col),
-                (unsigned int)( row      * size + col + 1),
-                (unsigned int)((row + 1) * size + col + 1),
-            }});
+            if (num_outside_radius < 4 && num_outside_bounds < 4)
+            {
+                indices.push_back(std::array<unsigned int, 3>({{
+                    (unsigned int)( row      * size + col),
+                    (unsigned int)( row      * size + col + 1),
+                    (unsigned int)((row + 1) * size + col),
+                }}));
+                // Second triangle (lower-right on diagram).
+                indices.push_back({{
+                    (unsigned int)((row + 1) * size + col),
+                    (unsigned int)( row      * size + col + 1),
+                    (unsigned int)((row + 1) * size + col + 1),
+                }});
+            }
         }
     }
 }
