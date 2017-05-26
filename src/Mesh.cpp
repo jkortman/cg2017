@@ -5,6 +5,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+#include "core.hpp"
 #include "Mesh.hpp"
 
 Mesh* Mesh::load_obj(const std::string& dir, const std::string& file) {
@@ -23,6 +24,8 @@ Mesh* Mesh::load_obj(const std::string& dir, const std::string& file) {
         std::fprintf(stderr, "Error in Mesh::load(): %s", err.c_str());
         return nullptr;
     }
+
+    mesh->palette = load_palette(dir+"palette");
 
     return mesh;
 }

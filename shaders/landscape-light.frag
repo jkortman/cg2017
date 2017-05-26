@@ -101,7 +101,7 @@ float linearize(float z)
 }
 
 // Fog calculation.
-const float b = 0.005;
+const float b = 0.003;
 
 vec3 fog(in vec3 fragment, in float dist, in vec3 fog_colour)
 {

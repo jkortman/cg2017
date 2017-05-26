@@ -50,12 +50,6 @@ int main(int argc, char** argv)
 
     // Create shaders.
     resources.give_shader(
-        "texture",
-        new Shader("shaders/texture.vert", "shaders/texture.frag"));
-    resources.give_shader(
-        "landscape",
-        new Shader("shaders/landscape.vert", "shaders/landscape.frag"));
-    resources.give_shader(
         "landscape-light",
         new Shader("shaders/landscape-light.vert", "shaders/landscape-light.frag"));
     resources.give_shader(
@@ -67,6 +61,13 @@ int main(int argc, char** argv)
     resources.give_shader(
         "depth",
         new Shader("shaders/depth.vert", "shaders/depth.frag"));
+    resources.give_shader(
+        "texture",
+        new Shader("shaders/texture.vert", "shaders/texture.frag"));
+    resources.give_shader(
+        "obj-cel",
+        new Shader("shaders/obj-cel.vert", "shaders/obj-cel.frag"));
+
     scene.depth_shader = resources.get_shader("depth");
     
     // Create meshes.
@@ -80,6 +81,13 @@ int main(int argc, char** argv)
         renderer.create_materials(
             renderer.assign_vao(
                 Mesh::load_obj("models/pine/", "PineTransp.obj"))));
+
+    printf("palette\n");
+    std::vector<glm::vec3>* palette = &resources.get_mesh("Pine02")->palette;
+    for (const auto& vec: *palette)
+    {
+        printf("    %f %f %f\n", vec.x, vec.y, vec.z);
+    }
 
     // Create lights.
     scene.world_light_day = LightSource(
@@ -103,9 +111,9 @@ int main(int argc, char** argv)
 
     // Create objects.
     scene.give_object(new Object(
-        resources.get_mesh("Pine01"),     // mesh
+        resources.get_mesh("Pine02"),     // mesh
         glm::vec3(0.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("texture")   // shader
+        resources.get_shader("obj-cel")   // shader
     ));
 
     // Rendering loop

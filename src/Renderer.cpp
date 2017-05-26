@@ -527,6 +527,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             current_program = render_unit.program_id;
             glUseProgram(current_program);
             init_shader(scene, object->shader);
+            object->shader->set_palette(render_unit.mesh->palette);
         }
 
         // Load model and normal matrices.

@@ -20,6 +20,7 @@ void Object::initialize(Mesh* mesh, const glm::vec4& position, Shader* shader)
     this->render_unit.program_id    = shader->program_id;
     this->shader                    = shader;
     this->render_unit               = get_render_unit();
+    this->palette                   = &mesh->palette;
 }
 
 

@@ -7,6 +7,7 @@
 
 #include <array>
 #include <vector>
+#include <glm/glm.hpp>
 #include <GL/glew.h>
 
 #include "tiny_obj_loader.h"
@@ -26,6 +27,8 @@ struct Mesh
     std::vector<GLuint> textureIDs;
     // the dir to search for mtl and tex files
     std::string dir;
+    // The palette, if one exists.
+    std::vector<glm::vec3> palette;
 };
 
 #endif // MESH_H

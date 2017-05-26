@@ -35,6 +35,10 @@ public:
     float       z_rotation;
     RenderUnit  render_unit;
     Shader* shader;
+
+    // The colour palette for the object.
+    // May be required for a shader program.
+    std::vector<glm::vec3>* palette;
 private:
     void initialize(Mesh* mesh, const glm::vec4& position, Shader* shader);
 };

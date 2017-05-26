@@ -10,6 +10,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <string>
+#include <vector>
 
 #ifndef MAIN_FILE
     #define EXTERN extern
@@ -96,6 +97,36 @@ void fatal_if(bool test, std::string msg, fatal_cleanup_fn cleanup)
     }
 }
 #endif
+
+// --------------------------
+// -- Palette loading tool --
+// --------------------------
+
+std::vector<glm::vec3> load_palette(const std::string& filename);
+
+#ifdef MAIN_FILE
+#include <cstdio>
+#include <fstream>
+
+std::vector<glm::vec3> load_palette(const std::string& path)
+{
+    std::vector<glm::vec3> palette;
+    std::vector<float> buf;
+    std::ifstream file(path);
+    std::string val;
+    while (std::getline(file, val))
+    {
+        buf.push_back(std::stof(val));
+        if (buf.size() == 3)
+        {
+            palette.push_back(glm::vec3(buf[0],buf[1],buf[2]));
+            buf.clear();
+        }
+    }
+    return palette;
+}
+#endif
+
 
 #undef EXTERN
 #endif // CORE_H

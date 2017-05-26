@@ -79,7 +79,10 @@ void main()
         && a_Position.y > right.y
         && a_Position.y > left.y)
     {
-        crest = 1.0;
+        //crest = 1.0;
+        crest = max(
+            max(a_Position.y - below.y, a_Position.y - above.y),
+            max(a_Position.y - right.y, a_Position.y - left.y));
     } else
     {
         crest = 0.0;
