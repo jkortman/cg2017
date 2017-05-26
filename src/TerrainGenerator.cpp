@@ -52,15 +52,9 @@ Landscape* TerrainGenerator::landscape()
     // Copy values into landscape.
     for (int i = 0; i < positions.size(); i += 1)
     {
-        landscape->positions.push_back(positions[i].x);
-        landscape->positions.push_back(positions[i].y);
-        landscape->positions.push_back(positions[i].z);
-        landscape->normals.push_back(normals[i].x);
-        landscape->normals.push_back(normals[i].y);
-        landscape->normals.push_back(normals[i].z);
-        landscape->colours.push_back(colours[i].x);
-        landscape->colours.push_back(colours[i].y);
-        landscape->colours.push_back(colours[i].z);
+        landscape->positions.push_back(positions[i]);
+        landscape->normals.push_back(normals[i]);
+        landscape->colours.push_back(colours[i]);
     }
     for (int i = 0; i < indices.size(); i += 1)
     {
