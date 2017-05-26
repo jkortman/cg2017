@@ -95,6 +95,6 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
 
 void main()
 {
-    FragColour = calculate_lighting(LightDay);
+    FragColour = match_to_palette(calculate_lighting(LightDay));
 
 }
