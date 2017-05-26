@@ -2,7 +2,9 @@
 
 #include "Water.hpp"
 
-Water::Water(int size, float edge, float level, glm::vec2 min, glm::vec2 max)
+Water::Water(
+    int size, float edge, float level, Landscape* landscape,
+    glm::vec2 min, glm::vec2 max)
     : model_matrix(glm::mat4(1.0f)), 
       size(size),
       edge(edge),
@@ -29,7 +31,7 @@ Water::Water(int size, float edge, float level, glm::vec2 min, glm::vec2 max)
         glm::vec3(0.16f, 0.16f, 0.5f),
         glm::vec3(0.10f, 0.10f, 0.33f),
     }};
-    initialize();
+    initialize(landscape);
 }
 
 float Water::vert_dist()
@@ -37,7 +39,7 @@ float Water::vert_dist()
     return edge / size;
 }
 
-void Water::initialize()
+void Water::initialize(Landscape* landscape)
 { 
     // Initialize positions and colours.
     for (int row = 0; row < size; row += 1)
@@ -88,9 +90,9 @@ void Water::initialize()
                 > max_radius) num_outside_radius += 1;
 
             // Check if any verts are outside of the bounds provided.
-            auto in_bounds = [=](float x, float y)
+            auto in_bounds = [=](float x, float z)
             {
-                return x >= min.x && y >= min.y && x <= max.x && y <= max.y;
+                return x >= min[0] && z >= min[1] && x <= max[0] && z <= max[1];
             };
             int num_outside_bounds = 0;
             if (!in_bounds(get_position(    row,     col).x,
@@ -102,8 +104,31 @@ void Water::initialize()
             if (!in_bounds(get_position(row + 1, col + 1).x,
                            get_position(row + 1, col + 1).z)) num_outside_bounds += 1;
 
+            // Check if any verts are obscured by the landscape.
+            auto is_obscured = [=](int row, int col) {
+                float x = get_position(row, col).x;
+                float z = get_position(row, col).z;
+                // check if x,z is witho bounds for the landscape.
+                if (x <= -landscape->edge / 2.0 
+                    || x >= landscape->edge / 2.0
+                    || z <= -landscape->edge / 2.0 
+                    || z >= landscape->edge / 2.0) return false;
+                return landscape->get_pos_at(get_position(row, col)).y
+                        > (level / 2.0) + get_position(row, col).y;
+            };
+            int num_obscured = 0;
+            if (landscape != nullptr)
+            {
+                if (is_obscured(    row,     col)) num_obscured += 1;
+                if (is_obscured(    row, col + 1)) num_obscured += 1;
+                if (is_obscured(row + 1,     col)) num_obscured += 1;
+                if (is_obscured(row + 1, col + 1)) num_obscured += 1;
+            }
+
             // First triangle (upper-left on diagram).
-            if (num_outside_radius < 4 && num_outside_bounds < 4)
+            if (num_outside_radius      < 4
+                && num_outside_bounds   < 4
+                && num_obscured         < 4)
             {
                 indices.push_back(std::array<unsigned int, 3>({{
                     (unsigned int)( row      * size + col),

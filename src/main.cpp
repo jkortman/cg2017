@@ -109,7 +109,8 @@ int main(int argc, char** argv)
     resources.get_shader("landscape-light")->set_palette(landscape->palette);
 
     // Create ocean.
-    Water* ocean = new Water(75, 1000.0f, 0.05f * max_height);
+    // We can pass the landscape to the water generator and have it cull hidden faces.
+    Water* ocean = new Water(75, 1000.0f, 0.05f * max_height, landscape);
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
     resources.get_shader("water")->set_palette(ocean->palette);

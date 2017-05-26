@@ -9,6 +9,8 @@
 #include <limits>
 #include <vector>
 
+#include "Landscape.hpp"
+
 struct Water
 {
     // Create the water mesh.
@@ -16,6 +18,7 @@ struct Water
         int size,
         float edge,
         float level,
+        Landscape* landscape = nullptr,
         glm::vec2 min = glm::vec2(
             std::numeric_limits<float>::lowest(),
             std::numeric_limits<float>::lowest()),
@@ -56,7 +59,7 @@ private:
     glm::vec2 max;
 
     // Mesh building functions.
-    void initialize();
+    void initialize(Landscape* landscape);
     void calculate_normals();
 
     // Coordinate-based element access.
