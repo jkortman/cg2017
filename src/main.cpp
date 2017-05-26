@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     resources.get_shader("landscape-light")->set_palette(landscape->palette);
 
     // Create ocean.
-    Water* ocean = new Water(100, 1000.0f, 0.05f * max_height, glm::vec2(-200.0f, -200.0f));
+    Water* ocean = new Water(75, 1000.0f, 0.05f * max_height, glm::vec2(-200.0f, -200.0f));
     ocean = renderer.assign_vao(ocean);
     scene.give_water(ocean, resources.get_shader("water"));
     resources.get_shader("water")->set_palette(ocean->palette);
@@ -104,8 +104,8 @@ int main(int argc, char** argv)
     // Create objects.
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
-        glm::vec3(0.0f, 20.0f, 0.0f),      // position
-        resources.get_shader("bplight")   // shader
+        glm::vec3(0.0f, 20.0f, 0.0f),     // position
+        resources.get_shader("texture")   // shader
     ));
 
     // Rendering loop

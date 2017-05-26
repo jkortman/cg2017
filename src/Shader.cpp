@@ -41,7 +41,11 @@ void Shader::load(
     program_id = LoadShaders(
         vertex_file_path.c_str(),
         fragment_file_path.c_str());
-    assert(program_id != SHADER_NONE && SHADER_NONE == -1);
+    
+    fatal_if(
+        program_id == -1,
+        "Loading shaders '" + vertex_file_path
+        + "'/'" + fragment_file_path + "' failed");
 }
 
 bool Shader::exists(const std::string& uniform)

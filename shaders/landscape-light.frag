@@ -100,11 +100,34 @@ float linearize(float z)
     return (2.0 * near) / (far + near - z * (far - near));
 }
 
+// Fog calculation.
+const float b = 0.005;
+
+vec3 fog(in vec3 fragment, in float dist, in vec3 fog_colour)
+{
+    float f = 1.0 - exp(-dist * b);
+    return mix(fragment, fog_colour, f);
+}
+
+// http://www.iquilezles.org/www/articles/fog/fog.htm
+vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fog_colour_sun, in vec3 view_dir, in vec3 light_dir)
+{
+    float f = 1.0 - exp(-dist * b);
+    float s = max(dot( view_dir, light_dir ), 0.0 );
+    float fog_scale = max(dot(light_dir, vec3(0.0, 1.0, 0.0)), 0.0);
+    // The new fog colour should scale between the fragment colour and the
+    // scattered fog colour using the angle of the sun.
+    vec3 fog_colour_new = mix(fog_colour, fog_colour_sun, pow(s, 8.0));
+    return mix(fragment, fog_colour_new, f);
+}
+
 void main()
 {
+    // --------------------
     // -- Edge detection -- 
+    // --------------------
     const int no_edge = 0, simple = 1, sobel = 2;
-    int edge_method = sobel;
+    int edge_method = no_edge;
 
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
@@ -156,22 +179,61 @@ void main()
         //grad = 1.0 - line_dark * sqrt(gx*gx + gy*gy); // geometric distance
     }
 
+    // --------------------------------
     // -- Fragment colour processing --
+    // --------------------------------
     vec3 colour = match_to_palette(Colour);
     vec2 light_intensity = calculate_lighting(LightDay);
     float diff = light_intensity.x;
     float spec = light_intensity.y;
+    float dist = length(ViewPos - FragPos);
+    // TODO: Remove duplicate code between this and lighting calculations
+    // for calculating light_dir and view_dir.
+    vec3 view_dir = normalize(ViewPos - FragPos);
+    vec3 light_dir = normalize(-LightDay.position.xyz);
 
-    FragColour = vec4(
-            //colour * discretize(diff),
-            grad * colour * discretize(0.8 * diff + 0.3 * spec),   // TODO: Replace these with material properties added by TerrainGenerator
+    // TODO: Replace these with material properties added by TerrainGenerator
+    vec3 shaded_colour = grad * colour * discretize(0.8 * diff + 0.3 * spec);
+
+    // Determine fog colours by time of day.
+    vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
+    vec3 fog_colour_sun = vec3(1.0, 0.9, 0.7);
+    vec3 fog_colour_night = vec3(0.2, 0.3, 0.4);
+    float day_factor = 0.5 + 0.5 * dot(light_dir, vec3(0.0, 1.0, 0.0));
+    vec3 fog_colour = mix(fog_colour_night, fog_colour_day, day_factor);
+    vec3 fog_sun_colour = mix(fog_colour_night, fog_colour_sun, day_factor);
+
+    const int fog_mode_none = 0,
+              fog_mode_normal = 1,
+              fog_mode_scatter = 2;
+    const int fog_mode = fog_mode_scatter;
+    if (fog_mode == fog_mode_none)
+    {
+        FragColour = vec4(shaded_colour, 1.0);
+    }
+    if (fog_mode == fog_mode_normal)
+    {
+        FragColour = vec4(
+            fog(shaded_colour, dist, fog_colour),
             1.0);
-
+    }
+    else if (fog_mode == fog_mode_scatter)
+    {
+        FragColour = vec4(
+            fog_scatter(
+                shaded_colour,
+                dist,
+                fog_colour, // regular fog colour
+                fog_sun_colour, // colour when aligned with sun
+                view_dir,
+                -light_dir),
+            1.0);
+    }
 
     // Depth buffer testing
     // the sampled texture is always (1,0,0)?
     //FragColour = vec4(vec3(grad), 1.0);
-    //FragColour = vec4(dt_coord.x, dt_coord.y, depth, 1.0);
+    //float depth = linearize(texture(DepthMap, st).x);
     //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
 }
 

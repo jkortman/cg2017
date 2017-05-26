@@ -373,7 +373,7 @@ static void draw_object(const RenderUnit& ru, const unsigned int current_program
 
         // Load the shape material texture into the shader.
         GLuint texID = ru.mesh->textureIDs[i];
-        //glBindTexture(GL_TEXTURE_2D, texID);
+        glBindTexture(GL_TEXTURE_2D, texID);
 
         // Render the shape.
         glBindVertexArray(ru.mesh->vaos[i]);
@@ -383,7 +383,7 @@ static void draw_object(const RenderUnit& ru, const unsigned int current_program
             GL_UNSIGNED_INT,
             0);
         glBindVertexArray(0);
-        //glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
 
