@@ -1,6 +1,7 @@
 // Main function for CG 2017 final project.
 
 #include <cassert>
+#include <cmath>
 #include <chrono>
 
 #define MAIN_FILE
@@ -119,10 +120,10 @@ int main(int argc, char** argv)
     //           __     If we have a circle with radius d, we need
     //          |  --.  a square with radius d/sqrt(2) to stay within
     //        d |  .  \ the bounds of the circle.
-    //          |.____|
-    //             d
-    // For some reason this doesn't quite work, so I'm using 1.8 as a divide factor.
-    Skybox* skybox = renderer.assign_vao(new Skybox((far_dist - 10.0f) / 1.8));
+    //          |.____| For a sphere and cube inside, we need to divide
+    //             d    by sqrt(3).
+    Skybox* skybox = renderer.assign_vao(
+        new Skybox((far_dist - 1.0f) / std::sqrt(3)));
     scene.give_skybox(skybox, resources.get_shader("sky-shader"));
 
     // Create objects.
