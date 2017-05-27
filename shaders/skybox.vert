@@ -10,7 +10,7 @@ uniform mat4 ModelMatrix;
 out vec3 FragPos;
 
 void main() {
-    FragPos = vec3(ModelMatrix * vec4(a_Position, 1.0));
+    FragPos = vec3(a_Position);//vec3(ModelMatrix * vec4(a_Position, 1.0));
     gl_Position =
         ProjectionMatrix
         * ViewMatrix

@@ -275,7 +275,7 @@ Skybox* Renderer::assign_vao(Skybox* skybox)
 
     glBindVertexArray(skybox->vao);
 
-    // Create buffers for positions, normals, texcoords, indices
+    // Create buffers for positions, normals, indices
     unsigned int buffer[3];
     glGenBuffers(3, buffer);
 
