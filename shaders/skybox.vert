@@ -8,9 +8,11 @@ uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 
 out vec3 FragPos;
+out vec3 FragPosWorld;
 
 void main() {
-    FragPos = vec3(a_Position);//vec3(ModelMatrix * vec4(a_Position, 1.0));
+    FragPosWorld = vec3(ModelMatrix * vec4(a_Position, 1.0));
+    FragPos = a_Position;
     gl_Position =
         ProjectionMatrix
         * ViewMatrix
