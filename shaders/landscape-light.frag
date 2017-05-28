@@ -239,8 +239,7 @@ void main()
     float shadow = in_shadow();
     vec3 shaded_colour = 
         colour
-          * (0.3 * ambi
-             + (1.0 - shadow) * discretize(0.8 * diff + 0.3 * spec));
+          * max(0.15 * ambi, (1.0 - shadow) * discretize(0.8 * diff + 0.3 * spec));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
