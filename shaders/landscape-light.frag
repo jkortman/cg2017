@@ -29,7 +29,7 @@ uniform LightSource LightDay;
 uniform vec3 Palette[16];
 uniform int PaletteSize;
 
-vec2 calculate_lighting(in LightSource light) {
+vec3 calculate_lighting(in LightSource light) {
     vec3 norm = normalize(Normal);
 
     vec3 light_dir;
@@ -40,20 +40,17 @@ vec2 calculate_lighting(in LightSource light) {
     }
 
     // Calculate ambient component.
-    //vec3 ambient = colour * light.ambient;
+    float ambi = 1.0;
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
-    //vec3 diffuse = diff * colour * light.diffuse;
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
     float spec = pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
-    //vec3 specular = MtlSpecular * light.specular * spec;
 
-    //return vec4(ambient + diffuse + specular, 1.0);
-    return vec2(diff, spec);
+    return vec3(ambi, diff, spec);
 }
 
 vec3 match_to_palette(vec3 colour)
@@ -207,9 +204,10 @@ void main()
     // -- Fragment colour processing --
     // --------------------------------
     vec3 colour = match_to_palette(Colour);
-    vec2 light_intensity = calculate_lighting(LightDay);
-    float diff = light_intensity.x;
-    float spec = light_intensity.y;
+    vec3 light_intensity = calculate_lighting(LightDay);
+    float ambi = light_intensity.x;
+    float diff = light_intensity.y;
+    float spec = light_intensity.z;
     float dist = length(ViewPos - FragPos);
     // TODO: Remove duplicate code between this and lighting calculations
     // for calculating light_dir and view_dir.
@@ -218,7 +216,10 @@ void main()
 
     // TODO: Replace these with material properties added by TerrainGenerator
     float shadow = in_shadow();
-    vec3 shaded_colour = (1.0 - shadow) * colour * discretize(0.8 * diff + 0.3 * spec);
+    vec3 shaded_colour = 
+        colour
+          * (0.3 * ambi
+             + (1.0 - shadow) * discretize(0.8 * diff + 0.3 * spec));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);

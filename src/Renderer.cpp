@@ -20,7 +20,7 @@ static void error_callback(int error, const char* description)
 }
 
 // Setup the OpenGL environment and settings.
-void Renderer::initialize(bool wireframe)
+void Renderer::initialize(bool wireframe, unsigned int aa_samples)
 {
     glfwSetErrorCallback(error_callback);
     fatal_if(!glfwInit(), "Failed to initialise GLFW");
@@ -30,6 +30,7 @@ void Renderer::initialize(bool wireframe)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, aa_samples);
 
     // Setup the window.
     window_width  = DEFAULT_WINDOW_WIDTH;
@@ -51,6 +52,7 @@ void Renderer::initialize(bool wireframe)
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_MULTISAMPLE);
 
     // -----------------------------------------
     // -- FBO initialization for depth buffer --

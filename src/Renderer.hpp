@@ -25,7 +25,7 @@ class Renderer
 public:
     Renderer();
     // Setup the OpenGL environment and settings.
-    void initialize(bool wireframe = false);
+    void initialize(bool wireframe = false, unsigned int aa_samples = 1);
     // Register InputHandler functions as callbacks.
     void set_callbacks();
     // Functions to generate and assign VAOs to renderables.

@@ -18,7 +18,8 @@
 #include "TerrainGenerator.hpp"
 #include "Water.hpp"
 
-const bool WIREFRAME_MODE = false;
+const bool          WIREFRAME_MODE = false;
+const unsigned int  NUM_AA_SAMPLES = 4;
 
 int main(int argc, char** argv)
 {
@@ -29,7 +30,7 @@ int main(int argc, char** argv)
     Scene scene;
 
     // Renderer setup
-    renderer.initialize(WIREFRAME_MODE);
+    renderer.initialize(WIREFRAME_MODE, NUM_AA_SAMPLES);
     renderer.set_callbacks();
     
     InputHandler::initialize();
