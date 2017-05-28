@@ -474,18 +474,30 @@ void Renderer::init_shader(
     const Scene& scene, Shader* shader, RenderMode render_mode) {
     glUseProgram(shader->program_id);
 
-    // Load projection matrix
-    // TODO - this doesn't need to happen every time!
-    shader->assert_existence("ProjectionMatrix");
-    glUniformMatrix4fv(
-        glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-        1, false, glm::value_ptr(scene.camera.projection));
-
-    // Load view matrix
-    shader->assert_existence("ViewMatrix");
-    glUniformMatrix4fv(
-        glGetUniformLocation(shader->program_id, "ViewMatrix"),
-        1, false, glm::value_ptr(scene.camera.view));
+    // Load projection and view matrices
+    glm::mat4 light_space_matrix = scene.camera.projection * scene.camera.view;
+    if (render_mode == RenderMode::Shadow)
+    {
+        shader->assert_existence("LightSpaceMatrix");
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "LightSpaceMatri"),
+            1, false, glm::value_ptr(light_space_matrix));
+    }
+    else
+    {
+        shader->assert_existence("ProjectionMatrix");
+        shader->assert_existence("ViewMatrix");
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+            1, false, glm::value_ptr(scene.camera.projection));
+        // Load view matrix
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ViewMatrix"),
+            1, false, glm::value_ptr(scene.camera.view));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "LightSpaceMatri"),
+            1, false, glm::value_ptr(light_space_matrix));
+    }
 
     // Load light sources.
     glUniform4fv(
@@ -520,6 +532,12 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glUseProgram(current_program);
         init_shader(scene, scene.depth_shader, render_mode);
     }
+    else if (render_mode == RenderMode::Shadow)
+    {
+        current_program = scene.shadow_shader->program_id;
+        glUseProgram(current_program);
+        init_shader(scene, scene.shadow_shader, render_mode);
+    }
 
     // Render skybox.
     // We don't need the skybox to be rendered when checking depth,
@@ -535,7 +553,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 
             glUniform1f(glGetUniformLocation(current_program, "Time"),
                 scene.time_elapsed);
-            
+
             // Load model and normal matrices.
             glUniformMatrix4fv(
                 glGetUniformLocation(current_program, "ModelMatrix"),

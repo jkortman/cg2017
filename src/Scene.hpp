@@ -49,6 +49,8 @@ public:
     float time_elapsed;
     // The shader for the depth pass.
     Shader* depth_shader;
+    // The shader for the shadow pass.
+    Shader* shadow_shader;
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
