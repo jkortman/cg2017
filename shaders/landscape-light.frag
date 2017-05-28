@@ -121,7 +121,7 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
     return mix(fragment, fog_colour_new, f);
 }
 
-void main()
+float edge_detect()
 {
     // --------------------
     // -- Edge detection -- 
@@ -179,6 +179,11 @@ void main()
         //grad = 1.0 - line_dark * sqrt(gx*gx + gy*gy); // geometric distance
     }
 
+    return grad;
+}
+
+void main()
+{
     // --------------------------------
     // -- Fragment colour processing --
     // --------------------------------
@@ -193,7 +198,7 @@ void main()
     vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // TODO: Replace these with material properties added by TerrainGenerator
-    vec3 shaded_colour = grad * colour * discretize(0.8 * diff + 0.3 * spec);
+    vec3 shaded_colour = colour * discretize(0.8 * diff + 0.3 * spec);
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
