@@ -19,7 +19,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(CPPFLAGS) $(INC) -o $(TARGET) $(OBJS) $(LIB)
 
-build/%.o: src/%.cpp
+build/%.o: src/%.cpp src/%.hpp
 	$(CC) $(CPPFLAGS) $(INC) -c -o $@ $<
 
 .PHONY: all clean refresh
