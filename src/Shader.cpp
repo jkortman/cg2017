@@ -38,6 +38,7 @@ void Shader::load(
     if (vertname == fragname) name = vertname;
     else                      name = vertname + "|" + fragname;
     
+    printf("Compiling shader %s...\n", name.c_str());
     program_id = LoadShaders(
         vertex_file_path.c_str(),
         fragment_file_path.c_str());
@@ -108,7 +109,7 @@ int CompileShader(const char *ShaderPath, const GLuint ShaderID)
 
     glGetShaderiv(ShaderID, GL_COMPILE_STATUS, &Result);
     glGetShaderiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    printf("compiled shader %d %d\n", Result, InfoLogLength);
+    printf("    compiled shader %d %d\n", Result, InfoLogLength);
     if ( InfoLogLength > 1 ) {
         char ShaderErrorMessage[InfoLogLength+1];
         glGetShaderInfoLog( ShaderID,
