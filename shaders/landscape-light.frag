@@ -181,20 +181,41 @@ float edge_detection()
     return grad;
 }
 
+// Set to true to multisample the shadow map for smooth shadows.
+#define MULTISAMPLE true
+#define SAMPLE_RADIUS 2
 float in_shadow()
 {
     // perform perspective divide
-    vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
-    // Transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(DepthMap, projCoords.xy).r; 
+    vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
     // Get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
+    float frag_depth = lit_coords.z;
     // Check whether current frag pos is in shadow
     float bias = 0.002;
-    float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;
 
+    float shadow = 0.0;
+    if (MULTISAMPLE)
+    {
+        // The distance to sample neighbouring texels at.
+        //vec2 dist = 1.0 / textureSize(DepthMap, 0);
+        float dist = 1.0/2048.0;
+        for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
+        {
+            for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
+            {
+                // Get the depth of the texel neightbour i,j
+                vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
+                float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
+                shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+            }
+        }
+    }
+    else
+    {
+        // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+        float lit_depth = texture(DepthMap, lit_coords.xy).r; 
+        shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
+    }
     return shadow;
 }
 
