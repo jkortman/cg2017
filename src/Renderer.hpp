@@ -51,7 +51,7 @@ private:
 
     GLuint depth_buffer;
     GLuint depth_texture;
-    const unsigned int depth_tex_size = 512;
+    const unsigned int depth_tex_size = 2048;
 };
 
 #endif // RENDERER_HPP

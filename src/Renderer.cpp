@@ -64,7 +64,7 @@ void Renderer::initialize(bool wireframe)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, 512, 512, //depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
