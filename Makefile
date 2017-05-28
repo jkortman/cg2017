@@ -2,7 +2,8 @@ CC = g++
 TARGET = cg2017
 SOURCES = $(shell echo ./src/*.cpp)
 OBJS = $(subst ./src/,./build/,$(SOURCES:.cpp=.o))
-CPPFLAGS = -Wall -std=c++11
+WARN = -Wall -Wno-unused-private-field -Wno-unused-variable
+CPPFLAGS = $(WARN) -std=c++11
 UNAME = $(shell uname)
 # Linux
 ifeq ($(UNAME),Linux)
