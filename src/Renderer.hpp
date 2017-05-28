@@ -44,12 +44,15 @@ public:
     // Check if the rendering process should end.
     bool should_end();
 private:
-    enum class RenderMode { Scene, Depth };
+    enum class RenderMode { Scene, Depth, Shadow };
     void draw_scene(const Scene& scene, RenderMode render_mode);
 
     GLuint depth_buffer;
     GLuint depth_texture;
+    GLuint shadow_buffer;
+    GLuint shadow_texture;
     const unsigned int depth_tex_size = 512;
+    const unsigned int shadow_tex_size = 512;
 };
 
 #endif // RENDERER_HPP

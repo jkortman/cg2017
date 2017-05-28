@@ -64,7 +64,7 @@ void Renderer::initialize(bool wireframe)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, 512, 512, //depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -84,10 +84,51 @@ void Renderer::initialize(bool wireframe)
     glReadBuffer(GL_NONE); // default here would be GL_BACK
 
     // Check that the framebuffer generated correctly
-    GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    fatal_if(
-        fb_status != GL_FRAMEBUFFER_COMPLETE,
-        "Frame buffer error, status: " + std::to_string(fb_status));
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));   
+    }
+
+    // ------------------------------------------
+    // -- FBO initialization for shadow buffer --
+    // ------------------------------------------
+    glGenFramebuffers(1, &shadow_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+
+    glGenTextures(1, &shadow_texture);
+    glBindTexture(GL_TEXTURE_2D, shadow_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_DEPTH_COMPONENT, shadow_tex_size, shadow_tex_size,
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    // Attach depth_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D,
+        shadow_texture, 0);
+
+    // Instruct openGL that we won't bind a color texture with the current FBO
+    glDrawBuffer(GL_NONE); // default here would be GL_FRONT
+    glReadBuffer(GL_NONE); // default here would be GL_BACK
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Shadow frame buffer error, status: " + std::to_string(fb_status));   
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -631,7 +672,21 @@ void Renderer::render(const Scene& scene)
     GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     fatal_if(
         fb_status != GL_FRAMEBUFFER_COMPLETE,
-        "Frame buffer error, status: " + std::to_string(fb_status));
+        "Depth frame buffer error, status: " + std::to_string(fb_status));
+
+    // -----------------------------------
+    // -- Pass 2: Render shadow buffer. --
+    // -----------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, shadow_tex_size, shadow_tex_size);
+    draw_scene(scene, RenderMode::Shadow);
+
+    fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    fatal_if(
+        fb_status != GL_FRAMEBUFFER_COMPLETE,
+        "Shadow frame buffer error, status: " + std::to_string(fb_status));
 
     // ---------------------------
     // -- Pass 2: Render scene. --
@@ -640,7 +695,10 @@ void Renderer::render(const Scene& scene)
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, shadow_texture);
     draw_scene(scene, RenderMode::Scene);   
 }
 

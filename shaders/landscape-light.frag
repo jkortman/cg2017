@@ -15,6 +15,7 @@ uniform float   MtlShininess;
 uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
+uniform sampler2D ShadowMap;
 
 struct LightSource
 {
@@ -242,7 +243,8 @@ void main()
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0); 
     float depth = linearize(texture(DepthMap, st).x);
-    FragColour = vec4(vec3(depth), 1.0);
+    float sdepth = linearize(texture(ShadowMap, st).x);
+    FragColour = vec4(vec3(depth, sdepth, 0.0), 1.0);
 }
 
 
