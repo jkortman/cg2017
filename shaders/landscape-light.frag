@@ -23,8 +23,13 @@ struct LightSource
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
+    float K_constant;
+    float K_linear;
+    float K_quadratic;
 };
 uniform LightSource LightDay;
+uniform int NumLights;
+uniform LightSource Lights[4];
 
 uniform vec3 Palette[16];
 uniform int PaletteSize;
@@ -33,10 +38,18 @@ vec3 calculate_lighting(in LightSource light) {
     vec3 norm = normalize(Normal);
 
     vec3 light_dir;
+    float attenuation;
     if (light.position.w == 0.0) {
+        // Directional light
         light_dir = normalize(-light.position.xyz);
+        attenuation = 1.0;
     } else {
+        // Point light
         light_dir = normalize(vec3(light.position) - FragPos);
+        float dist = length(vec3(light.position) - FragPos);
+        attenuation = 1.0 / (  light.K_constant
+                             + light.K_linear * dist
+                             + light.K_quadratic * dist * dist);
     }
 
     // Calculate ambient component.
@@ -50,7 +63,7 @@ vec3 calculate_lighting(in LightSource light) {
     vec3 halfway_dir = normalize(light_dir + view_dir);
     float spec = pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
 
-    return vec3(ambi, diff, spec);
+    return attenuation * vec3(ambi, diff, spec);
 }
 
 vec3 match_to_palette(vec3 colour)
@@ -121,7 +134,6 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
 
 float edge_detection()
 {
-
     // --------------------
     // -- Edge detection -- 
     // --------------------
@@ -225,10 +237,14 @@ void main()
     // -- Fragment colour processing --
     // --------------------------------
     vec3 colour = match_to_palette(Colour);
-    vec3 light_intensity = calculate_lighting(LightDay);
-    float ambi = light_intensity.x;
-    float diff = light_intensity.y;
-    float spec = light_intensity.z;
+    vec3 light_day_intensity = calculate_lighting(LightDay);
+    vec3 light_point_intensity = vec3(0.0);
+
+    for (int i = 0; i < NumLights; i += 1)
+    {
+        light_point_intensity += calculate_lighting(Lights[i]);
+    }
+
     float dist = length(ViewPos - FragPos);
     // TODO: Remove duplicate code between this and lighting calculations
     // for calculating light_dir and view_dir.
@@ -237,9 +253,14 @@ void main()
 
     // TODO: Replace these with material properties added by TerrainGenerator
     float shadow = in_shadow();
+
+    float ambi = light_day_intensity.x + light_point_intensity.x;
+    float diff = (1.0 - shadow) * light_day_intensity.y + light_point_intensity.y;
+    float spec = (1.0 - shadow) * light_day_intensity.z + light_point_intensity.z;
+
     vec3 shaded_colour = 
         colour
-          * max(0.15 * ambi, (1.0 - shadow) * discretize(0.8 * diff + 0.3 * spec));
+          * (0.15 * ambi + discretize(0.8 * diff + 0.3 * spec));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);

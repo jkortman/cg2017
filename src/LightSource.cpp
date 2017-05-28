@@ -10,16 +10,30 @@ LightSource::LightSource(
     glm::vec4 position,
     glm::vec3 ambient,
     glm::vec3 diffuse,
-    glm::vec3 specular)
-    : position(position),
-      ambient(ambient),
-      diffuse(diffuse),
-      specular(specular)
+    glm::vec3 specular,
+    float K_constant,
+    float K_linear,
+    float K_quadratic)
+    : position      (position),
+      ambient       (ambient),
+      diffuse       (diffuse),
+      specular      (specular),
+      K_constant    (K_constant),
+      K_linear      (K_linear),
+      K_quadratic   (K_quadratic)
 {
     float scale = 128.0f;
     projection = glm::ortho(-scale, scale, -scale, scale, 0.05f, 1200.0f);
     update_view();
 }
+
+void LightSource::attenuate(float constant, float linear, float quadratic)
+{
+    K_constant  = constant;
+    K_linear    = linear;
+    K_quadratic = quadratic;
+}
+
 
 glm::mat4& LightSource::update_view()
 {

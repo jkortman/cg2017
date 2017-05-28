@@ -105,7 +105,7 @@ void Scene::update(float dt)
     camera.update_view();
 
     // Rotate the day lighting.
-    const float day_cycle_factor = 3.0f;
+    const float day_cycle_factor = 50.0f;
     auto daylight_dir = glm::vec3(world_light_day.position);
     daylight_dir = glm::rotate(
         daylight_dir,

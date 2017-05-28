@@ -475,6 +475,51 @@ void Renderer::init_shader(
         glGetUniformLocation(shader->program_id, "LightDay.specular"),
         1, glm::value_ptr(scene.world_light_day.specular));
 
+    glUniform1i(
+        glGetUniformLocation(shader->program_id, "NumLights"),
+        int(scene.lights.size()));
+
+    for (int i = 0; i < scene.lights.size(); i += 1)
+    {
+        const LightSource& ls = scene.lights[i];
+        glUniform4fv(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].position").c_str()),
+            1, glm::value_ptr(scene.lights[i].position));
+        glUniform3fv(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].ambient").c_str()),
+            1, glm::value_ptr(scene.lights[i].ambient));
+        glUniform3fv(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].diffuse").c_str()),
+            1, glm::value_ptr(scene.lights[i].diffuse));
+        glUniform3fv(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].specular").c_str()),
+            1, glm::value_ptr(scene.lights[i].specular));
+        glUniform1f(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].K_constant").c_str()),
+            scene.lights[i].K_constant);
+        glUniform1f(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].K_linear").c_str()),
+            scene.lights[i].K_linear);
+        glUniform1f(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].K_quadratic").c_str()),
+            scene.lights[i].K_quadratic);
+
+    }
+
     // Load view position.
     glUniform3fv(
         glGetUniformLocation(shader->program_id, "ViewPos"),
@@ -508,9 +553,9 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             glUseProgram(current_program);
             init_shader(scene, scene.skybox_shader, render_mode);
 
-            glUniform1f(glGetUniformLocation(current_program, "Time"),
+            glUniform1f(
+                glGetUniformLocation(current_program, "Time"),
                 scene.time_elapsed);
-           
 
             // Load model and normal matrices.
             glUniformMatrix4fv(

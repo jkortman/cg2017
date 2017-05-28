@@ -99,6 +99,14 @@ int main(int argc, char** argv)
         glm::vec3(0.5f, 0.5f, 0.48f),
         glm::vec3(1.0f, 1.0f, 1.0f));
 
+    scene.lights.push_back(LightSource(
+        glm::vec4(-20.518629f, 11.420021f, -0.268702f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        1.0f, 0.027f, 0.0028f
+    ));
+
     // Generate landscape.
     const float max_height = 128.0f;    // Needs to be consistent with water.vert.
     TerrainGenerator tg(600, 400.0f, max_height);
