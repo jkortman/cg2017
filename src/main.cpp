@@ -52,59 +52,44 @@ int main(int argc, char** argv)
     ResourceManager resources;
 
     // Create shaders.
-    resources.give_shader(
+    // To load a shader into the resources, add the name here.
+    const std::vector<std::string> shaders = {{
         "landscape-light",
-        new Shader("shaders/landscape-light.vert", "shaders/landscape-light.frag"));
-    resources.give_shader(
         "water",
-        new Shader("shaders/water.vert", "shaders/water.frag"));
-    resources.give_shader(
         "bplight",
-        new Shader("shaders/bplight.vert", "shaders/bplight.frag"));
-    resources.give_shader(
         "depth",
-        new Shader("shaders/depth.vert", "shaders/depth.frag"));
-    resources.give_shader(
         "texture",
-        new Shader("shaders/texture.vert", "shaders/texture.frag"));
-    resources.give_shader(
         "obj-cel",
-        new Shader("shaders/obj-cel.vert", "shaders/obj-cel.frag"));
-    resources.give_shader(
-        "sky-shader",
-        new Shader("shaders/simple-sky.vert", "shaders/simple-sky.frag"));
-    resources.give_shader(
+        "simple-sky",
         "skybox",
-        new Shader("shaders/skybox.vert", "shaders/skybox.frag"));
-    resources.give_shader(
         "horizon",
-        new Shader("shaders/horizon.vert", "shaders/horizon.frag"));
-
+    }};
+    for (const auto& shname: shaders)
+    {
+        resources.give_shader(
+        shname,
+        new Shader("shaders/" + shname + ".vert",
+                   "shaders/" + shname + ".frag"));
+    }
 
     scene.depth_shader = resources.get_shader("depth");
     
     // Create meshes.
-    resources.give_mesh(
-        "Cube",
-        renderer.create_materials(
-            renderer.assign_vao(
-                Mesh::load_obj("models/cube-simple/", "cube-simple.obj"))));
-    resources.give_mesh(
-        "Pine01",
-        renderer.create_materials(
-            renderer.assign_vao(
-                Mesh::load_obj("models/tree/", "PineTree03.obj"))));
-    resources.give_mesh(
-        "Pine02",
-        renderer.create_materials(
-            renderer.assign_vao(
-                Mesh::load_obj("models/pine/", "PineTransp.obj"))));
-
-    printf("palette\n");
-    std::vector<glm::vec3>* palette = &resources.get_mesh("Pine02")->palette;
-    for (const auto& vec: *palette)
+    // Each mesh entry in meshes is a name, dir name, and filename.
+    const std::vector<std::array<std::string, 3>> meshes = {{
+        {{"Cube",       "cube-simple",  "cube-simple"   }},
+        {{"Pine01",     "tree",         "PineTree03"    }},
+        {{"Pine02",     "pine",         "PineTransp"    }},
+    }};
+    for (const auto& meshinfo: meshes)
     {
-        printf("    %f %f %f\n", vec.x, vec.y, vec.z);
+        const std::string& name     = meshinfo[0];
+        const std::string& dir      = meshinfo[1];
+        const std::string& filename = meshinfo[2];
+        resources.give_mesh(
+            name,
+            renderer.create_materials(renderer.assign_vao(
+                Mesh::load_obj("models/" + dir + "/", filename + ".obj"))));
     }
 
     // Create lights.
