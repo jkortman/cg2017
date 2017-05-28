@@ -114,6 +114,7 @@ void Scene::update(float dt)
     world_light_day.position.x = daylight_dir.x;
     world_light_day.position.y = daylight_dir.y;
     world_light_day.position.z = daylight_dir.z;
+    world_light_day.update_view();
 
     // Update the model and normal matrices for each object.
     for (auto& object : objects)
