@@ -64,9 +64,6 @@ int main(int argc, char** argv)
         "depth",
         new Shader("shaders/depth.vert", "shaders/depth.frag"));
     resources.give_shader(
-        "shadow",
-        new Shader("shaders/shadow.vert", "shaders/shadow.frag"));
-    resources.give_shader(
         "texture",
         new Shader("shaders/texture.vert", "shaders/texture.frag"));
     resources.give_shader(
@@ -79,8 +76,8 @@ int main(int argc, char** argv)
         "skybox",
         new Shader("shaders/skybox.vert", "shaders/skybox.frag"));
 
+
     scene.depth_shader = resources.get_shader("depth");
-    scene.shadow_shader = resources.get_shader("shadow");
     
     // Create meshes.
     resources.give_mesh(
@@ -138,7 +135,7 @@ int main(int argc, char** argv)
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(0.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("texture")   // shader
+        resources.get_shader("obj-cel")   // shader
     ));
 
     // Rendering loop

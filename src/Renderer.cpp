@@ -64,7 +64,7 @@ void Renderer::initialize(bool wireframe)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT, 512, 512, //depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -84,51 +84,10 @@ void Renderer::initialize(bool wireframe)
     glReadBuffer(GL_NONE); // default here would be GL_BACK
 
     // Check that the framebuffer generated correctly
-    {
-        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        fatal_if(
-            fb_status != GL_FRAMEBUFFER_COMPLETE,
-            "Depth frame buffer error, status: " + std::to_string(fb_status));   
-    }
-
-    // ------------------------------------------
-    // -- FBO initialization for shadow buffer --
-    // ------------------------------------------
-    glGenFramebuffers(1, &shadow_buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
-
-    glGenTextures(1, &shadow_texture);
-    glBindTexture(GL_TEXTURE_2D, shadow_texture);
-
-    // Generate an empty image for OpenGL.
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, shadow_tex_size, shadow_tex_size,
-        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    // Attach depth_texture as depth attachment
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER,
-        GL_DEPTH_ATTACHMENT,
-        GL_TEXTURE_2D,
-        shadow_texture, 0);
-
-    // Instruct openGL that we won't bind a color texture with the current FBO
-    glDrawBuffer(GL_NONE); // default here would be GL_FRONT
-    glReadBuffer(GL_NONE); // default here would be GL_BACK
-
-    // Check that the framebuffer generated correctly
-    {
-        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        fatal_if(
-            fb_status != GL_FRAMEBUFFER_COMPLETE,
-            "Shadow frame buffer error, status: " + std::to_string(fb_status));   
-    }
+    GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    fatal_if(
+        fb_status != GL_FRAMEBUFFER_COMPLETE,
+        "Frame buffer error, status: " + std::to_string(fb_status));
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -470,46 +429,21 @@ static void draw_object(const RenderUnit& ru, const unsigned int current_program
     }
 }
 
-void Renderer::init_shader(
-    const Scene& scene, Shader* shader, RenderMode render_mode) {
+void init_shader(const Scene& scene, Shader* shader) {
     glUseProgram(shader->program_id);
 
-    // Load projection and view matrices
-    //glm::mat4 light_space_matrix = scene.camera.projection * scene.camera.view;
-    glm::mat4 light_space_matrix = scene.world_light_day.projection * scene.world_light_day.view;
-    if (render_mode == RenderMode::Shadow)
-    {
-        shader->assert_existence("LightSpaceMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
-            1, false, glm::value_ptr(light_space_matrix));
-    }
-    else
-    {
-        shader->assert_existence("ProjectionMatrix");
-        shader->assert_existence("ViewMatrix");
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-            1, false, glm::value_ptr(scene.camera.projection));
-        // Load view matrix
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ViewMatrix"),
-            1, false, glm::value_ptr(scene.camera.view));
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
-            1, false, glm::value_ptr(light_space_matrix));
-    }
+    // Load projection matrix
+    // TODO - this doesn't need to happen every time!
+    shader->assert_existence("ProjectionMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+        1, false, glm::value_ptr(scene.camera.projection));
 
-    if (render_mode == RenderMode::Scene)
-    {
-        // Set up depth and shadow textures.
-        glUniform1i(glGetUniformLocation(shader->program_id, "DepthMap"), 1);
-        glUniform1i(glGetUniformLocation(shader->program_id, "ShadowMap"), 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depth_texture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, shadow_texture);
-    }
+    // Load view matrix
+    shader->assert_existence("ViewMatrix");
+    glUniformMatrix4fv(
+        glGetUniformLocation(shader->program_id, "ViewMatrix"),
+        1, false, glm::value_ptr(scene.camera.view));
 
     // Load light sources.
     glUniform4fv(
@@ -542,13 +476,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     {
         current_program = scene.depth_shader->program_id;
         glUseProgram(current_program);
-        init_shader(scene, scene.depth_shader, render_mode);
-    }
-    else if (render_mode == RenderMode::Shadow)
-    {
-        current_program = scene.shadow_shader->program_id;
-        glUseProgram(current_program);
-        init_shader(scene, scene.shadow_shader, render_mode);
+        init_shader(scene, scene.depth_shader);
     }
 
     // Render skybox.
@@ -561,10 +489,11 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         {
             current_program = scene.skybox_shader->program_id;
             glUseProgram(current_program);
-            init_shader(scene, scene.skybox_shader, render_mode);
+            init_shader(scene, scene.skybox_shader);
 
             glUniform1f(glGetUniformLocation(current_program, "Time"),
                 scene.time_elapsed);
+           
 
             // Load model and normal matrices.
             glUniformMatrix4fv(
@@ -589,7 +518,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         {
             current_program = scene.landscape_shader->program_id;
             glUseProgram(current_program);
-            init_shader(scene, scene.landscape_shader, render_mode);
+            init_shader(scene, scene.landscape_shader);
         }
 
         // Load model and normal matrices.
@@ -630,7 +559,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         {
             current_program = scene.water_shader->program_id;
             glUseProgram(current_program);
-            init_shader(scene, scene.water_shader, render_mode);
+            init_shader(scene, scene.water_shader);
         }
 
         // Load model and normal matrices.
@@ -670,7 +599,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         {
             current_program = render_unit.program_id;
             glUseProgram(current_program);
-            init_shader(scene, object->shader, render_mode);
+            init_shader(scene, object->shader);
             object->shader->set_palette(render_unit.mesh->palette);
         }
 
@@ -702,21 +631,7 @@ void Renderer::render(const Scene& scene)
     GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     fatal_if(
         fb_status != GL_FRAMEBUFFER_COMPLETE,
-        "Depth frame buffer error, status: " + std::to_string(fb_status));
-
-    // -----------------------------------
-    // -- Pass 2: Render shadow buffer. --
-    // -----------------------------------
-    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, shadow_tex_size, shadow_tex_size);
-    draw_scene(scene, RenderMode::Shadow);
-
-    fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    fatal_if(
-        fb_status != GL_FRAMEBUFFER_COMPLETE,
-        "Shadow frame buffer error, status: " + std::to_string(fb_status));
+        "Frame buffer error, status: " + std::to_string(fb_status));
 
     // ---------------------------
     // -- Pass 2: Render scene. --
@@ -725,6 +640,7 @@ void Renderer::render(const Scene& scene)
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
     draw_scene(scene, RenderMode::Scene);   
 }
 

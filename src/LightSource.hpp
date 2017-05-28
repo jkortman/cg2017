@@ -18,10 +18,6 @@ public:
     glm::vec3 ambient;  // ambient colour
     glm::vec3 diffuse;  // diffuse colour
     glm::vec3 specular; // specular colour
-
-    // projection and view matrices for rendering from the light's POV.
-    glm::mat4 projection;
-    glm::mat4 view;
 };
 
 
