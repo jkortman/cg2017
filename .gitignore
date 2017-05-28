@@ -1,6 +1,9 @@
 # MacOS filesystem stuff
 .DS_Store
 
+# The main executable
+cg2017
+
 # Prerequisites
 *.d
 
