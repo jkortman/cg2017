@@ -3,6 +3,7 @@
 in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
+in vec4 FragPosLightSpace;
 
 out vec4 FragColour;
 
@@ -183,6 +184,23 @@ float edge_detection()
     return grad;
 }
 
+float in_shadow()
+{
+    // perform perspective divide
+    vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+    // Transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(DepthMap, projCoords.xy).r; 
+    // Get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // Check whether current frag pos is in shadow
+    float bias = 0.002;
+    float shadow = (currentDepth - bias) > closestDepth  ? 1.0 : 0.0;
+
+    return shadow;
+}
+
 void main()
 {
     // --------------------------------
@@ -199,7 +217,8 @@ void main()
     vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // TODO: Replace these with material properties added by TerrainGenerator
-    vec3 shaded_colour = colour * discretize(0.8 * diff + 0.3 * spec);
+    float shadow = in_shadow();
+    vec3 shaded_colour = (1.0 - shadow) * colour * discretize(0.8 * diff + 0.3 * spec);
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
@@ -241,8 +260,9 @@ void main()
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0);
     //float depth = linearize(texture(DepthMap, st).x);
-    float depth = texture(DepthMap, st).x;
-    FragColour = vec4(vec3(depth), 1.0);
+    //float depth = texture(DepthMap, st).x;
+    //FragColour = vec4(vec3(depth), 1.0);
+    //FragColour = vec4(vec3(in_shadow()), 1.0);
 
     //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
 }
