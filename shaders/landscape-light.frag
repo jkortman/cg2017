@@ -243,8 +243,9 @@ void main()
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0); 
     float depth = linearize(texture(DepthMap, st).x);
-    float sdepth = linearize(texture(ShadowMap, st).x);
-    FragColour = vec4(vec3(depth, sdepth, 0.0), 1.0);
+    float sdepth = texture(ShadowMap, st).x;
+    //FragColour = vec4(vec3(depth, sdepth, 0.0), 1.0);
+    FragColour = vec4(vec3(sdepth), 1.0);
 }
 
 

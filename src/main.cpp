@@ -79,7 +79,6 @@ int main(int argc, char** argv)
         "skybox",
         new Shader("shaders/skybox.vert", "shaders/skybox.frag"));
 
-
     scene.depth_shader = resources.get_shader("depth");
     scene.shadow_shader = resources.get_shader("shadow");
     
@@ -139,7 +138,7 @@ int main(int argc, char** argv)
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(0.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("obj-cel")   // shader
+        resources.get_shader("texture")   // shader
     ));
 
     // Rendering loop

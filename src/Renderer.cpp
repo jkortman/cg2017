@@ -475,12 +475,13 @@ void Renderer::init_shader(
     glUseProgram(shader->program_id);
 
     // Load projection and view matrices
-    glm::mat4 light_space_matrix = scene.camera.projection * scene.camera.view;
+    //glm::mat4 light_space_matrix = scene.camera.projection * scene.camera.view;
+    glm::mat4 light_space_matrix = scene.world_light_day.projection * scene.world_light_day.view;
     if (render_mode == RenderMode::Shadow)
     {
         shader->assert_existence("LightSpaceMatrix");
         glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "LightSpaceMatri"),
+            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
             1, false, glm::value_ptr(light_space_matrix));
     }
     else
@@ -495,8 +496,19 @@ void Renderer::init_shader(
             glGetUniformLocation(shader->program_id, "ViewMatrix"),
             1, false, glm::value_ptr(scene.camera.view));
         glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "LightSpaceMatri"),
+            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
             1, false, glm::value_ptr(light_space_matrix));
+    }
+
+    if (render_mode == RenderMode::Scene)
+    {
+        // Set up depth and shadow textures.
+        glUniform1i(glGetUniformLocation(shader->program_id, "DepthMap"), 1);
+        glUniform1i(glGetUniformLocation(shader->program_id, "ShadowMap"), 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, shadow_texture);
     }
 
     // Load light sources.
@@ -713,10 +725,6 @@ void Renderer::render(const Scene& scene)
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, shadow_texture);
     draw_scene(scene, RenderMode::Scene);   
 }
 
