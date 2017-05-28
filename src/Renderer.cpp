@@ -435,17 +435,29 @@ void Renderer::init_shader(
     glUseProgram(shader->program_id);
 
     // Load projection matrix
-    // TODO - this doesn't need to happen every time!
-    shader->assert_existence("ProjectionMatrix");
-    glUniformMatrix4fv(
-        glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-        1, false, glm::value_ptr(scene.camera.projection));
-
-    // Load view matrix
-    shader->assert_existence("ViewMatrix");
-    glUniformMatrix4fv(
-        glGetUniformLocation(shader->program_id, "ViewMatrix"),
-        1, false, glm::value_ptr(scene.camera.view));
+    if (render_mode == RenderMode::Depth)
+    {
+        shader->assert_existence("LightSpaceMatrix");
+        glm::mat4 ls = scene.camera.projection * scene.camera.view;
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
+            1, false, glm::value_ptr(scene.world_light_day.light_space));
+            //1, false, glm::value_ptr(ls));
+    }
+    else
+    {
+        shader->assert_existence("ProjectionMatrix");
+        shader->assert_existence("ViewMatrix");
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+            1, false, glm::value_ptr(scene.camera.projection));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ViewMatrix"),
+            1, false, glm::value_ptr(scene.camera.view));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
+            1, false, glm::value_ptr(scene.world_light_day.light_space));
+    }
 
     // Load light sources.
     glUniform4fv(

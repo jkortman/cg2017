@@ -26,11 +26,11 @@ LightSource::LightSource(
 
 glm::mat4& LightSource::update_view()
 {
-    const glm::vec3 position(-2.0f, 30.0f, -1.0f);
-    const glm::vec3 at(0.0f, 0.0f, 0.0f);
+    const glm::vec3 position(-23.953300f, 69.010078f, 49.062695f);
+    const glm::vec3 dir(0.970498f, 0.017103f, -0.240506f);
     view = glm::lookAt(
         position,
-        at,
+        position + dir,
         AXIS_Y);
     light_space = projection * view;
     return view;
