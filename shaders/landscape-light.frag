@@ -254,13 +254,17 @@ void main()
     // TODO: Replace these with material properties added by TerrainGenerator
     float shadow = in_shadow();
 
-    float ambi = light_day_intensity.x + light_point_intensity.x;
-    float diff = (1.0 - shadow) * light_day_intensity.y + light_point_intensity.y;
-    float spec = (1.0 - shadow) * light_day_intensity.z + light_point_intensity.z;
+    float ambi = max(light_day_intensity.x, light_point_intensity.x);
+    float diff = max(
+        (1.0 - shadow) * discretize(light_day_intensity.y),
+        discretize(light_point_intensity.y));
+    float spec = max(
+        (1.0 - shadow) * discretize(light_day_intensity.z),
+        discretize(light_point_intensity.z));
 
     vec3 shaded_colour = 
         colour
-          * (0.15 * ambi + discretize(0.8 * diff + 0.3 * spec));
+          * (0.15 * ambi + 0.8 * diff + 0.3 * spec);
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
