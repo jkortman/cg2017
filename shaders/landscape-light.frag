@@ -36,6 +36,25 @@ uniform LightSource Lights[4];
 uniform vec3 Palette[16];
 uniform int PaletteSize;
 
+float discretize(float value)
+{
+    // We map a continuous value to one of N
+    // fixed values between 0 and 1+W, where W is some factor to force white
+    // highlights on the landscape.
+    // For N = 5 this is equivalent to:
+    //      if      (value < 0.25)      return 0.00;
+    //      else if (value < 0.50)      return 0.33;
+    //      else if (value < 0.75)      return 0.66;
+    //      else if (value < 1.00)      return 1.00;
+    //      else                        return 1.33;
+    const int N = 5;
+    if      (value < 0.25)      return 0.00;
+    else if (value < 0.50)      return 0.33;
+    else if (value < 0.75)      return 0.66;
+    else if (value < 1.00)      return 1.00;
+    else                        return 1.33;
+}
+
 vec3 calculate_lighting(in LightSource light) {
     vec3 norm = normalize(Normal);
 
@@ -52,11 +71,12 @@ vec3 calculate_lighting(in LightSource light) {
         attenuation = 1.0 / (  light.K_constant
                              + light.K_linear * dist
                              + light.K_quadratic * dist * dist);
-        // If a spot light, check if within the cone.
+        // If a spot light, attenuate by the error.
         float cos_angle = dot(light_dir, normalize(-light.spot_direction));
         if (cos_angle < light.spot_cos_angle)
         {
-            return vec3(1.0, 0.0, 0.0);
+            float amt = light.spot_cos_angle - cos_angle;
+            attenuation -= amt;
         }
     }
 
@@ -91,25 +111,6 @@ vec3 match_to_palette(vec3 colour)
     }
 
     return Palette[min_index];
-}
-
-float discretize(float value)
-{
-    // We map a continuous value to one of N
-    // fixed values between 0 and 1+W, where W is some factor to force white
-    // highlights on the landscape.
-    // For N = 5 this is equivalent to:
-    //      if      (value < 0.25)      return 0.00;
-    //      else if (value < 0.50)      return 0.33;
-    //      else if (value < 0.75)      return 0.66;
-    //      else if (value < 1.00)      return 1.00;
-    //      else                        return 1.33;
-    const int N = 5;
-    if      (value < 0.25)      return 0.00;
-    else if (value < 0.50)      return 0.33;
-    else if (value < 0.75)      return 0.66;
-    else if (value < 1.00)      return 1.00;
-    else                        return 1.33;
 }
 
 float linearize(float z)
