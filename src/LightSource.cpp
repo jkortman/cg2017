@@ -13,14 +13,18 @@ LightSource::LightSource(
     glm::vec3 specular,
     float K_constant,
     float K_linear,
-    float K_quadratic)
+    float K_quadratic,
+    glm::vec3 spot_direction,
+    float spot_angle)
     : position      (position),
       ambient       (ambient),
       diffuse       (diffuse),
       specular      (specular),
       K_constant    (K_constant),
       K_linear      (K_linear),
-      K_quadratic   (K_quadratic)
+      K_quadratic   (K_quadratic),
+      spot_direction(spot_direction),
+      spot_angle    (spot_angle)
 {
     float scale = 128.0f;
     projection = glm::ortho(-scale, scale, -scale, scale, 0.05f, 1200.0f);

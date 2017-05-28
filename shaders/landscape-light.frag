@@ -19,13 +19,15 @@ uniform sampler2D DepthMap;
 
 struct LightSource
 {
-    vec4 position;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
-    float K_constant;
-    float K_linear;
-    float K_quadratic;
+    vec4    position;
+    vec3    ambient;
+    vec3    diffuse;
+    vec3    specular;
+    float   K_constant;
+    float   K_linear;
+    float   K_quadratic;
+    vec3    spot_direction;
+    float   spot_cos_angle;
 };
 uniform LightSource LightDay;
 uniform int NumLights;
@@ -44,12 +46,18 @@ vec3 calculate_lighting(in LightSource light) {
         light_dir = normalize(-light.position.xyz);
         attenuation = 1.0;
     } else {
-        // Point light
+        // Point or spot light
         light_dir = normalize(vec3(light.position) - FragPos);
         float dist = length(vec3(light.position) - FragPos);
         attenuation = 1.0 / (  light.K_constant
                              + light.K_linear * dist
                              + light.K_quadratic * dist * dist);
+        // If a spot light, check if within the cone.
+        float cos_angle = dot(light_dir, normalize(-light.spot_direction));
+        if (cos_angle < light.spot_cos_angle)
+        {
+            return vec3(1.0, 0.0, 0.0);
+        }
     }
 
     // Calculate ambient component.

@@ -99,12 +99,24 @@ int main(int argc, char** argv)
         glm::vec3(0.5f, 0.5f, 0.48f),
         glm::vec3(1.0f, 1.0f, 1.0f));
 
+    // Test point light
     scene.lights.push_back(LightSource(
         glm::vec4(-20.518629f, 11.420021f, -0.268702f, 1.0f),
         glm::vec3(1.0f, 1.0f, 1.0f),
         glm::vec3(1.0f, 1.0f, 1.0f),
         glm::vec3(1.0f, 1.0f, 1.0f),
         1.0f, 0.027f, 0.0028f
+    ));
+
+    // Test spot light.
+    scene.lights.push_back(LightSource(
+        glm::vec4(-41.486008f, 24.419973f, 41.395313f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        1.0f, 0.027f, 0.0028f,
+        glm::vec3(0.017663f, -0.585867f, 0.810214f),
+        45.0f
     ));
 
     // Generate landscape.
@@ -150,7 +162,6 @@ int main(int argc, char** argv)
         horizon->scale = glm::vec3(600.0f, 0.0f, 600.0f);
         scene.give_object(horizon);
     }
-    
 
     // Rendering loop
     auto current_time = std::chrono::steady_clock::now();

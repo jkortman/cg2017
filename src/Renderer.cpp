@@ -517,6 +517,16 @@ void Renderer::init_shader(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].K_quadratic").c_str()),
             scene.lights[i].K_quadratic);
+        glUniform3fv(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].spot_direction").c_str()),
+            1, glm::value_ptr(scene.lights[i].spot_direction));
+        glUniform1f(
+            glGetUniformLocation(
+                shader->program_id,
+                ("Lights[" + std::to_string(i) + "].spot_cos_angle").c_str()),
+            glm::cos(glm::radians(scene.lights[i].spot_angle)));
 
     }
 
