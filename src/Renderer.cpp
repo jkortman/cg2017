@@ -496,10 +496,11 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     }
 
     // Render skybox.
-    // We don't need the skybox to be rendered when checking depth,
-    // as it should be really close to the far plane anyway.
+    // Skybox doesn't casr any shadows, so it's unnecessary when rendering
+    // the depth map.
     if (render_mode == RenderMode::Scene)
     {
+        // render skybox.
         Skybox* skybox = scene.skybox.get();
         if (skybox != nullptr)
         {

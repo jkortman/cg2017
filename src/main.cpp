@@ -76,11 +76,19 @@ int main(int argc, char** argv)
     resources.give_shader(
         "skybox",
         new Shader("shaders/skybox.vert", "shaders/skybox.frag"));
+    resources.give_shader(
+        "horizon",
+        new Shader("shaders/horizon.vert", "shaders/horizon.frag"));
 
 
     scene.depth_shader = resources.get_shader("depth");
     
     // Create meshes.
+    resources.give_mesh(
+        "Cube",
+        renderer.create_materials(
+            renderer.assign_vao(
+                Mesh::load_obj("models/cube-simple/", "cube-simple.obj"))));
     resources.give_mesh(
         "Pine01",
         renderer.create_materials(
@@ -135,9 +143,21 @@ int main(int argc, char** argv)
     // Create objects.
     scene.give_object(new Object(
         resources.get_mesh("Pine01"),     // mesh
-        glm::vec3(0.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("obj-cel")   // shader
+        glm::vec3(-20.0f, 20.0f, 0.0f),     // position
+        resources.get_shader("texture")   // shader
     ));
+
+    // Create horizon.
+    {
+        Object* horizon = new Object(
+            resources.get_mesh("Cube"),       // mesh
+            glm::vec3(0.0f, 0.0f, 0.0f),   // position
+            resources.get_shader("horizon")   // shader
+        );
+        horizon->scale = glm::vec3(600.0f, 0.0f, 600.0f);
+        scene.give_object(horizon);
+    }
+    
 
     // Rendering loop
     auto current_time = std::chrono::steady_clock::now();

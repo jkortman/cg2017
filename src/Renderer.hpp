@@ -19,6 +19,7 @@
 #include "Water.hpp"
 #include "Mesh.hpp"
 #include "Skybox.hpp"
+#include "Shader.hpp"
 
 class Renderer
 {
