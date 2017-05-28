@@ -18,12 +18,6 @@ public:
     glm::vec3 ambient;  // ambient colour
     glm::vec3 diffuse;  // diffuse colour
     glm::vec3 specular; // specular colour
-
-    // Matrices for rendering depth maps for shadows.
-    glm::mat4 projection;
-    glm::mat4 view;
-
-    glm::mat4& update_view_matrix();
 };
 
 

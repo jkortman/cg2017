@@ -46,8 +46,6 @@ public:
 private:
     enum class RenderMode { Scene, Depth };
     void draw_scene(const Scene& scene, RenderMode render_mode);
-    void init_shader(
-        const Scene& scene, Shader* shader, RenderMode render_mode);
 
     GLuint depth_buffer;
     GLuint depth_texture;

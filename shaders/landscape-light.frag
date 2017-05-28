@@ -127,7 +127,7 @@ float edge_detect()
     // -- Edge detection -- 
     // --------------------
     const int no_edge = 0, simple = 1, sobel = 2;
-    int edge_method = no_edge;
+    int edge_method = sobel;
 
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
@@ -198,7 +198,7 @@ void main()
     vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // TODO: Replace these with material properties added by TerrainGenerator
-    vec3 shaded_colour = colour * discretize(0.8 * diff + 0.3 * spec);
+    vec3 shaded_colour = edge_detect() * colour * discretize(0.8 * diff + 0.3 * spec);
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
@@ -238,8 +238,11 @@ void main()
     // Depth buffer testing
     // the sampled texture is always (1,0,0)?
     //FragColour = vec4(vec3(grad), 1.0);
-    //float depth = linearize(texture(DepthMap, st).x);
-    //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
+    vec2 st = 0.5 * vec2(
+        float(gl_FragCoord.x) / 640.0,
+        float(gl_FragCoord.y) / 480.0); 
+    float depth = linearize(texture(DepthMap, st).x);
+    FragColour = vec4(vec3(depth), 1.0);
 }
 
 
