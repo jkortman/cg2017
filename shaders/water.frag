@@ -192,6 +192,6 @@ void main()
                 -light_dir),
             1.0);
     }
-    //FragColour = vec4(vec3(shadow), 1.0);
+    //FragColour = vec4(vec3(1.0-shadow), 1.0);
 
 }

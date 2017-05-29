@@ -26,7 +26,7 @@ LightSource::LightSource(
       spot_direction(spot_direction),
       spot_angle    (spot_angle)
 {
-    float scale = 128.0f;
+    float scale = 256.0f;
     projection = glm::ortho(-scale, scale, -scale, scale, 0.05f, 1200.0f);
     update_view();
 }

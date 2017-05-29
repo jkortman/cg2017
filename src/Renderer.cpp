@@ -69,10 +69,24 @@ void Renderer::initialize(bool wireframe, unsigned int aa_samples)
         0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // Clamping to border
+    //    Clamping to border means some areas of the water will have a
+    //    solid block shadow during sunrise/sunset.
+    //    (This is somewhat mitigated by changing the border colour to
+    //    depending on whether the sun is up or down at the start of
+    //    'Renderer::draw_scene()'.)
+    //    Warning: This requires a glTexParameterfv() call every frame,
+    //    which appears to be a little slow.
+    // Clamping to edge
+    //    Clamping to edge means some shadows will stretch unrealistically,
+    //    again at sunrise/sunset.
+    //    If you make the light view frustum large enough, the edges aren't
+    //    present on the water surface, and the choice doesn't matter.
+    #define WRAP_BEHAVIOUR GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WRAP_BEHAVIOUR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WRAP_BEHAVIOUR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
 
     // Attach depth_texture as depth attachment
     glFramebufferTexture2D(
@@ -542,6 +556,27 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     if (render_mode == RenderMode::Scene)
     {
         reshape(window_width, window_height);
+
+        // The default shadow state is no shadows when the sun is above
+        // the horizon, and shadows when the sun is below the horizon.
+        // This is important for below the horizon.
+        // Warning: this seems a litte slow - it's likely glTexParameterfv()
+        // are a little too performance-heavy to call per-frame.
+        #if WRAP_BEHAVIOUR == GL_CLAMP_TO_BORDER
+            glBindTexture(GL_TEXTURE_2D, depth_texture);
+            std::array<float, 4> border_colour_night = {{ 1.0f, 0.0f, 0.0f, 1.0f }};
+            std::array<float, 4> border_colour_day   = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
+            if (glm::dot(glm::vec3(scene.world_light_day.position), AXIS_Y) >= 0.0f)
+            {
+                glTexParameterfv(
+                GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_colour_day.data());
+            }
+            else
+            {
+                glTexParameterfv(
+                GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_colour_night.data());
+            }
+        #endif
     }
     else if (render_mode == RenderMode::Depth)
     {
