@@ -86,9 +86,11 @@ private:
     std::vector<glm::vec3> colours;
     std::vector<Biome> biomes;
     std::vector<std::array<unsigned int, 3>> indices;
+    // Generated objects.
+    std::vector<Object*> objects;
     // The per-biome colours.
     std::vector<glm::vec3> biome_colours;
-    // The object data.
+    // The mesh and shader data for creating objects.
     ResourceManager* resources;
 
     // ---------------------------
@@ -141,7 +143,7 @@ private:
     // (1.0f = full blur, 0.0f = no blur)
     glm::vec3 blur_value(
         Property property, int row, int col, float amt, int kernel_size=1);
-    
+
     void object_position_map(
         int radius,     // The search radius for maxima, or how
                         // dense the generated objects should be.

@@ -91,6 +91,9 @@ Landscape* TerrainGenerator::landscape()
         biome_colours.begin() + 1,  // skip error colour
         biome_colours.end());
 
+    // Give generated objects to landscape.
+    landscape->objects = objects;
+
     return landscape;
 }
 
@@ -432,12 +435,34 @@ void TerrainGenerator::populate()
 
     // Add pine trees to PineForest biome.
     {
-
+        std::vector<std::vector<bool>> locations;
+        object_position_map(1, 1, locations);
         for (int row = 0; row < size; row += 1)
         {
             for (int col = 0; col < size; col += 1)
             {
-                
+                if (locations[row][col] &&
+                        (get_biome(row, col) == Woodland
+                        || get_biome(row, col) == Forest
+                        || get_biome(row, col) == PineForest))
+                {
+                    float r = randf();
+                    Mesh* model;
+                    if      (r < 0.45f) model = pine01;
+                    else if (r < 0.90f) model = pine02;
+                    else                model = stump;
+
+                    Object* obj = new Object(
+                        model,
+                        get_position(row, col)
+                            - glm::vec3(0.1f * randf(),
+                                        -0.3f, 
+                                        0.1f * randf()), 
+                        tex_shader);
+
+                    obj->scale = glm::vec3(1.0f, 1.0f, 1.0f) + 0.1f * randf();
+                    objects.push_back(obj);
+                }
             }
         }
     }
