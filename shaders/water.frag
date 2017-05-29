@@ -4,6 +4,7 @@ in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
 in float crest;
+in vec4 FragPosLightSpace;
 
 out vec4 FragColour;
 
@@ -15,6 +16,8 @@ uniform float   MtlShininess;
 uniform float Time;
 
 uniform vec3 ViewPos;
+
+uniform sampler2D DepthMap;
 
 struct LightSource
 {
@@ -29,6 +32,8 @@ struct LightSource
     float   spot_cos_angle;
 };
 uniform LightSource LightDay;
+uniform int NumLights;
+uniform LightSource Lights[4];
 
 uniform vec3 Palette[16];
 uniform int PaletteSize;
@@ -98,6 +103,44 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
     return mix(fragment, fog_colour_new, f);
 }
 
+// Set to true to multisample the shadow map for smooth shadows.
+#define MULTISAMPLE true
+#define SAMPLE_RADIUS 2
+float in_shadow()
+{
+    // perform perspective divide
+    vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
+    // Get depth of current fragment from light's perspective
+    float frag_depth = lit_coords.z;
+    // Check whether current frag pos is in shadow
+    float bias = 0.002;
+
+    float shadow = 0.0;
+    if (MULTISAMPLE)
+    {
+        // The distance to sample neighbouring texels at.
+        //vec2 dist = 1.0 / textureSize(DepthMap, 0);
+        float dist = 1.0/2048.0;
+        for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
+        {
+            for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
+            {
+                // Get the depth of the texel neightbour i,j
+                vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
+                float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
+                shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+            }
+        }
+    }
+    else
+    {
+        // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+        float lit_depth = texture(DepthMap, lit_coords.xy).r; 
+        shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
+    }
+    return shadow;
+}
+
 void main()
 {
     // If max_height is updated in main, it needs to be updated here too.
@@ -105,6 +148,7 @@ void main()
     const float water_level = 0.05 * max_height;
 
     // Colour very slightly by depth to give indication of water level.
+    float shadow = in_shadow();
     float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
     vec4 shaded_colour = colour_mod * match_to_palette(calculate_lighting(LightDay));
 
@@ -148,5 +192,6 @@ void main()
                 -light_dir),
             1.0);
     }
+    //FragColour = vec4(vec3(shadow), 1.0);
 
 }

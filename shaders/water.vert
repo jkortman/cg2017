@@ -8,12 +8,14 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 uniform mat3 NormalMatrix;
+uniform mat4 LightSpaceMatrix;
 uniform float Time;
 uniform float VertDist;
 
 out vec3 Colour;
 out vec3 Normal;
 out vec3 FragPos;
+out vec4 FragPosLightSpace;
 out float crest;
 
 const float pi = 3.1415;
@@ -91,6 +93,7 @@ void main()
     // Colour slightly by height.
     Colour = a_Colour;
     FragPos = vec3(ModelMatrix * vec4(pos, 1.0));
+    FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
 
     gl_Position =
         ProjectionMatrix
