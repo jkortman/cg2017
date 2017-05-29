@@ -186,8 +186,8 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         const float frow = float(row);
         const float fcol = float(col);
         float alt = 0.5 + 0.5 * stb_perlin_fbm_noise3(
-            float(row) / 128.0f,            // Coordinates
-            float(col) / 128.0f,
+            float(row) / (size * 0.25f),            // Coordinates
+            float(col) / (size * 0.25f),
             0.5f,
             2.0,                            // Frequency increase per octave
             0.5,                            // Multiplier per successive octave
@@ -213,8 +213,8 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
     auto moisture_at = [=](int row, int col) -> float
     {
         return stb_perlin_fbm_noise3(
-            float(row) / 128.0f,            // Coordinates
-            float(col) / 128.0f,
+            float(row) / (size * 0.25f),            // Coordinates
+            float(col) / (size * 0.25f),
             1.5f,
             2.1,                            // Frequency increase per octave
             0.4,                            // Multiplier per successive octave
@@ -531,14 +531,15 @@ void TerrainGenerator::object_position_map(
     assert(div == 1);
 
     ValueMap noise(size * div);
+    float density = 100.0f;
 
     for (int row = 0; row < size * div; row += 1)
     {
         for (int col = 0; col < size * div; col += 1)
         {
             float value = stb_perlin_noise3(
-                float(row) / 8.0f,
-                float(col) / 8.0f,
+                float(row) * density / size,
+                float(col) * density / size,
                 seed,
                 0,0,0);
             noise.set(row, col, value);

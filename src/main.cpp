@@ -37,8 +37,8 @@ int main(int argc, char** argv)
 
     // Scene setup
     const float far_dist = 1200.0f;
-    scene.player.position = glm::vec3(0.0, 20.0, 3.0);
-    scene.player.direction = glm::vec3(0.0, 0.0, -1.0);
+    scene.player.position  = glm::vec3( 0.0f, 20.0f,  3.0f);
+    scene.player.direction = glm::vec3( 0.0f,  0.0f, -1.0f);
     scene.player.height = 2.0f;
     scene.camera = Camera(
         glm::vec3(0.0, 0.0, 3.0),   // position
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
         // Note: The TerrainGenerator requires certain meshes and shaders
         // available with the correct name in resources.
         // See TerrainGenerator::populate().
-        TerrainGenerator tg(0, 600, 400.0f, max_height, &resources);
+        TerrainGenerator tg(0, 200, 400.0f, max_height, &resources);
         landscape = renderer.assign_vao(tg.landscape());
         scene.give_landscape(landscape, resources.get_shader("landscape-light"));
         resources.get_shader("landscape-light")->set_palette(landscape->palette);
@@ -148,13 +148,6 @@ int main(int argc, char** argv)
     Skybox* skybox = renderer.assign_vao(
         new Skybox((far_dist - 1.0f) / std::sqrt(3)));
     scene.give_skybox(skybox, resources.get_shader("skybox"));
-
-    // Create objects.
-    scene.give_object(new Object(
-        resources.get_mesh("Pine01"),     // mesh
-        glm::vec3(-20.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("texture")   // shader
-    ));
 
     // Create horizon.
     {

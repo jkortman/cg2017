@@ -26,7 +26,7 @@ class Renderer
 public:
     Renderer();
     // Setup the OpenGL environment and settings.
-    void initialize(bool wireframe = false, unsigned int aa_samples = 1);
+    void initialize(bool wf = false, unsigned int aa_samples = 1);
     // Register InputHandler functions as callbacks.
     void set_callbacks();
     // Functions to generate and assign VAOs to renderables.
@@ -44,6 +44,7 @@ public:
     void cleanup();
     // Check if the rendering process should end.
     bool should_end();
+
 private:
     enum class RenderMode { Scene, Depth };
     void draw_scene(const Scene& scene, RenderMode render_mode);
@@ -53,6 +54,7 @@ private:
     GLuint depth_buffer;
     GLuint depth_texture;
     const unsigned int depth_tex_size = 2048;
+    bool wireframe;
 };
 
 #endif // RENDERER_HPP

@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <iostream>
 
+#include "Console.hpp"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -20,8 +22,11 @@ static void error_callback(int error, const char* description)
 }
 
 // Setup the OpenGL environment and settings.
-void Renderer::initialize(bool wireframe, unsigned int aa_samples)
+void Renderer::initialize(bool wf, unsigned int aa_samples)
 {
+    wireframe = wf;
+    console->register_var("wf", Bool, &wireframe, 1, "the rendering mode (fill or wireframe)");
+
     glfwSetErrorCallback(error_callback);
     fatal_if(!glfwInit(), "Failed to initialise GLFW");
 
@@ -726,6 +731,10 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 // Render a scene.
 void Renderer::render(const Scene& scene)
 {
+    // Initial setup.
+    if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    else           glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     // ----------------------------------
     // -- Pass 1: Render depth buffer. --
     // ----------------------------------
