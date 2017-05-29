@@ -186,8 +186,8 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         const float frow = float(row);
         const float fcol = float(col);
         float alt = 0.5 + 0.5 * stb_perlin_fbm_noise3(
-            float(row) / (size * 0.25f),            // Coordinates
-            float(col) / (size * 0.25f),
+            float(row) / (size * 0.25f) + 0.5f,            // Coordinates
+            float(col) / (size * 0.25f) + 0.5f,
             0.5f,
             2.0,                            // Frequency increase per octave
             0.5,                            // Multiplier per successive octave
@@ -203,18 +203,18 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
             / std::sqrt(2 * std::pow(0.5 * float(size), 2));
         // Changing a,b,c changes the island generated.
         // see: http://www.redblobgames.com/maps/terrain-from-noise/
-        const float a = 0.20f;
-        const float b = 0.85f;
-        const float c = 0.40f;
-        alt = (alt + a) - b * std::pow(distance, c);
-        //alt = (alt + a) * b * std::pow(distance, c);
+        const float a = 0.03f;
+        const float b = 1.22f;
+        const float c = 0.20f;
+        //alt = (alt + a) - b * std::pow(distance, c);
+        alt = (alt + a) * b * std::pow(distance, c);
         return alt;
     };
     auto moisture_at = [=](int row, int col) -> float
     {
         return stb_perlin_fbm_noise3(
-            float(row) / (size * 0.25f),            // Coordinates
-            float(col) / (size * 0.25f),
+            float(row) / (size * 0.25f) + 0.5f,            // Coordinates
+            float(col) / (size * 0.25f) + 0.5f,
             1.5f,
             2.1,                            // Frequency increase per octave
             0.4,                            // Multiplier per successive octave
@@ -260,7 +260,17 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
     {
         for (int col = 0; col < size; col += 1)
         {
-            altitude_map.set(row, col, altitude_at(row, col));
+            // With some distance metrics there is a singularity at
+            // 0.0, 0.0, which looks ugly. To avoid this, at 0,0 we
+            // copy a neighbouring value.
+            if (row == size / 2 && col == size / 2)
+            {
+                altitude_map.set(row, col, altitude_at(row-1, col));
+            }
+            else
+            {
+                altitude_map.set(row, col, altitude_at(row, col));
+            }
             moisture_map.set(row, col, moisture_at(row, col));
         }
     }
@@ -282,7 +292,7 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
             // Set height based on the altitude.
             // The height maps altitude [0,1] to height [0,max_height], but not linearly.
             float vert_height = max_height * pow(altitude, 1.5f);
-            heightmap.set(row, col, altitude * max_height);
+            heightmap.set(row, col, altitude * 92.0f);//max_height);
 
             // Assign colour based on the biome.
             Biome biome = assign_biome(altitude, moisture);
@@ -292,6 +302,17 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         }
     }
     
+    // Blue the region around 0,0.
+    int r = 3;
+    for (int i = -r; i <= r; i += 1)
+    {
+        for (int j = -r; j <= r; j += 1)
+        {
+            set_position(i + size / 2, j + size/ 2,
+                blur_value(Positions, i + size/2, j + size/2, 1.0, 20));
+        }
+    }
+
     sealevel = 0.05f * max_height;
 }
 
