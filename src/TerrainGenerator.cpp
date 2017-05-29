@@ -16,7 +16,7 @@
 // Create a new TerrainGenerator.
 // The terrain will consist of size*size vertices, and will have
 // dimensions edge*edge.
-TerrainGenerator::TerrainGenerator(int size, float edge, float max_height)
+TerrainGenerator::TerrainGenerator(int seed, int size, float edge, float max_height)
     : size(size), edge(edge), max_height(max_height)
 {
     positions.resize(size * size);
@@ -25,19 +25,31 @@ TerrainGenerator::TerrainGenerator(int size, float edge, float max_height)
     biomes.resize(size * size);
 
     // Build colours.
-    biome_colours = {
-        glm::vec3(1.00f, 0.00f, 0.00f), // error (red)
-        glm::vec3(0.70f, 0.60f, 0.20f), // ocean (sand)
-        glm::vec3(0.70f, 0.55f, 0.03f), // coast (sand)
-        glm::vec3(0.50f, 0.40f, 0.40f), // dirt
-        glm::vec3(0.44f, 0.40f, 0.48f), // rock
-        glm::vec3(0.07f, 0.40f, 0.15f), // dark grass
-        glm::vec3(0.14f, 0.60f, 0.28f), // light grass
-        glm::vec3(0.04f, 0.60f, 0.40f), // forest
-        glm::vec3(1.00f, 1.00f, 1.00f), // snow
-    };
+    std::vector<std::array<unsigned char, 3>> biome_colours_raw = {{
+        /* Error      */ {{ 255,   0,   0 }},
+        /* Ocean      */ {{ 222, 198, 160 }},
+        /* Beach      */ {{ 209, 184, 142 }},
+        /* Dunes      */ {{ 160, 144, 120 }},
+        /* Veldt      */ {{ 201, 209, 157 }},
+        /* Grassland  */ {{ 137, 169,  90 }},
+        /* Woodland   */ {{ 104, 147,  91 }},
+        /* Forest     */ {{  71, 135,  87 }},
+        /* PineForest */ {{ 153, 169, 121 }},
+        /* Rock       */ {{  85,  85,  85 }},
+        /* Bare       */ {{ 136, 136, 136 }},
+        /* Moor       */ {{ 136, 152, 120 }},
+        /* Tundra     */ {{ 187, 187, 171 }},
+        /* LightSnow  */ {{ 221, 221, 228 }},
+        /* HeavySnow  */ {{ 238, 238, 238 }},
+    }};
+    for (int i = 0; i < biome_colours_raw.size(); i += 1)
+    {
+        biome_colours.push_back(glm::vec3(
+            float(biome_colours_raw[i][0]) / 255.0f,
+            float(biome_colours_raw[i][1]) / 255.0f,
+            float(biome_colours_raw[i][2]) / 255.0f));
+    }
 
-    int seed = 200;
     generate(seed, max_height);
 }
 
@@ -133,6 +145,7 @@ void TerrainGenerator::generate(int seed, float max_height)
     generate_positions();
     generate_normals();
 
+    /*
     // Blur normals
     for (int row = 0; row < size; row += 1)
     {
@@ -141,17 +154,7 @@ void TerrainGenerator::generate(int seed, float max_height)
             blur_value(Normals, row, col, 0.8f, 2);
         }
     }
-
-    generate_materials();
-
-    // Blur colours
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            blur_value(Colours, row, col, 1.0f, 4);
-        }
-    }
+    */
 
     generate_indices();
 }
@@ -167,174 +170,121 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
     // and uses them to assign biomes using the following rules:
     //  (O = Ocean, C = Coast, D = Dirt, R = Rock,
     //   V = dark grass, G = light grass, F = Forest, S = Snow)
-    //
-    //  1.0 | S S S S S S S S S S
-    //  0.9 | S S S S S S S S S S
-    //  0.8 | R R R R V V S S S S
-    //  0.7 | R R R R V V F F F F
-    //  0.6 | R R R R V V F F F F
-    //  0.5 | R R R R V V F F F F
-    //  0.4 | D D D D G G G G F F
-    //  0.3 | D D D D G G G G F F
-    //  0.2 | D D D D G G G G F F
-    //  0.1 | C C C C C C C C C C
-    //  .05 | O O O O O O O O O O
-    //       --------------------
-    //        0 0 0 0 0 0 0 0 0 1
-    //        . . . . . . . . . .
-    //        1 2 3 4 5 6 7 8 9 0
+    // todo
 
-    // -- Generate component maps --
-    // Altitude and Moisture maps are normalized to [0, 1],
-    // and are used to determine the biome of the vertex.
-    ValueMap altitude_map(size);            // The base altitude
-    ValueMap altitude_coastmod_map(size);   // Force coast modifications
-    ValueMap mountain_map(size);            // Mountain component
-    ValueMap moisture_map(size);            // Moisture for biomes
+    // Moisture and altitude can be obtained for a row/col point using
+    // these functions.
+    auto altitude_at = [=](int row, int col) -> float
+    {
+        const float frow = float(row);
+        const float fcol = float(col);
+        float alt = 0.5 + 0.5 * stb_perlin_fbm_noise3(
+            float(row) / 128.0f,            // Coordinates
+            float(col) / 128.0f,
+            0.5f,
+            2.0,                            // Frequency increase per octave
+            0.5,                            // Multiplier per successive octave
+            6,                              // Number of octaves
+            0,0,0);                         // wrapping settings
+        // Flatten the altitude to force plains.
+        alt = std::pow(alt, 3.5f);
+        // The altitude is modified by distance from the centre.
+        const float distance =
+            std::sqrt(
+                std::pow(frow - 0.5 * float(size), 2)
+                + std::pow(fcol - 0.5 * float(size), 2))
+            / std::sqrt(2 * std::pow(0.5 * float(size), 2));
+        // Changing a,b,c changes the island generated.
+        // see: http://www.redblobgames.com/maps/terrain-from-noise/
+        const float a = 0.20f;
+        const float b = 0.85f;
+        const float c = 0.40f;
+        alt = (alt + a) - b * std::pow(distance, c);
+        //alt = (alt + a) * b * std::pow(distance, c);
+        return alt;
+    };
+    auto moisture_at = [=](int row, int col) -> float
+    {
+        return stb_perlin_fbm_noise3(
+            float(row) / 128.0f,            // Coordinates
+            float(col) / 128.0f,
+            1.5f,
+            2.1,                            // Frequency increase per octave
+            0.4,                            // Multiplier per successive octave
+            6,                              // Number of octaves
+            0,0,0);                         // wrapping settings
+    };
+    auto assign_biome = [=](float altitude, float moisture) -> Biome
+    {
+        if (altitude < 0.05f) return Ocean;
+        if (altitude < 0.07f) return Beach;
+        if (altitude < 0.30f)
+        {
+            if (moisture < 0.12f) return Dunes;
+            if (moisture < 0.25f) return Veldt;
+            if (moisture < 0.70f) return Grassland;
+            if (moisture < 0.90f) return Woodland;
+            return Forest;
+        }
+        if (altitude < 0.6f)
+        {
+            if (moisture < 0.25) return Veldt;
+            if (moisture < 0.5f) return Grassland;
+            if (moisture < 0.7f) return Woodland;
+            return Forest;
+        }
+        if (altitude < 0.84f)
+        {
+            if (moisture < 0.3f) return Tundra;
+            if (moisture < 0.6f) return Moor;
+            return PineForest;
+        }
+        if (moisture < 0.2f) return Rock;
+        if (moisture < 0.4f) return Bare;
+        if (moisture < 0.7f) return LightSnow;
+        return HeavySnow;
+    };
+
+    // -- Initialization pass --
+    // Sets and normalizes the altitude and moisture maps.
+    ValueMap altitude_map(size);
+    ValueMap moisture_map(size);
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            altitude_map.set(row, col, altitude_at(row, col));
+            moisture_map.set(row, col, moisture_at(row, col));
+        }
+    }
+    altitude_map.normalize(0.0f, 1.0f);
+    moisture_map.normalize(0.0f, 1.0f);
 
     // The altitude is modified to force a coast look using a quarter-circle.
     auto interpol = [](float x, float x0, float x1, float y0, float y1)
     {
         return y0 + (x - x0) * (y1 - y0) / (x1 - x0);
     };
-    auto circular_modifier = [=](int row, int col)
-    {
-        float x = 2.0f * ((-float(size - 1) / 2.0f) + float(row)) / (size - 1); // -1 to 1
-        float y = 2.0f * ((-float(size - 1) / 2.0f) + float(col)) / (size - 1); // -1 to 1
-
-        float radius = std::sqrt(x*x + y*y);
-
-        // Using the radius, we divide the region into ocean, coast, plains, and mountains.
-        float mod;
-        // ocean
-        if      (radius > 0.95f)    mod = 0.0f;
-        //coast
-        else if (radius > 0.85f)    mod = interpol(radius, 0.95f, 0.85f, 0.0f, 0.4f);
-        else if (radius > 0.45f)    mod = 0.4f;
-        else if (radius > 0.30f)    mod = interpol(radius, 0.45f, 0.30f, 0.4f, 1.0f);
-        else                        mod = 1.0f;
-        return mod;
-    };
-    auto dist_from_corner_modifier = [=](int row, int col)
-    {
-        float x = float(row) / (size - 1); // -1 to 1
-        float y = float(col) / (size - 1); // -1 to 1
-
-        float dist = std::sqrt(x*x + y*y);
-
-        // Using the radius, we divide the region into ocean, coast, plains, and mountains.
-        float mod;
-        // ocean
-        if      (dist >= 0.99f)    mod = 0.0f;
-        //coast
-        else if (dist >= 0.80f)    mod = interpol(dist, 0.99f, 0.80f, 0.0f, 0.3f);
-        else if (dist >= 0.40f)    mod = 0.3f;
-        else if (dist >= 0.10f)    mod = interpol(dist, 0.40f, 0.10f, 0.3f, 1.0f);
-        else                       mod = 1.0f;
-
-        //return mod;
-        return float(pow(mod, 1.5));
-    };
-    auto altitude_modifier = circular_modifier;
-
+    
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
         {
-            float base_altitude = stb_perlin_noise3(
-                float(row) / 128.0f,
-                float(col) / 128.0f,
-                float(seed) + 0.0f,
-                0, 0, 0);
-            float coastmod = altitude_modifier(row, col);
-            float mountain = stb_perlin_ridge_noise3(
-                float(row) / 100.0f,
-                float(col) / 100.0f,
-                float(seed) + 1.0f,
-                2.0f, 0.5f, 1.0f, 6,
-                0, 0, 0);
-            float moisture = stb_perlin_noise3(
-                float(row) / 164.0f,
-                float(col) / 164.0f,
-                float(seed) + 2.0f,
-                0, 0, 0);
-            altitude_map.set(row, col, base_altitude);
-            altitude_coastmod_map.set(row, col, coastmod);
-            mountain_map.set(row, col, mountain);
-            moisture_map.set(row, col, moisture);
-        }
-    }
-
-    #if 0
-    fprintf(stderr, "Coast modifier:\n");
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            float coastmod = altitude_coastmod_map.get(row, col);
-            fprintf(stderr, "%f ", coastmod);
-        }
-        fprintf(stderr, "\n");
-    }
-    #endif
-
-    altitude_map.normalize(0.0f, 1.0f);
-    altitude_coastmod_map.normalize(0.0f, 1.0f);
-    mountain_map.normalize(0.0f, 1.0f);
-    moisture_map.normalize(0.0f, 1.0f);
-
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            
-            altitude_map.set(row, col, 
-                altitude_map.get(row, col)
-                * altitude_coastmod_map.get(row, col)
-                * mountain_map.get(row, col));
-                
-            //altitude_map.set(row, col, 
-            //    altitude_coastmod_map.get(row, col));
-        }
-    }
-
-    altitude_map.normalize(0.0f, 1.0f);
-
-    // -- Assign biomes --
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            Biome biome = Error;
             float altitude = altitude_map.get(row, col);
             float moisture = moisture_map.get(row, col);
+            // Set height based on the altitude.
+            // The height maps altitude [0,1] to height [0,max_height], but not linearly.
+            float vert_height = max_height * pow(altitude, 1.5f);
+            heightmap.set(row, col, altitude * max_height);
 
-            if      (altitude < 0.05f)      biome = Ocean;
-            else if      (altitude < 0.1f)  biome = Coast;
-            else if (altitude > 0.8f)       biome = Snow;
-            else if (altitude < 0.4f
-                     && moisture < 0.4f)    biome = Dirt;
-            else if (moisture < 0.4f)       biome = Rock;
-            else if (altitude < 0.4f
-                     && moisture < 0.8f)    biome = LightGrass;
-            else if (moisture < 0.6f)       biome = DarkGrass;
-            else if (altitude > 0.7f)       biome = Snow;
-            else                            biome = Forest;
-
+            // Assign colour based on the biome.
+            Biome biome = assign_biome(altitude, moisture);
+            glm::vec3 colour = biome_colours[int(biome)];
             set_biome(row, col, biome);
+            set_colour(row, col, colour);
         }
     }
     
-    // -- Generate vertex heights --
-    //const float alt_multiplier = 1.0f;
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            float altitude = altitude_map.get(row, col);
-            heightmap.set(row, col, max_height * altitude);
-        }
-    }
     sealevel = 0.05f * max_height;
 }
 
@@ -410,26 +360,7 @@ glm::vec3 randomize_shade(glm::vec3 colour, float amt)
 // Stage 4: Generate materials accociated with each position.
 void TerrainGenerator::generate_materials()
 {
-    for (int row = 0; row < size; row += 1)
-    {
-        for (int col = 0; col < size; col += 1)
-        {
-            // Get the angle with the y-axis and normal.
-            /*
-            float yangle =
-                (180 / 3.142)
-                * acos(glm::dot(AXIS_Y, get_normal(row, col)));
-            */
-
-            //fprintf(stderr, "Biome: %d\n", int(get_biome(row, col)));
-            glm::vec3 colour;
-            colour = biome_colours[int(get_biome(row, col))];
-            if (get_biome(row, col) != Ocean) {
-                //colour = randomize_shade(colour, 0.2f);
-            }
-            set_colour(row, col, colour);
-        }
-    }
+    fatal("Deprecated function generate_materials");
 }
 
 // Stage 5: Generate indices.

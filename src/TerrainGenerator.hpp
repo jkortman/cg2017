@@ -19,7 +19,7 @@ public:
     // Create a new TerrainGenerator.
     // The terrain will consist of size*size vertices, and will have
     // dimensions edge*edge.
-    TerrainGenerator(int size, float edge, float max_height);
+    TerrainGenerator(int seed, int size, float edge, float max_height);
     TerrainGenerator() = delete;
 
     // Convert the contained terrain data into a landscape object.
@@ -28,18 +28,25 @@ private:
     // --------------------
     // -- Internal types --
     // --------------------
-    // Biomes: Coast, Dirt, Rock, DarkGrass, LightGrass, Forest, Snow.
+    // Biomes
     enum Biome {
-        Error       = 0,
-        Ocean       = 1,
-        Coast       = 2,
-        Dirt        = 3,
-        Rock        = 4,
-        DarkGrass   = 5,
-        LightGrass  = 6,
-        Forest      = 7,
-        Snow        = 8
+        Error       = 0,    
+        Ocean       = 1,    // The ocean.
+        Beach       = 2,    // A sandy beach colour.
+        Dunes       = 3,    // A dry region close to the beach.
+        Veldt       = 4,    // A dry grassland with small shrubs.
+        Grassland   = 5,    // A moderate-moisture grassland.
+        Woodland    = 6,    // A sparse forest.
+        Forest      = 7,    // A much denser forest.
+        PineForest  = 8,    // A high-altitude alpine forest.
+        Rock        = 9,    // Grey rock.
+        Bare        = 10,   // Bare, rocky dirt.
+        Moor        = 11,   // A bare high-altitude grassland.
+        Tundra      = 12,   // High-altitude, light snow.
+        LightSnow   = 13,
+        HeavySnow   = 14,
     };
+    static constexpr int num_biomes = 15;
     // A heightmap is a matrix of heights (floats).
     // width is leftwards, breadth is downwards.
     struct ValueMap {
@@ -65,8 +72,6 @@ private:
     float sealevel;
     // The heightmap for the terrain.
     ValueMap heightmap;
-    // Maps for biome components.
-    ValueMap biome_map;
     // The maximum height of the landscape.
     float max_height;
     // The vertex data.

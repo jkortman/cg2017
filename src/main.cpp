@@ -115,10 +115,13 @@ int main(int argc, char** argv)
 
     // Generate landscape.
     const float max_height = 128.0f;    // Needs to be consistent with water.vert.
-    TerrainGenerator tg(600, 400.0f, max_height);
+    TerrainGenerator tg(0, 600, 400.0f, max_height);
     Landscape* landscape = renderer.assign_vao(tg.landscape());
     scene.give_landscape(landscape, resources.get_shader("landscape-light"));
     resources.get_shader("landscape-light")->set_palette(landscape->palette);
+    scene.player.position =
+        landscape->get_pos_at(glm::vec3(0.0f, 0.0f, 0.0f))
+        + glm::vec3(0.0f, 1.0f, 0.0f);
 
     // Create ocean.
     // We can pass the landscape to the water generator and have it cull hidden faces.
