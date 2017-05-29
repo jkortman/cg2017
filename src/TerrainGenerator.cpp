@@ -224,7 +224,7 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
     auto assign_biome = [=](float altitude, float moisture) -> Biome
     {
         if (altitude < 0.05f) return Ocean;
-        if (altitude < 0.07f) return Beach;
+        if (altitude < 0.08f) return Beach;
         if (altitude < 0.30f)
         {
             if (moisture < 0.12f) return Dunes;
