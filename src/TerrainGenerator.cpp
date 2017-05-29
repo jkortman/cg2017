@@ -457,32 +457,60 @@ void TerrainGenerator::populate()
     // Add pine trees to PineForest biome.
     {
         std::vector<std::vector<bool>> locations;
-        object_position_map(1, 1, locations);
+        int div = 2;
+        float div_size = edge / (size * div);
+        object_position_map(1, div, locations);
+        // The number of positions to divide an edge unit into.
+        // 1 will assign 1 possible position per vertex,
+        // 2 four (an equal distance apart), etc.
         for (int row = 0; row < size; row += 1)
         {
             for (int col = 0; col < size; col += 1)
             {
-                if (locations[row][col] &&
-                        (get_biome(row, col) == Woodland
-                        || get_biome(row, col) == Forest
-                        || get_biome(row, col) == PineForest))
+                for (int dr = 0; dr < div; dr += 1)
                 {
-                    float r = randf();
-                    Mesh* model;
-                    if      (r < 0.45f) model = pine01;
-                    else if (r < 0.90f) model = pine02;
-                    else                model = stump;
+                    for (int dc = 0; dc < div; dc += 1)
+                    {
+                        if (locations.at(div * row + dr).at(div * col + dc)
+                            && ( get_biome(row, col) == Woodland
+                              || get_biome(row, col) == Forest
+                              || get_biome(row, col) == PineForest))
+                        {
+                            // Get the height at this position.
+                            // TODO: The current implementation of this is a hack.
+                            float height = std::min({
+                                get_position(row, col).y,
+                                get_position(row, col + 1).y,
+                                get_position(row + 1, col).y,
+                                get_position(row + 1, col + 1).y});
 
-                    Object* obj = new Object(
-                        model,
-                        get_position(row, col)
-                            - glm::vec3(0.1f * randf(),
-                                        -0.3f, 
-                                        0.1f * randf()), 
-                        tex_shader);
+                            // Select object to generate.
+                            float p = randf();
+                            Mesh* model;
+                            if      (p < 0.45f) model = pine01;
+                            else if (p < 0.90f) model = pine02;
+                            else                model = stump;
 
-                    obj->scale = glm::vec3(1.0f, 1.0f, 1.0f) + 0.1f * randf();
-                    objects.push_back(obj);
+                            glm::vec3 pos = get_position(row, col)
+                                    + glm::vec3(
+                                        dr * div_size,
+                                        0.0f,
+                                        dc * div_size)
+                                    - glm::vec3(
+                                        0.1f * randf(),
+                                        0.0f, 
+                                        0.1f * randf());
+                            pos.y = height;
+                            Object* obj = new Object(
+                                model,
+                                pos, 
+                                tex_shader);
+                            obj->scale =
+                                glm::vec3(1.0f, 1.0f, 1.0f)
+                                + 0.1f * randf();
+                            objects.push_back(obj);
+                        }
+                    }
                 }
             }
         }
@@ -548,9 +576,6 @@ void TerrainGenerator::object_position_map(
         std::fill(vec.begin(), vec.end(), false);
     }
 
-    // Until I properly implement this.
-    assert(div == 1);
-
     ValueMap noise(size * div);
     float density = 100.0f;
 
@@ -559,8 +584,8 @@ void TerrainGenerator::object_position_map(
         for (int col = 0; col < size * div; col += 1)
         {
             float value = stb_perlin_noise3(
-                float(row) * density / size,
-                float(col) * density / size,
+                float(row) * density / (size * div) + 0.5f,
+                float(col) * density / (size * div) + 0.5f,
                 seed,
                 0,0,0);
             noise.set(row, col, value);
@@ -586,7 +611,7 @@ void TerrainGenerator::object_position_map(
                     }
                 }
             }
-            if (xmax == row && ymax == col) objects[row][col] = true;
+            if (xmax == row && ymax == col) objects.at(row).at(col) = true;
         }
     }
     seed += 1.0f;

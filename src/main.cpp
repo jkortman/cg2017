@@ -121,7 +121,7 @@ int main(int argc, char** argv)
         // Note: The TerrainGenerator requires certain meshes and shaders
         // available with the correct name in resources.
         // See TerrainGenerator::populate().
-        TerrainGenerator tg(0, 200, 400.0f, max_height, &resources);
+        TerrainGenerator tg(0, 100, 400.0f, max_height, &resources);
         landscape = renderer.assign_vao(tg.landscape());
         scene.give_landscape(landscape, resources.get_shader("landscape-light"));
         resources.get_shader("landscape-light")->set_palette(landscape->palette);
