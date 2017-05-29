@@ -20,9 +20,9 @@ uniform sampler2D DepthMap;
 struct LightSource
 {
     vec4    position;
-    vec3    ambient;
-    vec3    diffuse;
-    vec3    specular;
+    float    ambient;
+    float    diffuse;
+    float    specular;
     float   K_constant;
     float   K_linear;
     float   K_quadratic;

@@ -465,15 +465,15 @@ void Renderer::init_shader(
     glUniform4fv(
         glGetUniformLocation(shader->program_id, "LightDay.position"),
         1, glm::value_ptr(scene.world_light_day.position));
-    glUniform3fv(
+    glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.ambient"),
-        1, glm::value_ptr(scene.world_light_day.ambient));
-    glUniform3fv(
+        scene.world_light_day.ambient.x);
+    glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.diffuse"),
-        1, glm::value_ptr(scene.world_light_day.diffuse));
-    glUniform3fv(
+        scene.world_light_day.diffuse.x);
+    glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.specular"),
-        1, glm::value_ptr(scene.world_light_day.specular));
+        scene.world_light_day.specular.x);
 
     glUniform1i(
         glGetUniformLocation(shader->program_id, "NumLights"),
@@ -487,21 +487,21 @@ void Renderer::init_shader(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].position").c_str()),
             1, glm::value_ptr(scene.lights[i].position));
-        glUniform3fv(
+        glUniform1f(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].ambient").c_str()),
-            1, glm::value_ptr(scene.lights[i].ambient));
-        glUniform3fv(
+            scene.lights[i].ambient.x);
+        glUniform1f(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].diffuse").c_str()),
-            1, glm::value_ptr(scene.lights[i].diffuse));
-        glUniform3fv(
+            scene.lights[i].diffuse.x);
+        glUniform1f(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].specular").c_str()),
-            1, glm::value_ptr(scene.lights[i].specular));
+            scene.lights[i].specular.x);
         glUniform1f(
             glGetUniformLocation(
                 shader->program_id,

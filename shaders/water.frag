@@ -18,10 +18,15 @@ uniform vec3 ViewPos;
 
 struct LightSource
 {
-    vec4 position;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4    position;
+    float   ambient;
+    float   diffuse;
+    float   specular;
+    float   K_constant;
+    float   K_linear;
+    float   K_quadratic;
+    vec3    spot_direction;
+    float   spot_cos_angle;
 };
 uniform LightSource LightDay;
 
@@ -49,7 +54,7 @@ vec4 calculate_lighting(in LightSource light) {
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
     float spec = pow(max(dot(norm, halfway_dir), 0.0), 100.0);
-    vec3 specular = light.specular * spec;
+    vec3 specular = vec3(light.specular * spec);
 
     return vec4(ambient + diffuse + specular, 1.0);
 }
