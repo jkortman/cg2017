@@ -467,13 +467,13 @@ void Renderer::init_shader(
         1, glm::value_ptr(scene.world_light_day.position));
     glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.ambient"),
-        scene.world_light_day.ambient.x);
+        scene.world_light_day.ambient);
     glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.diffuse"),
-        scene.world_light_day.diffuse.x);
+        scene.world_light_day.diffuse);
     glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.specular"),
-        scene.world_light_day.specular.x);
+        scene.world_light_day.specular);
 
     glUniform1i(
         glGetUniformLocation(shader->program_id, "NumLights"),
@@ -491,17 +491,17 @@ void Renderer::init_shader(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].ambient").c_str()),
-            scene.lights[i].ambient.x);
+            scene.lights[i].ambient);
         glUniform1f(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].diffuse").c_str()),
-            scene.lights[i].diffuse.x);
+            scene.lights[i].diffuse);
         glUniform1f(
             glGetUniformLocation(
                 shader->program_id,
                 ("Lights[" + std::to_string(i) + "].specular").c_str()),
-            scene.lights[i].specular.x);
+            scene.lights[i].specular);
         glUniform1f(
             glGetUniformLocation(
                 shader->program_id,

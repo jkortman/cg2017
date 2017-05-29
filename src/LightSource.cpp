@@ -8,9 +8,9 @@
 
 LightSource::LightSource(
     glm::vec4 position,
-    glm::vec3 ambient,
-    glm::vec3 diffuse,
-    glm::vec3 specular,
+    float ambient,
+    float diffuse,
+    float specular,
     float K_constant,
     float K_linear,
     float K_quadratic,

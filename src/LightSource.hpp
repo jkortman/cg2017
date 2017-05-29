@@ -11,19 +11,19 @@ class LightSource
 {
 public:
     LightSource(
-        glm::vec4 position       = glm::vec4(0.0, 0.0, 0.0, 1.0),
-        glm::vec3 ambient        = glm::vec3(1.0, 1.0, 1.0),
-        glm::vec3 diffuse        = glm::vec3(1.0, 1.0, 1.0),
-        glm::vec3 specular       = glm::vec3(1.0, 1.0, 1.0),
+        glm::vec4 position       = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f),
+        float     ambient        = 1.0f,
+        float     diffuse        = 1.0f,
+        float     specular       = 1.0f,
         float     K_constant     = 1.0f,
         float     K_linear       = 0.0f,
         float     K_quadratic    = 0.0f,
         glm::vec3 spot_direction = glm::vec3(0.0f, 0.0f, 0.0f),
         float     spot_angle     = 180.0f);
     glm::vec4 position;
-    glm::vec3 ambient;  // ambient colour
-    glm::vec3 diffuse;  // diffuse colour
-    glm::vec3 specular; // specular colour
+    float     ambient;  // ambient amt
+    float     diffuse;  // diffuse amt
+    float     specular; // specular amt
 
     // Attenuation settings for point and spot lights.
     void attenuate(float constant, float linear, float quadratic);
