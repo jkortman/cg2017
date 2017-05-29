@@ -7,9 +7,11 @@
 #include <array>
 #include <vector>
 #include <glm/glm.hpp>
+#include <unordered_map>
 
 #include "Mesh.hpp"
 #include "Landscape.hpp"
+#include "ResourceManager.hpp"
 
 #include "stb_perlin.h"
 
@@ -19,7 +21,11 @@ public:
     // Create a new TerrainGenerator.
     // The terrain will consist of size*size vertices, and will have
     // dimensions edge*edge.
-    TerrainGenerator(int seed, int size, float edge, float max_height);
+    // The generator does not take ownership of 'resources', and will not
+    // delete it.
+    TerrainGenerator(
+        int seed, int size, float edge, float max_height,
+        ResourceManager* resources = nullptr);
     TerrainGenerator() = delete;
 
     // Convert the contained terrain data into a landscape object.
@@ -82,6 +88,8 @@ private:
     std::vector<std::array<unsigned int, 3>> indices;
     // The per-biome colours.
     std::vector<glm::vec3> biome_colours;
+    // The object data.
+    ResourceManager* resources;
 
     // ---------------------------
     // -- Data access functions --
@@ -123,7 +131,7 @@ private:
     // Stage 5: Generate indices.
     void generate_indices();
     // Stage 6: Object population.
-    // TODO.
+    void populate();
 
     // ----------------------------------
     // -- Processing utility functions --
@@ -133,6 +141,15 @@ private:
     // (1.0f = full blur, 0.0f = no blur)
     glm::vec3 blur_value(
         Property property, int row, int col, float amt, int kernel_size=1);
+    
+    void object_position_map(
+        int radius,     // The search radius for maxima, or how
+                        // dense the generated objects should be.
+        int div,        // Each square in the heightmap will be divided
+                        // into div*div regions, each of which can have an
+                        // object.
+        std::vector<std::vector<bool>>& objects);
+
 };
 
 #endif // TERRAINGENERATOR_HPP

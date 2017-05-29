@@ -3,6 +3,7 @@
 #include "TerrainGenerator.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <array>
 #include <cmath>
 #include <limits>
@@ -16,8 +17,10 @@
 // Create a new TerrainGenerator.
 // The terrain will consist of size*size vertices, and will have
 // dimensions edge*edge.
-TerrainGenerator::TerrainGenerator(int seed, int size, float edge, float max_height)
-    : size(size), edge(edge), max_height(max_height)
+TerrainGenerator::TerrainGenerator(
+    int seed, int size, float edge, float max_height,
+    ResourceManager* resources)
+    : size(size), edge(edge), max_height(max_height), resources(resources)
 {
     positions.resize(size * size);
     normals.resize(size * size);
@@ -157,6 +160,7 @@ void TerrainGenerator::generate(int seed, float max_height)
     */
 
     generate_indices();
+    populate();
 }
 
 // Stage 1: Use noise functions to generate a heightmap according to some
@@ -407,6 +411,39 @@ void TerrainGenerator::generate_indices()
     }
 }
 
+
+void TerrainGenerator::populate()
+{
+    // The objects required are:
+    Mesh* pine01        = resources->get_mesh("Pine01");
+    Mesh* pine02        = resources->get_mesh("Pine02");
+    Mesh* stump         = resources->get_mesh("Stump");
+    Shader* tex_shader  = resources->get_shader("texture");
+    /*new Object(
+        resources.get_mesh("Pine01"),     // mesh
+        glm::vec3(-20.0f, 20.0f, 0.0f),     // position
+        resources.get_shader("texture")   // shader
+    )*/
+
+    // To place objects, we evaluate some noise function and
+    // select the local maxima, and place an object there with some
+    // optional probability. The density of the placed objects
+    // depends on the period of the noise function.
+
+    // Add pine trees to PineForest biome.
+    {
+
+        for (int row = 0; row < size; row += 1)
+        {
+            for (int col = 0; col < size; col += 1)
+            {
+                
+            }
+        }
+    }
+    
+}
+
 // ----------------------------------
 // -- Processing utility functions --
 // ----------------------------------
@@ -446,6 +483,66 @@ glm::vec3 TerrainGenerator::blur_value(
     // Return the blurred ammount.
     return (1.0f - amt) * properties->at(size * row + col)
                  + amt  * sum * (1.0f / num_values);
+}
+
+// Populate
+static float seed = 0.0f;
+void TerrainGenerator::object_position_map(
+    int radius,     // The search radius for maxima, or how
+                    // dense the generated objects should be.
+    int div,        // Each square in the heightmap will be divided
+                    // into div*div regions, each of which can have an
+                    // object.
+    std::vector<std::vector<bool>>& objects) // The output.
+{
+    objects.resize(size * div);
+    for (auto& vec: objects)
+    {
+        vec.resize(size * div);
+        std::fill(vec.begin(), vec.end(), false);
+    }
+
+    // Until I properly implement this.
+    assert(div == 1);
+
+    ValueMap noise(size * div);
+
+    for (int row = 0; row < size * div; row += 1)
+    {
+        for (int col = 0; col < size * div; col += 1)
+        {
+            float value = stb_perlin_noise3(
+                float(row) / 8.0f,
+                float(col) / 8.0f,
+                seed,
+                0,0,0);
+            noise.set(row, col, value);
+        }
+    }
+
+    for (int row = 0; row < size * div; row += 1)
+    {
+        for (int col = 0; col < size * div; col += 1)
+        {
+            float max = std::numeric_limits<float>::lowest();
+            int xmax, ymax;
+            for (int i = -radius; i <= radius; i += 1)
+            {
+                for (int j = -radius; j <= radius; j += 1)
+                {
+                    int x = row + i, y = col + j;
+                    if (x < 0 || y < 0 || x >= size*div || y >= size*div) continue;
+                    if (noise.get(x, y) > max) 
+                    {
+                        max = noise.get(x, y);
+                        xmax = x; ymax = y;
+                    }
+                }
+            }
+            if (xmax == row && ymax == col) objects[row][col] = true;
+        }
+    }
+    seed += 1.0f;
 }
 
 // ----------------------------------------------------
