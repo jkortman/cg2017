@@ -150,7 +150,7 @@ GLuint LoadShaders(const char * vertex_file_path,
     if ( InfoLogLength > 0 ) {
         std::vector<char> ProgramErrorMessage(InfoLogLength+1);
         glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-        std::cerr << &ProgramErrorMessage[0] << std::endl;
+        std::cerr << "    " << &ProgramErrorMessage[0];;
     }
 
     glDeleteShader(VertexShaderID);
