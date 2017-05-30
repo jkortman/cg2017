@@ -81,6 +81,8 @@ int main(int argc, char** argv)
         {{ "Pine01",     "tree",         "PineTree03"    }},
         {{ "Pine02",     "pine",         "PineTransp"    }},
         {{ "Stump",      "TreeStump",    "TreeStump03"   }},
+        //{{ "Fence01",    "fences",       "fence01"       }},
+        {{ "Fence02",    "fences",       "fence02"       }},
     }};
     for (const auto& meshinfo: meshes)
     {
@@ -98,6 +100,7 @@ int main(int argc, char** argv)
         glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
         0.2f, 0.5f, 1.0f);
 
+    #if 0
     // Test point light
     scene.lights.push_back(LightSource(
         glm::vec4(-20.518629f, 11.420021f, -0.268702f, 1.0f),
@@ -113,6 +116,19 @@ int main(int argc, char** argv)
         glm::vec3(0.017663f, -0.585867f, 0.810214f),
         45.0f
     ));
+    #endif
+
+    // Create fence object
+    {
+        Object* fence_obj = new Object(
+            resources.get_mesh("Fence02"),
+            glm::vec3(34.999115, 11.191076, 20.257238),
+            resources.get_shader("texture"));
+        fence_obj->scale = glm::vec3(0.01f, 0.01f, 0.01f);
+        //fence_obj->y_rotation = 0.6f;
+        scene.give_object(fence_obj);
+    };
+
 
     // Generate landscape.
     const float max_height = 128.0f;    // Needs to be consistent with water.vert.

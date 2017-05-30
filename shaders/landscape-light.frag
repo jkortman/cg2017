@@ -205,7 +205,7 @@ float edge_detection()
 // Set to true to multisample the shadow map for smooth shadows.
 #define MULTISAMPLE true
 #define SAMPLE_RADIUS 2
-float in_shadow()
+float in_shadow(vec3 light_dir)
 {
     // perform perspective divide
     vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
@@ -218,8 +218,7 @@ float in_shadow()
     if (MULTISAMPLE)
     {
         // The distance to sample neighbouring texels at.
-        //vec2 dist = 1.0 / textureSize(DepthMap, 0);
-        float dist = 1.0/2048.0;
+        float dist = 0.5 / textureSize(DepthMap, 0).x;
         for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
         {
             for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
@@ -227,7 +226,19 @@ float in_shadow()
                 // Get the depth of the texel neightbour i,j
                 vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
                 float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
-                shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+                //shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+                // interpolate from 0 to 1/9 based on how large the difference is.
+                
+                // This has errors when the sun is below the horizon,
+                // so we increase shadow amount when that is the case.
+                // We use a correction factor for to push the shadow amt towards
+                // the maximum using the angle of the sun.
+                // There's a multiplicative and additive way of performing this.
+                const float e = 1.0;
+                float add_horizon_correction = max(0.0, -dot(light_dir, vec3(0.0, 1.0, 0.0)));
+                shadow += max(0.0, 
+                    min(1.0/9.0,
+                        add_horizon_correction + e * (frag_depth - bias - neighbour_depth)));
             }
         }
     }
@@ -261,7 +272,7 @@ void main()
     vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // TODO: Replace these with material properties added by TerrainGenerator
-    float shadow = in_shadow();
+    float shadow = in_shadow(light_dir);
 
     float ambi = max(light_day_intensity.x, light_point_intensity.x);
     float diff = max(
