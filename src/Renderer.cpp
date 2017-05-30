@@ -633,6 +633,10 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             init_shader(scene, scene.landscape_shader, render_mode);
         }
 
+        glUniform1f(
+            glGetUniformLocation(current_program, "Time"),
+            scene.time_elapsed);
+
         // Load model and normal matrices.
         glUniformMatrix4fv(
             glGetUniformLocation(current_program, "ModelMatrix"),

@@ -17,6 +17,8 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 
+uniform float Time;
+
 struct LightSource
 {
     vec4    position;
@@ -202,9 +204,47 @@ float edge_detection()
     return grad;
 }
 
+// Returns a vector of weights for each season.
+const float year = 50.0;
+void season_colours(out vec3 mul, out vec3 add)
+{
+    // Each season has an additive and a multiplicative colour.
+    vec3 seasons_mul[4] = vec3[](
+        vec3( 1.000,  0.900,  0.500),
+        1.4 * vec3( 0.500,  0.370,  0.040),
+        vec3( 0.800,  0.800,  1.000),
+        vec3( 0.700,  1.000,  0.800)
+    );
+    vec3 seasons_add[4] = vec3[](
+        vec3( 0.300,  0.300,  0.300),
+        vec3( 0.100,  0.080,  0.029),
+        vec3(-0.100, -0.100,  0.000),
+        vec3( 0.000,  0.100,  0.000)
+    );
+
+    // Get the normalized time, t, which is 0 at the start of the year and
+    // 2pi at the end.
+    float t = 2.0 * 3.141 * mod(Time, year) / year;
+
+    // calculate the weights for each season.
+    vec4 weights = vec4(
+        max(0.0,  sin(t)),
+        max(0.0,  cos(t)),
+        max(0.0, -sin(t)),
+        max(0.0, -cos(t)));
+
+    mul = vec3(0.0);
+    add = vec3(0.0);
+    for (int i = 0; i < 4; i += 1)
+    {
+        mul += weights[i] * seasons_mul[i];
+        add += weights[i] * seasons_add[i];
+    }
+}
+
 // Set to true to multisample the shadow map for smooth shadows.
 #define MULTISAMPLE true
-#define SAMPLE_RADIUS 2
+#define SAMPLE_RADIUS 3
 float in_shadow(vec3 light_dir)
 {
     // perform perspective divide
@@ -257,6 +297,19 @@ void main()
     // -- Fragment colour processing --
     // --------------------------------
     vec3 colour = match_to_palette(Colour);
+
+    // Experimental seasons stuff.
+    // Each season has a multiplicative and additive colour.
+    // The season values are interpolated between based on the time.
+    #if 0
+        //vec3 mseason_summer = vec3( 1.0,  0.6,  0.5);
+        //vec3 aseason_summer = vec3( 0.1,  0.2,  0.0);
+        vec3 mul;
+        vec3 add;
+        season_colours(mul, add);
+        colour = colour * mul + add;
+    #endif
+
     vec3 light_day_intensity = calculate_lighting(LightDay);
     vec3 light_point_intensity = vec3(0.0);
 
@@ -271,7 +324,6 @@ void main()
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 light_dir = normalize(-LightDay.position.xyz);
 
-    // TODO: Replace these with material properties added by TerrainGenerator
     float shadow = in_shadow(light_dir);
 
     float ambi = max(light_day_intensity.x, light_point_intensity.x);
@@ -282,6 +334,7 @@ void main()
         (1.0 - shadow) * discretize(light_day_intensity.z),
         discretize(light_point_intensity.z));
 
+    // TODO: Replace these with material properties added by TerrainGenerator
     vec3 shaded_colour = 
         colour
           * (0.15 * ambi + 0.8 * diff + 0.3 * spec);
@@ -321,6 +374,7 @@ void main()
             1.0);
     }
 
+
     // Depth buffer testing
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
@@ -329,8 +383,6 @@ void main()
     float depth = texture(DepthMap, st).x;
     //FragColour = vec4(vec3(depth), 1.0);
     //FragColour = vec4(vec3(in_shadow()), 1.0);
-
-    //FragColour = vec4(vec3(linearize(gl_FragCoord.z)), 1.0);
 }
 
 
