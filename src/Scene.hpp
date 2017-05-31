@@ -20,6 +20,7 @@
 #include "Landscape.hpp"
 #include "Water.hpp"
 #include "Skybox.hpp"
+#include "Demo.hpp"
 
 class Scene
 {
@@ -29,6 +30,7 @@ public:
     // The player.
     Player player;
     Camera camera;
+    Demo* demo;
     // The objects present in the scene.
     std::vector<Object*> objects;
     // Directional lights for day and night, which cast shadows.
@@ -49,6 +51,7 @@ public:
     float time_elapsed;
     // The shader for the depth pass.
     Shader* depth_shader;
+    
 
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
@@ -70,6 +73,8 @@ public:
     void give_skybox(Skybox* skybox, Shader* shader);
     // Get the owned landscape.
     Skybox* get_skybox();
+
+    void give_demo(Demo* demo);
 
     glm::vec3 check_collisions(glm::vec3 current, glm::vec3 proposed);
 

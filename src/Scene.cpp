@@ -2,6 +2,7 @@
 
 #include "Scene.hpp"
 
+#include <iostream>
 #include <cstdio>
 #include <GL/glew.h>
 #define GLFW_INCLUDE_NONE
@@ -33,6 +34,7 @@ Scene::Scene()
         &no_clip,
         1,
         "Toggles noclip");
+
 }
 
 void Scene::update(float dt)
@@ -94,14 +96,30 @@ void Scene::update(float dt)
         player.direction,
         rotate_factor * float(-InputHandler::mouse_dy),
         right_direction);
+    
+    
+    if (demo->demo_mode)
+    {
+        node cam_pos = demo->update_pos(dt);
+    
+        camera.position = cam_pos.pos;
+        camera.direction = cam_pos.dir;
+    }
+    else
+    {
+        // Match camera to player.
+        camera.position = player.position;
+        camera.direction = player.direction;
+    }
+
 
     // Update skybox position.
-    skybox->update_model_matrix(player.position);
+    skybox->update_model_matrix(camera.position);
     //skybox->update_model_matrix(glm::vec3(0.0, 30.0, 0.0));
 
-    // Match camera to player.
-    camera.position = player.position;
-    camera.direction = player.direction;
+
+    
+    
     camera.update_view();
 
     // Rotate the day lighting.
@@ -184,6 +202,21 @@ Landscape* Scene::get_landscape()
 {
     return landscape.get();
 }
+
+
+void Scene::give_demo(Demo* demo)
+{
+    this->demo = demo;
+
+    console->register_var(
+        "demo",
+        Bool,
+        &demo->demo_mode,
+        1,
+        "Toggles if demo is run");
+    
+}
+
 
 
 glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
