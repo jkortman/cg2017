@@ -18,7 +18,7 @@ uniform vec3 moon_pos;
 uniform vec3 shadow_pos;
 uniform float shadow_radius;
 
-out vec4 FragColour;
+out vec4 FragColour; 
 
 void main() {
     // TO DO: Need to pass in the horizon location to get the transition right
@@ -56,14 +56,14 @@ void main() {
     vec4 night_colour = vec4(0.0, 10.0/256.0, 40.0/256.0, 1.0); //vec4(0.0, 0.149 - FragPos.y / 2400.0, 0.301 - FragPos.y / 2400.0, 1.0);//
     
     //if (  <= 1000)
-    vec3 cast = normalize(ViewPos-FragPosWorld);
+    vec3 level = normalize(ViewPos-FragPosWorld);
 
     float bound = 0.2;
-    if ( -cast.y < bound  )
+    if ( -level.y < bound  )
     {
-        night_colour += vec4(0.0,(bound+cast.y)/4.0, (bound+cast.y)/2.0,0.0);
-        day_colour += vec4((bound+cast.y)/2.0, (bound+cast.y)/4.0, 0.0,0.0);
-        //night_colour = vec4(0.0, 0.5/cast.y, 0.5/cast.y, 1.0);
+        night_colour += vec4(0.0,(bound+level.y)/4.0, (bound+level.y)/2.0,0.0);
+        day_colour += vec4((bound+level.y)/2.0, (bound+level.y)/4.0, 0.0,0.0);
+        //night_colour = vec4(0.0, 0.5/level.y, 0.5/level.y, 1.0);
     }
     //day_colour = night_colour;
 
