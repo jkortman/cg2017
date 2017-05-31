@@ -168,7 +168,7 @@ void main()
     // Colour very slightly by depth to give indication of water level.
     float shadow = in_shadow(light_dir);
     float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
-    vec4 shaded_colour = colour_mod * match_to_palette(calculate_lighting(LightDay));
+    vec4 shaded_colour = (1.0 - shadow) * colour_mod * match_to_palette(calculate_lighting(LightDay));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
@@ -204,5 +204,5 @@ void main()
                 -light_dir),
             1.0);
     }
-    FragColour = vec4(vec3(1.0-shadow), 1.0);
+    //FragColour = vec4(vec3(1.0-shadow), 1.0);
 }

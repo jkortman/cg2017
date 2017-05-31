@@ -252,7 +252,7 @@ float in_shadow(vec3 light_dir)
     // Get depth of current fragment from light's perspective
     float frag_depth = lit_coords.z;
     // Check whether current frag pos is in shadow
-    float bias = 0.1;
+    float bias = 0.005;
 
     float shadow = 0.0;
     if (MULTISAMPLE)
@@ -301,7 +301,7 @@ void main()
     // Experimental seasons stuff.
     // Each season has a multiplicative and additive colour.
     // The season values are interpolated between based on the time.
-    #if 1
+    #if 0
         //vec3 mseason_summer = vec3( 1.0,  0.6,  0.5);
         //vec3 aseason_summer = vec3( 0.1,  0.2,  0.0);
         vec3 mul;
