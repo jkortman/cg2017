@@ -36,11 +36,11 @@ const glm::mat4& Object::update_model_matrix()
 {
     glm::mat4& model_matrix = render_unit.model_matrix;
     model_matrix = glm::mat4();
+    model_matrix = glm::translate(model_matrix, glm::vec3(position));
+    model_matrix = glm::scale(model_matrix, scale);
     model_matrix = glm::rotate(model_matrix, x_rotation, AXIS_X);
     model_matrix = glm::rotate(model_matrix, y_rotation, AXIS_Y);
     model_matrix = glm::rotate(model_matrix, z_rotation, AXIS_Z);
-    model_matrix = glm::translate(model_matrix, glm::vec3(position));
-    model_matrix = glm::scale(model_matrix, scale);
     return model_matrix;
 }
 
