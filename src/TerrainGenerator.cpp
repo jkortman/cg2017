@@ -213,7 +213,7 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         alt = (alt + a) * b * std::pow(distance, c);
         // Cliff modifier: if position is very close to the edge, force the altitude downward.
         float cliffmod = 0.5 + 0.5 * std::tanh(-6.0f * (maxdist - 0.5f* size + 10.0f));
-        alt = cliffmod * alt;
+        //alt = cliffmod * alt;
         return alt;
     };
     auto moisture_at = [=](int row, int col) -> float
