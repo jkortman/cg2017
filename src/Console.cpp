@@ -139,6 +139,22 @@ void Console::parse()
                 output.append("on.");
             }
             std::cout << output << "\n";
+        } else if (input.command == "demo")
+        {
+            output = "Demo turned ";
+            container = variables["demo"];
+            bool* ptr = (bool*)container.pointer;
+            if (*ptr == false)
+            {
+                *ptr = true;
+                output.append("on.");
+            }
+            else
+            {
+                *ptr = false;
+                output.append("off.");
+            }
+            std::cout << output << "\n";
         } else if (variables.find(input.command) != variables.end())
         {   
             container = variables[input.command];

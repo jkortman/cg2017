@@ -17,6 +17,7 @@
 #include "Landscape.hpp"
 #include "TerrainGenerator.hpp"
 #include "Water.hpp"
+#include "Demo.hpp"
 
 const bool          WIREFRAME_MODE = false;
 const unsigned int  NUM_AA_SAMPLES = 4;
@@ -28,6 +29,8 @@ int main(int argc, char** argv)
     
     Renderer renderer;
     Scene scene;
+    Demo demo;
+    demo.initialize();
 
     // Renderer setup
     renderer.initialize(WIREFRAME_MODE, NUM_AA_SAMPLES);
@@ -48,6 +51,7 @@ int main(int argc, char** argv)
         0.05f,                      // near
         far_dist);                  // far
 
+    scene.give_demo(&demo);
     // Create resources.
     ResourceManager resources;
 
