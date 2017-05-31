@@ -71,22 +71,9 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT, depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT32, depth_tex_size, depth_tex_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-    // Clamping to border
-    //    Clamping to border means some areas of the water will have a
-    //    solid block shadow during sunrise/sunset.
-    //    (This is somewhat mitigated by changing the border colour to
-    //    depending on whether the sun is up or down at the start of
-    //    'Renderer::draw_scene()'.)
-    //    Warning: This requires a glTexParameterfv() call every frame,
-    //    which appears to be a little slow.
-    // Clamping to edge
-    //    Clamping to edge means some shadows will stretch unrealistically,
-    //    again at sunrise/sunset.
-    //    If you make the light view frustum large enough, the edges aren't
-    //    present on the water surface, and the choice doesn't matter.
     #define WRAP_BEHAVIOUR GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WRAP_BEHAVIOUR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WRAP_BEHAVIOUR);
