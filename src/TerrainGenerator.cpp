@@ -201,9 +201,6 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
                 std::pow(frow - 0.5 * float(size), 2)
                 + std::pow(fcol - 0.5 * float(size), 2))
             / std::sqrt(2 * std::pow(0.5 * float(size), 2));
-        const float xdist = std::abs(frow - 0.5 * float(size));
-        const float zdist = std::abs(fcol - 0.5 * float(size));
-        const float maxdist = std::max(xdist, zdist);
         // Changing a,b,c changes the island generated.
         // see: http://www.redblobgames.com/maps/terrain-from-noise/
         const float a = 0.03f;
@@ -211,9 +208,6 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
         const float c = 0.03f; //0.2
         //alt = (alt + a) - b * std::pow(distance, c);
         alt = (alt + a) * b * std::pow(distance, c);
-        // Cliff modifier: if position is very close to the edge, force the altitude downward.
-        float cliffmod = 0.5 + 0.5 * std::tanh(-6.0f * (maxdist - 0.5f* size + 10.0f));
-        //alt = cliffmod * alt;
         return alt;
     };
     auto moisture_at = [=](int row, int col) -> float
@@ -262,6 +256,7 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
     // Sets and normalizes the altitude and moisture maps.
     ValueMap altitude_map(size);
     ValueMap moisture_map(size);
+    ValueMap cliff_map(size);
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
@@ -278,10 +273,27 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
                 altitude_map.set(row, col, altitude_at(row, col));
             }
             moisture_map.set(row, col, moisture_at(row, col));
+
+            // Cliff modifier: if position is very close to the edge, force the altitude downward.
+            const float maxdist = std::max(
+                std::abs(float(row) - 0.5 * float(size)),
+                std::abs(float(col) - 0.5 * float(size)));
+            const float k = 1.3f;
+            float cliffmod = 1.0f - 1.0f / (1.0f + std::exp(-k*(maxdist - (0.5f * float(size) - 5.0f))));
+            cliff_map.set(row, col, std::max(0.0f, std::min(1.0f, cliffmod)));
         }
     }
     altitude_map.normalize(0.0f, 1.0f);
     moisture_map.normalize(0.0f, 1.0f);
+
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            altitude_map.set(row, col, altitude_map.get(row, col)
+                                       * cliff_map.get(row, col));
+        }
+    }
 
     // The altitude is modified to force a coast look using a quarter-circle.
     auto interpol = [](float x, float x0, float x1, float y0, float y1)
