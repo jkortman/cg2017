@@ -25,10 +25,13 @@ void main() {
 
     bool debug = false;
 
-    float dome_radius = 600;
-    float dt = -Time/2.0; //15
+    float dome_radius = 600; // In World Coordinates. Based on terrain generator Edge
+    float dt = -Time/2.0; // Scales time
     float theta = Time / 2.0;
 
+
+    // Vectors normalized to unit sphere - means only useful for relative direction, 
+    // unless original direction tracked
     vec3 Light = normalize(-LightDay.position.xyz);
     vec3 LightWC = dome_radius*Light;
     vec3 Pos = normalize(FragPos);
@@ -55,6 +58,7 @@ void main() {
     vec4 day_colour = vec4(110.0/256.0, 170.0/256.0, 225.0/256.0, 1.0);//vec4(0.7,0.7,0.8+ FragPos.y / 5000.0,1.0);
     vec4 night_colour = vec4(0.0, 10.0/256.0, 40.0/256.0, 1.0); //vec4(0.0, 0.149 - FragPos.y / 2400.0, 0.301 - FragPos.y / 2400.0, 1.0);//
     
+
     //if (  <= 1000)
     vec3 level = normalize(ViewPos-FragPosWorld);
 
@@ -74,7 +78,10 @@ void main() {
     if (factor > 1) factor = 1;
     if (factor < 0) factor = 0;
 
-    FragColour = day_colour*(factor) + night_colour*(1-factor);
+
+    vec4 sky_colour = day_colour*(factor) + night_colour*(1-factor);
+
+    FragColour = sky_colour;
     //if (FragPosWorld.y  > 100 && FragPosWorld.y < 150) FragColour = vec4(1.0,0.0,1.0,1.0);
     //if (LightWC.y < 250) FragColour = vec4(0.0,1.0,1.0,1.0);
 
@@ -112,20 +119,42 @@ void main() {
      // Maybe vary size over time to simulate getting closer/further away
      // Maybe simulate change in form - track 
     
-    float a = 0.7;
-    float h = (1.0 -pow(a,2.0))/(-5.0*a);
-    float r = sqrt(pow(h,2.0)+1.0);
+    float q = 0.065; // Radius of Moon
+    float a = cos(Time/5.0)*q; // Edge of Moon Shadow
+    float err = 0.005;
+    if (a < err && a > -err) a = -0.01;
 
-    vec3 direction = h*(cross(MoonPos,vec3(0.0,1.0,0.0)));
+    float h = (pow(q,2.0) - pow(a,2.0))/(-2.0*a); // Distance of Moon Shadow circle from Moon
+    float r = sqrt(pow(h,2.0)+pow(q,2.0)); // Radius of Moon Shadow
+
+    //vec3 direction = h*(cross(MoonPos,vec3(0.0,1.0,0.0)));
+    theta = h*1.24  ;
+    mat3 rot;
+    rot[0] = vec3(cos(theta),0,sin(theta));
+    rot[1] = vec3(0,1,0);
+    rot[2] = vec3(-sin(theta),0,cos(theta));
+
+    ShadowPos = Pos - normalize(vec3(0.1*cos(theta) + 0.1*sin(theta), 0.1, -0.1*sin(theta)+0.1*cos(theta)));
+
+    // Need to work out the rotation
+
+
 
     
-    if (length(MoonPos) < 0.065) //0.15
+    if (length(MoonPos) < q) //0.15
     {
         FragColour += (1.1-factor)*vec4(1.0,1.0,1.0,1.0);
+        FragColour = vec4(1.0,1.0,1.0,1.0);
+        if (a < 0) FragColour = sky_colour;
         /* if (length(ShadowPos) < length(ShadowPos-MoonPos) -0.01)
         {
             FragColour = night_colour;
         } */
+        if (length(ShadowPos) < r)
+        {
+            FragColour = sky_colour; //vec4(1.0,0.0,1.0,1.0); //vec4(0.0, 0.0, 0.0, 1.0);
+            if (a < 0) FragColour = vec4(1.0,1.0,1.0,1.0);//sky_colour = vec4(1.0,0.0,1.0,1.0);
+        }
         
     }
 
