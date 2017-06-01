@@ -6,6 +6,7 @@
 
 #include <array>
 #include <glm/glm.hpp>
+#include <GL/glew.h>
 #include <limits>
 #include <vector>
 
@@ -24,10 +25,12 @@ struct Skybox
     // Rendering information.
     unsigned int vao;
     glm::mat4 model_matrix;
+    GLuint texID;
 
 private:
     // Generated mesh properties.
     const float radius;
+
 
     // Mesh building functions.
     void initialize();

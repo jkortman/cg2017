@@ -10,18 +10,18 @@ void Demo::initialize()
     path.push_back({glm::vec3(24.146, 83.500, -60.810), glm::vec3(-0.382, 0.218, -0.898)});
     path.push_back({glm::vec3(55.857, 24.881, 64.486), glm::vec3(-0.805, -0.163, 0.570)});
     path.push_back({glm::vec3(-56.148, 48.541, 121.107), glm::vec3(-0.933, -0.256, 0.252)});
-
+    path.push_back({glm::vec3(-103.179, 70.111, 6.165), glm::vec3(-0.614, -0.314, -0.724)});
 }
 
 
 node Demo::update_pos(float dt)
 {
     time_prev = time;
-    time += dt;
+    time += dt/2.0;
     if (time >= 1)
     {
         time = 0;
-        segment = (segment+1)%3;
+        segment = (segment+1)%path.size();
     }
 
     float c1 = pow(1.0-time,3.0);
@@ -31,8 +31,8 @@ node Demo::update_pos(float dt)
 
     glm::vec3 p1 = path.at(segment).pos;
     glm::vec3 d1 = path.at(segment).dir;
-    glm::vec3 p2 = path.at( (segment+1)%3 ).pos;
-    glm::vec3 d2 = path.at( (segment+1)%3 ).dir;
+    glm::vec3 p2 = path.at( (segment+1)%path.size() ).pos;
+    glm::vec3 d2 = path.at( (segment+1)%path.size() ).dir;
 
     
     return {c1*p1 + c2*(p1+d1) + c3*(p2+d2) + c4*p2, float(1-time)*d1 + time*d2};

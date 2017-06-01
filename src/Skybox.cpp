@@ -59,4 +59,5 @@ void Skybox::initialize()
         {{ 0, 5, 4 }},
         {{ 5, 0, 1 }},
     }};
+    
 }

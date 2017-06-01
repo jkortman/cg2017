@@ -86,6 +86,7 @@ private:
     std::vector<std::unique_ptr<Object>> owned_objects;
     bool no_clip;
     bool camera_mode;
+    int frame =0;
 };
 
 #endif // SCENE_H

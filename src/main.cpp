@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         {{ "Pine02",     "pine",         "PineTransp"    }},
         {{ "Stump",      "TreeStump",    "TreeStump03"   }},
         //{{ "Fence01",    "fences",       "fence01"       }},
-        {{ "Fence02",    "fences",       "fence02"       }},
+        // {{ "Fence02",    "fences",       "fence02"       }},
     }};
     for (const auto& meshinfo: meshes)
     {
@@ -124,13 +124,13 @@ int main(int argc, char** argv)
 
     // Create fence object
     {
-        Object* fence_obj = new Object(
+/*        Object* fence_obj = new Object(
             resources.get_mesh("Fence02"),
             glm::vec3(34.999115, 11.191076, 20.257238),
             resources.get_shader("texture"));
         fence_obj->scale = glm::vec3(0.01f, 0.01f, 0.01f);
         //fence_obj->y_rotation = 0.6f;
-        scene.give_object(fence_obj);
+        scene.give_object(fence_obj);*/
     };
 
 
@@ -167,6 +167,7 @@ int main(int argc, char** argv)
     //             d    by sqrt(3).
     Skybox* skybox = renderer.assign_vao(
         new Skybox((far_dist - 1.0f) / std::sqrt(3)));
+    renderer.setup_skybox(skybox);
     scene.give_skybox(skybox, resources.get_shader("skybox"));
 
     // Create horizon.

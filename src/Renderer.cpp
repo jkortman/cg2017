@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <unordered_map>
 #include <iostream>
+#include <vector>
 
 #include "Console.hpp"
 
@@ -341,6 +342,7 @@ Mesh* Renderer::assign_vao(Mesh* mesh)
 enum ImageFormat {JPEG, PNG, UNKNOWN};
 static ImageFormat get_image_type(const std::string& path);
 static void load_texture(const std::string& path);
+static void load_texture_skybox(std::vector<std::string> paths);
 
 // Read and load mesh textures onto the GPU.
 Mesh* Renderer::create_materials(Mesh* mesh)
@@ -399,6 +401,45 @@ Mesh* Renderer::create_materials(Mesh* mesh)
 
     return mesh;
 }
+
+void Renderer::setup_skybox(Skybox* skybox)
+{
+    glActiveTexture(GL_TEXTURE0);
+
+    std::vector<std::string> paths;
+    paths.push_back("skybox/sky_right.jpg");
+    paths.push_back("skybox/sky_left.jpg");
+    paths.push_back("skybox/sky_top.jpg");
+    paths.push_back("skybox/sky_bottom.jpg");
+    paths.push_back("skybox/sky_back.jpg");
+    paths.push_back("skybox/sky_front.jpg");
+
+    
+
+    
+        
+    // Check if the texture is already loaded.
+    GLuint texID = -1;
+    // If not, load the texture onto the GPU.
+    glGenTextures(1, &texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    // Set texture wrap behaviour to repeat
+    load_texture_skybox(paths);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE); 
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    //mesh->textureIDs.push_back(texID);
+    
+    skybox->texID =texID;
+    //return mesh;
+}
+
+
 
 static void draw_object(const RenderUnit& ru, const unsigned int current_program)
 {
@@ -598,6 +639,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             glUniformMatrix4fv(
                 glGetUniformLocation(current_program, "ModelMatrix"),
                 1, false, glm::value_ptr(skybox->model_matrix));
+
+            glBindTexture(GL_TEXTURE_2D, skybox->texID);
 
             glBindVertexArray(skybox->vao);
             glDrawElements(
@@ -827,4 +870,50 @@ static void load_texture(const std::string& path)
     }
     stbi_image_free(data);
     glGenerateMipmap(GL_TEXTURE_2D); 
+}
+
+static void load_texture_skybox(std::vector<std::string> path)
+{
+    for (int i = 0; i < path.size(); i++)
+    {
+        ImageFormat image_fmt = get_image_type(path.at(i));
+        int x, y, n;
+        unsigned char* data = nullptr;
+        
+        switch (image_fmt) {
+            case JPEG: data = stbi_load(path.at(i).c_str(), &x, &y, &n, 3); break;
+            case PNG:  data = stbi_load(path.at(i).c_str(), &x, &y, &n, 4); break;
+            default: break;
+        }
+
+        if (data == nullptr || image_fmt == UNKNOWN) {
+            warn("No path to image '" + path.at(i)  + "'");
+
+            // A red texture to be used when no texture is provided.
+            const std::array<unsigned char, 3> error_texture({{255, 0, 0}});
+
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB, 1, 1, 0, GL_RGB,
+                GL_UNSIGNED_BYTE, &error_texture[0]);
+            return;
+        }
+
+        switch (image_fmt) {
+            case JPEG:
+                glTexImage2D(
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB, x, y, 0, GL_RGB,
+                    GL_UNSIGNED_BYTE, data);
+                break;
+            case PNG:
+                glTexImage2D(
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGBA, x, y, 0, GL_RGBA,
+                    GL_UNSIGNED_BYTE, data);
+                break;
+            default:
+                fatal("Unknown image type");
+        }
+        stbi_image_free(data);
+        //glGenerateMipmap(GL_TEXTURE_2D); 
+    }
+    
 }

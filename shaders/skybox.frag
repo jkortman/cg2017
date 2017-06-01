@@ -17,6 +17,7 @@ uniform vec3 ViewPos;
 uniform vec3 moon_pos;
 uniform vec3 shadow_pos;
 uniform float shadow_radius;
+uniform samplerCube skybox;
 
 out vec4 FragColour; 
 
@@ -43,23 +44,18 @@ void main() {
     vec3 moon_light = normalize(vec3(sin(dt), -sin(dt), -cos(dt) )); //normalize(vec3(0.5,0.5,0.5)); //
     moon_light = normalize(vec3(0.1,0.1,0.1));
     vec3 moon_shadow = normalize(vec3(0.2,0.1,0.2));
-    /* float phase_center = -0.5*sin(theta)*tan(theta);
-    float phase_radius = sqrt(pow(phase_center,2.0)+1);
-    vec3 moon_shadow = moon_light - vec3(phase_center,0.0,0.0); */
+    
+
     vec3 MoonPos = Pos - moon_light ;//Pos + Light;
     vec3 SunPosWorld  = PosWorld - Light;
     vec3 MoonPosWorld = PosWorld + Light;
     vec3 ShadowPos = Pos - shadow_pos ;
 
-    //if (FragPosWorld.z < 0) LightWC *= -1;
-    //float horizon = Pos-PosWorld;// 199*(ViewPos.y / ViewPos.z);
-
+    
     // Sky
     vec4 day_colour = vec4(110.0/256.0, 170.0/256.0, 225.0/256.0, 1.0);//vec4(0.7,0.7,0.8+ FragPos.y / 5000.0,1.0);
     vec4 night_colour = vec4(0.0, 10.0/256.0, 40.0/256.0, 1.0); //vec4(0.0, 0.149 - FragPos.y / 2400.0, 0.301 - FragPos.y / 2400.0, 1.0);//
     
-
-    //if (  <= 1000)
     vec3 level = normalize(ViewPos-FragPosWorld);
 
     float bound = 0.2;
@@ -67,23 +63,16 @@ void main() {
     {
         night_colour += vec4(0.0,(bound+level.y)/4.0, (bound+level.y)/2.0,0.0);
         day_colour += vec4((bound+level.y)/2.0, (bound+level.y)/4.0, 0.0,0.0);
-        //night_colour = vec4(0.0, 0.5/level.y, 0.5/level.y, 1.0);
     }
-    //day_colour = night_colour;
-
-    //night_colour = vec4(floor(FragPos.x), 1.0,1.0, 1.0);
-
+    
     bound = ViewPos.y + dome_radius * 0.2; // Diameter of the Sun
     float factor = (LightWC.y+ViewPos.y + dome_radius*0.2)/bound;  
     if (factor > 1) factor = 1;
     if (factor < 0) factor = 0;
 
-
     vec4 sky_colour = day_colour*(factor) + night_colour*(1-factor);
 
     FragColour = sky_colour;
-    //if (FragPosWorld.y  > 100 && FragPosWorld.y < 150) FragColour = vec4(1.0,0.0,1.0,1.0);
-    //if (LightWC.y < 250) FragColour = vec4(0.0,1.0,1.0,1.0);
 
     if (debug)
     {
@@ -107,8 +96,6 @@ void main() {
     }
     
 
-
-
     // Sun/moon
     if (length(SunPos) < 0.08) FragColour = vec4(1.0,0.7,0.3,1.0);
     if (length(SunPos) < 0.065) FragColour = vec4(1.0,0.9,0.4,1.0);
@@ -116,18 +103,18 @@ void main() {
     if (length(SunPos) < 0.05) FragColour = vec4(1.0,1.0,0.7,1.0);  
     if (length(SunPos) < 0.04) FragColour = vec4(1.0,1.0,1.0,1.0);
 
-     // Maybe vary size over time to simulate getting closer/further away
-     // Maybe simulate change in form - track 
+    // Maybe vary size over time to simulate getting closer/further away
+    // Maybe simulate change in form - track 
     
     float q = 0.065; // Radius of Moon
     float a = cos(Time/5.0)*q; // Edge of Moon Shadow
+    a = 0.03;
     float err = 0.005;
     if (a < err && a > -err) a = -0.01;
 
     float h = (pow(q,2.0) - pow(a,2.0))/(-2.0*a); // Distance of Moon Shadow circle from Moon
     float r = sqrt(pow(h,2.0)+pow(q,2.0)); // Radius of Moon Shadow
 
-    //vec3 direction = h*(cross(MoonPos,vec3(0.0,1.0,0.0)));
     theta = h*1.24  ;
     mat3 rot;
     rot[0] = vec3(cos(theta),0,sin(theta));
@@ -136,32 +123,27 @@ void main() {
 
     ShadowPos = Pos - normalize(vec3(0.1*cos(theta) + 0.1*sin(theta), 0.1, -0.1*sin(theta)+0.1*cos(theta)));
 
-    // Need to work out the rotation
-
-
+    // Rotation mostly there. Possibly the angle wrong because of distance.
 
     
-    if (length(MoonPos) < q) //0.15
+    if (length(MoonPos) < q)
     {
+        // Left zone
         FragColour += (1.1-factor)*vec4(1.0,1.0,1.0,1.0);
         FragColour = vec4(1.0,1.0,1.0,1.0);
-        if (a < 0) FragColour = sky_colour;
-        /* if (length(ShadowPos) < length(ShadowPos-MoonPos) -0.01)
-        {
-            FragColour = night_colour;
-        } */
+        // Right zone
+        if (a < 0) FragColour = sky_colour; 
+
+        // Shadow sphere
         if (length(ShadowPos) < r)
         {
-            FragColour = sky_colour; //vec4(1.0,0.0,1.0,1.0); //vec4(0.0, 0.0, 0.0, 1.0);
-            if (a < 0) FragColour = vec4(1.0,1.0,1.0,1.0);//sky_colour = vec4(1.0,0.0,1.0,1.0);
+            FragColour = sky_colour; // Left Zone
+            if (a < 0) FragColour = vec4(1.0,1.0,1.0,1.0); // Right Zone
         }
         
     }
 
+   //FragColour = vec4(0.7,0.7,0.7,1.0);
+    FragColour = 0.8*FragColour + 0.2*texture(skybox, FragPos);
 
-
-     /*    if ( length(MoonPos -moon_shadow) < phase_radius)
-    {
-        FragColour = vec4(0.0,0.0,0.0,1.0);
-    } */
 }
