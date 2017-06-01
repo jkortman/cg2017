@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     {
         Object* horizon = new Object(
             resources.get_mesh("Cube"),       // mesh
-            glm::vec3(0.0f, 0.0f, 0.0f),   // position
+            glm::vec3(0.0f, 0.0f, 0.0f),      // position
             resources.get_shader("horizon")   // shader
         );
         horizon->scale = glm::vec3(600.0f, 0.0f, 600.0f);

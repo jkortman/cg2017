@@ -106,21 +106,20 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
 // Set to true to multisample the shadow map for smooth shadows.
 #define MULTISAMPLE true
 #define SAMPLE_RADIUS 2
-float in_shadow()
+float in_shadow(vec3 light_dir)
 {
     // perform perspective divide
     vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
     // Get depth of current fragment from light's perspective
     float frag_depth = lit_coords.z;
     // Check whether current frag pos is in shadow
-    float bias = 0.002;
+    float bias = 0.005;
 
     float shadow = 0.0;
     if (MULTISAMPLE)
     {
         // The distance to sample neighbouring texels at.
-        //vec2 dist = 1.0 / textureSize(DepthMap, 0);
-        float dist = 1.0/2048.0;
+        float dist = 0.5 / textureSize(DepthMap, 0).x;
         for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
         {
             for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
@@ -128,7 +127,19 @@ float in_shadow()
                 // Get the depth of the texel neightbour i,j
                 vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
                 float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
-                shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+                //shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
+                // interpolate from 0 to 1/9 based on how large the difference is.
+                
+                // This has errors when the sun is below the horizon,
+                // so we increase shadow amount when that is the case.
+                // We use a correction factor for to push the shadow amt towards
+                // the maximum using the angle of the sun.
+                const float e = 1.0;
+                float horizon_correction = max(0.0, -dot(light_dir, vec3(0.0, 1.0, 0.0)));
+                shadow += max(0.0, 
+                    min(1.0/9.0,
+                        horizon_correction +
+                        e * (frag_depth - bias - neighbour_depth)));
             }
         }
     }
@@ -141,22 +152,23 @@ float in_shadow()
     return shadow;
 }
 
+
 void main()
 {
     // If max_height is updated in main, it needs to be updated here too.
     const float max_height = 128.0;
     const float water_level = 0.05 * max_height;
 
-    // Colour very slightly by depth to give indication of water level.
-    float shadow = in_shadow();
-    float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
-    vec4 shaded_colour = colour_mod * match_to_palette(calculate_lighting(LightDay));
-
     // TODO: Remove duplicate code between this and lighting calculations
     // for calculating light_dir and view_dir.
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 light_dir = normalize(-LightDay.position.xyz);
     float dist = length(ViewPos - FragPos);
+
+    // Colour very slightly by depth to give indication of water level.
+    float shadow = in_shadow(light_dir);
+    float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
+    vec4 shaded_colour = (1.0 - shadow) * colour_mod * match_to_palette(calculate_lighting(LightDay));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);

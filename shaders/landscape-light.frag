@@ -244,7 +244,7 @@ void season_colours(out vec3 mul, out vec3 add)
 
 // Set to true to multisample the shadow map for smooth shadows.
 #define MULTISAMPLE true
-#define SAMPLE_RADIUS 3
+#define SAMPLE_RADIUS 2
 float in_shadow(vec3 light_dir)
 {
     // perform perspective divide
@@ -252,7 +252,7 @@ float in_shadow(vec3 light_dir)
     // Get depth of current fragment from light's perspective
     float frag_depth = lit_coords.z;
     // Check whether current frag pos is in shadow
-    float bias = 0.002;
+    float bias = 0.005;
 
     float shadow = 0.0;
     if (MULTISAMPLE)
@@ -273,12 +273,12 @@ float in_shadow(vec3 light_dir)
                 // so we increase shadow amount when that is the case.
                 // We use a correction factor for to push the shadow amt towards
                 // the maximum using the angle of the sun.
-                // There's a multiplicative and additive way of performing this.
                 const float e = 1.0;
-                float add_horizon_correction = max(0.0, -dot(light_dir, vec3(0.0, 1.0, 0.0)));
+                float horizon_correction = max(0.0, -dot(light_dir, vec3(0.0, 1.0, 0.0)));
                 shadow += max(0.0, 
                     min(1.0/9.0,
-                        add_horizon_correction + e * (frag_depth - bias - neighbour_depth)));
+                        horizon_correction +
+                        e * (frag_depth - bias - neighbour_depth)));
             }
         }
     }

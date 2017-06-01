@@ -201,13 +201,19 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
                 std::pow(frow - 0.5 * float(size), 2)
                 + std::pow(fcol - 0.5 * float(size), 2))
             / std::sqrt(2 * std::pow(0.5 * float(size), 2));
+        const float xdist = std::abs(frow - 0.5 * float(size));
+        const float zdist = std::abs(fcol - 0.5 * float(size));
+        const float maxdist = std::max(xdist, zdist);
         // Changing a,b,c changes the island generated.
         // see: http://www.redblobgames.com/maps/terrain-from-noise/
         const float a = 0.03f;
-        const float b = 1.22f;
-        const float c = 0.20f;
+        const float b = 2.00f;
+        const float c = 0.03f; //0.2
         //alt = (alt + a) - b * std::pow(distance, c);
         alt = (alt + a) * b * std::pow(distance, c);
+        // Cliff modifier: if position is very close to the edge, force the altitude downward.
+        float cliffmod = 0.5 + 0.5 * std::tanh(-6.0f * (maxdist - 0.5f* size + 10.0f));
+        //alt = cliffmod * alt;
         return alt;
     };
     auto moisture_at = [=](int row, int col) -> float
