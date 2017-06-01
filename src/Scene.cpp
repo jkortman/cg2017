@@ -41,10 +41,17 @@ void Scene::update(float dt)
 {
     time_elapsed += dt;
     const float rotate_factor = 0.006f;
-    const float move_speed = 0.13f;
+    float move_speed;
+    if (InputHandler::keys[GLFW_KEY_LEFT_ALT])
+    {
+        move_speed = 0.6f;
+    }
+    else 
+    {
+        move_speed = 0.3f;
+    }
 
     glm::vec3 right_direction = glm::cross(player.direction, AXIS_Y);
-
 
     glm::vec3 movement = player.position;
 
