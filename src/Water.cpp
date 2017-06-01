@@ -40,17 +40,24 @@ float Water::vert_dist()
 }
 
 void Water::initialize(Landscape* landscape)
-{ 
+{
+    auto radius = [](float x, float y) { return std::sqrt(x*x + y*y); };
     // Initialize positions and colours.
+    // Set the alpha on edge values
+    // Everything outside the edge radius has height 0.
+    const float edge_radius = 0.5 * edge - 0.5 * edge / size;
+
     for (int row = 0; row < size; row += 1)
     {
         for (int col = 0; col < size; col += 1)
         {
             float height = level;
+            float x = -edge / 2.0f + edge * float(row) / (size - 1);
+            float z = -edge / 2.0f + edge * float(col) / (size - 1);
             glm::vec3 position(
-                -edge / 2.0f + edge * float(row) / (size - 1),
-                height,
-                -edge / 2.0f + edge * float(col) / (size - 1));
+                x,
+                (radius(x, z) > edge_radius) ? 0.0f : height,
+                z);
             set_position(row, col, position);
 
             set_colour(row, col, base_colour);
@@ -68,7 +75,6 @@ void Water::initialize(Landscape* landscape)
     //                        | / |
     //                        |/  |
     //               r+1,c -> .___. <- r+1, c+1
-    auto radius = [](float x, float y) { return std::sqrt(x*x + y*y); };
     const float max_radius = 0.5 * edge;
     for (int row = 0; row < size - 1; row += 1)
     {

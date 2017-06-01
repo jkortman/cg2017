@@ -108,12 +108,26 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
 #define SAMPLE_RADIUS 2
 float in_shadow(vec3 light_dir)
 {
+    // The cosine of the light angle.
+    float light_angle = dot(light_dir, vec3(0.0, 1.0, 0.0));
+
+    // The threshold at which shadows are on by default.
+    // Between 0.0 and night_thresh, we interpolate between proper shadows
+    // and full shadows.
+    const float night_thresh = -0.2;
+    if (light_angle < night_thresh) return 1.0;
+
     // perform perspective divide
     vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
     // Get depth of current fragment from light's perspective
     float frag_depth = lit_coords.z;
     // Check whether current frag pos is in shadow
     float bias = 0.005;
+
+    // If outside of light view and it's day, default to no shadows.
+    if (light_angle > 0.0
+        && (lit_coords.s > 1.0 || lit_coords.s < 0.0
+            || lit_coords.t > 1.0 || lit_coords.t < 0.0)) return 0.0;
 
     float shadow = 0.0;
     if (MULTISAMPLE)
@@ -135,7 +149,7 @@ float in_shadow(vec3 light_dir)
                 // We use a correction factor for to push the shadow amt towards
                 // the maximum using the angle of the sun.
                 const float e = 1.0;
-                float horizon_correction = max(0.0, -dot(light_dir, vec3(0.0, 1.0, 0.0)));
+                float horizon_correction = max(0.0, -light_angle);
                 shadow += max(0.0, 
                     min(1.0/9.0,
                         horizon_correction +
@@ -148,6 +162,12 @@ float in_shadow(vec3 light_dir)
         // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
         float lit_depth = texture(DepthMap, lit_coords.xy).r; 
         shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
+    }
+
+    if (light_angle < 0.0)
+    {
+        float x = light_angle / night_thresh;
+        shadow = x + (1.0 - x) * shadow;
     }
     return shadow;
 }

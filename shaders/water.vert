@@ -41,7 +41,19 @@ void main()
     // If max_height is updated in main, it needs to be updated here too.
     const float max_height = 128.0;
     const float water_level = 0.05 * max_height;
-    vec3 pos = wave(a_Position, Time);
+    vec3 pos;
+
+    // If we are at the edge of the water, move the triangle down to height 0.0.
+    // This simulateously blocks the sun and improves horizon quality.
+    if (a_Position.y == 0.0)
+    {
+        pos = a_Position;
+    }
+    else
+    {
+        pos = wave(a_Position, Time);
+    }
+
 
     // Recalculate normal.
     // The normal is the cross product of two vectors:
