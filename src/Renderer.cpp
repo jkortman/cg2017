@@ -586,6 +586,10 @@ void Renderer::init_shader(
 void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 {
     unsigned int current_program;
+
+    // NOTE: Landscape and Water expect the single bound texture to be a depth map.
+    // Binding another texture before those are rendered will break the lighting!
+
     if (render_mode == RenderMode::Scene)
     {
         reshape(window_width, window_height);
@@ -616,40 +620,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         current_program = scene.depth_shader->program_id;
         glUseProgram(current_program);
         init_shader(scene, scene.depth_shader, render_mode);
-    }
-
-    // Render skybox.
-    // Skybox doesn't casr any shadows, so it's unnecessary when rendering
-    // the depth map.
-    if (render_mode == RenderMode::Scene)
-    {
-        // render skybox.
-        Skybox* skybox = scene.skybox.get();
-        if (skybox != nullptr)
-        {
-            current_program = scene.skybox_shader->program_id;
-            glUseProgram(current_program);
-            init_shader(scene, scene.skybox_shader, render_mode);
-
-            glUniform1f(
-                glGetUniformLocation(current_program, "Time"),
-                scene.time_elapsed);
-
-            // Load model and normal matrices.
-            glUniformMatrix4fv(
-                glGetUniformLocation(current_program, "ModelMatrix"),
-                1, false, glm::value_ptr(skybox->model_matrix));
-
-            glBindTexture(GL_TEXTURE_2D, skybox->texID);
-
-            glBindVertexArray(skybox->vao);
-            glDrawElements(
-                GL_TRIANGLES,
-                3 * skybox->indices.size(),
-                GL_UNSIGNED_INT,
-                0);
-            glBindVertexArray(0);
-        }
     }
 
     // Render the landscape.
@@ -735,6 +705,40 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             GL_UNSIGNED_INT,
             0);
         glBindVertexArray(0);
+    }
+
+    // Render skybox.
+    // Skybox doesn't casr any shadows, so it's unnecessary when rendering
+    // the depth map.
+    if (render_mode == RenderMode::Scene)
+    {
+        // render skybox.
+        Skybox* skybox = scene.skybox.get();
+        if (skybox != nullptr)
+        {
+            current_program = scene.skybox_shader->program_id;
+            glUseProgram(current_program);
+            init_shader(scene, scene.skybox_shader, render_mode);
+
+            glUniform1f(
+                glGetUniformLocation(current_program, "Time"),
+                scene.time_elapsed);
+
+            // Load model and normal matrices.
+            glUniformMatrix4fv(
+                glGetUniformLocation(current_program, "ModelMatrix"),
+                1, false, glm::value_ptr(skybox->model_matrix));
+
+            glBindTexture(GL_TEXTURE_2D, skybox->texID);
+
+            glBindVertexArray(skybox->vao);
+            glDrawElements(
+                GL_TRIANGLES,
+                3 * skybox->indices.size(),
+                GL_UNSIGNED_INT,
+                0);
+            glBindVertexArray(0);
+        }
     }
 
     // Load and draw each object in the scene.
