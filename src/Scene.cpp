@@ -104,6 +104,7 @@ void Scene::update(float dt)
         if (length(movement - player.position) > 0)
         {
             movement.y = landscape->get_pos_at(movement).y;
+            //movement.y = landscape->get_height_at(movement.x, movement.z);
             movement = player.position + move_speed*normalize(movement-player.position);
 
         }
