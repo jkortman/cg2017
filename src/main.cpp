@@ -73,10 +73,9 @@ int main(int argc, char** argv)
     }};
     for (const auto& shname: shaders)
     {
-        resources.give_shader(
-        shname,
-        new Shader("shaders/" + shname + ".vert",
-                   "shaders/" + shname + ".frag"));
+        resources.give_shader(shname,
+                              new Shader("shaders/" + shname + ".vert",
+                                         "shaders/" + shname + ".frag"));
     }
 
     scene.depth_shader = resources.get_shader("depth");
@@ -89,7 +88,6 @@ int main(int argc, char** argv)
         {{ "Pine02",     "pine",         "PineTransp"    }},
         {{ "Stump",      "TreeStump",    "TreeStump03"   }},
         {{ "Watchtower", "watchtower",   "watchtower"    }},
-        {{ "Bonfire",    "bonfire",      "bonfire"       }},
     }};
     for (const auto& meshinfo: meshes)
     {
@@ -140,16 +138,7 @@ int main(int argc, char** argv)
         tower->scale = glm::vec3(1.5f);
         tower->y_rotation = glm::pi<float>();
         scene.give_object(tower);
-    }; 
-    {
-        Object* fire = new Object(
-            resources.get_mesh("Bonfire"),
-            glm::vec3(0.0f, 30.0f, 0.0f),
-            resources.get_shader("diffuse"));
-        //fire->scale = glm::vec3(1.5f);
-        scene.give_object(fire);
     };
-
 
     // Generate landscape.
     const float max_height = 128.0f;    // Needs to be consistent with water.vert.
