@@ -13,7 +13,8 @@
 #include "Console.hpp"
 
 Scene::Scene()
-    : time_elapsed(0.0f)
+    : world_light_night_index(-1),
+      time_elapsed(0.0f)
 {
     no_clip = true;
     console->register_var(
@@ -149,13 +150,10 @@ void Scene::update(float dt)
     skybox->update_model_matrix(camera.position);
     //skybox->update_model_matrix(glm::vec3(0.0, 30.0, 0.0));
 
-
-    
-    
     camera.update_view();
 
     // Rotate the day lighting.
-    const float day_cycle_factor = 25.0f;
+    const float day_cycle_factor = 40.0f;
     auto daylight_dir = glm::vec3(world_light_day.position);
     daylight_dir = glm::rotate(
         daylight_dir,
@@ -165,6 +163,13 @@ void Scene::update(float dt)
     world_light_day.position.y = daylight_dir.y;
     world_light_day.position.z = daylight_dir.z;
     world_light_day.update_view();
+
+    if (world_light_night_index != -1)
+    {
+        lights[world_light_night_index].position.x = -daylight_dir.x;
+        lights[world_light_night_index].position.y = -daylight_dir.y;
+        lights[world_light_night_index].position.z = -daylight_dir.z;
+    }
 
     // Update the model and normal matrices for each object.
     for (auto& object : objects)

@@ -35,7 +35,7 @@ public:
     std::vector<Object*> objects;
     // Directional lights for day and night, which cast shadows.
     LightSource world_light_day;
-    LightSource world_light_night;
+    int world_light_night_index;
     // Point light sources.
     std::vector<LightSource> lights;
     // The landscape.
