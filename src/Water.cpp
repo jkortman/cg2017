@@ -51,9 +51,32 @@ void Water::initialize(Landscape* landscape)
     {
         for (int col = 0; col < size; col += 1)
         {
-            float height = level;
-            float x = -edge / 2.0f + edge * float(row) / (size - 1);
-            float z = -edge / 2.0f + edge * float(col) / (size - 1);
+            const float x = -edge / 2.0f + edge * float(row) / (size - 1);
+            const float z = -edge / 2.0f + edge * float(col) / (size - 1);
+
+            #if 1
+                const float height = level;
+            #else
+                // The water is a cap on a sphere. The height of the cap,
+                // 'h', is the default water level. The edge length of the cap
+                // (from the centre out to the edge circle) is a, or edge/2.
+                //     ... 
+                //   .  |h .   
+                //  .-------.
+                //  .     a .
+                const float h = level;
+                const float a = edge / 2.0f;
+                // The radius of the sphere.
+                const float R = (a*a + h*h) / (2.0f * h);
+                // In 3D space, the equation for the sphere is
+                //      x^2 + y^2 + z^2 = R^2.
+                // As we are solving for the height y, we use:
+                //      y = sqrt(R^2 - z^2 - x^2)
+                // But we want the height relative to the base plane of the cap:
+                //      height = sqrt(R^2 - z^2 - x^2) - (R - h)
+                const float height = std::sqrt(R*R - z*z - x*x) - (R - h);
+            #endif
+
             glm::vec3 position(
                 x,
                 (radius(x, z) > edge_radius) ? 0.0f : height,
@@ -158,9 +181,35 @@ void Water::calculate_normals()
     {
         for (int col = 0; col < size; col += 1)
         {
-            set_normal(row, col, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::vec3 norm;
+            if      (row == size-1) norm = get_normal(  row, col-1);
+            else if (col == size-1) norm = get_normal(row-1, col-1);
+            else
+            {
+                // Get the points at, above, and to the right of the current point.
+                glm::vec3 at    = get_position(  row,   col);
+                glm::vec3 below = get_position(row+1,   col);
+                glm::vec3 right = get_position(  row, col+1);
+
+                glm::vec3 downward = below - at;
+                glm::vec3 rightward = right - at;
+                norm = glm::normalize(glm::cross(rightward, downward));
+            }
+            set_normal(row, col, norm);
         }
     }
+
+    #if 0
+    for (int row = 0; row < size; row += 1)
+    {
+        for (int col = 0; col < size; col += 1)
+        {
+            glm::vec3 norm = get_normal(row, col);
+            printf("[%f %f %f] ", norm.x, norm.y, norm.z);
+        }
+        printf("\n");
+    }
+    #endif
 }
 
 // -- Data access functions --

@@ -225,4 +225,6 @@ void main()
             1.0);
     }
     //FragColour = vec4(vec3(1.0-shadow), 1.0);
+    //FragColour = vec4(0.5 + 0.5 * Normal, 1.0);
+    //FragColour = vec4(vec3(FragPos.y / (0.05 * 128.0)), 1.0);
 }

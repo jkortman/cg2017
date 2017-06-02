@@ -85,7 +85,7 @@ void main()
 
     vec3 downward = below - a_Position;
     vec3 rightward = right - a_Position;
-    Normal = NormalMatrix * cross(rightward, downward);
+    Normal = normalize(NormalMatrix * cross(rightward, downward));
 
     // Cresting: If this point is higher than it's neighbours, it is a crest.
     if (a_Position.y > below.y
