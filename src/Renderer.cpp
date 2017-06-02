@@ -251,7 +251,7 @@ Water* Renderer::assign_vao(Water* water)
     glBindBuffer(GL_ARRAY_BUFFER, buffer[1]);
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(float) * 3* water->normals.size(),
+        sizeof(float) * 3 * water->normals.size(),
         &water->normals[0].x,
         GL_STATIC_DRAW);
     glEnableVertexAttribArray(1);
