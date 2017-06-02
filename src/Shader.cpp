@@ -94,7 +94,7 @@ int CompileShader(const char *ShaderPath, const GLuint ShaderID)
         ShaderStream.close();
     }
     else {
-        std::cerr << "Cannot open " << ShaderPath << ". Are you in the right directory?" << std::endl;
+        std::cerr << "    Cannot open " << ShaderPath << ". Are you in the right directory?" << std::endl;
         return 0;
     }
 
