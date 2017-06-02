@@ -69,6 +69,7 @@ int main(int argc, char** argv)
         "simple-sky",
         "skybox",
         "horizon",
+        "diffuse",
     }};
     for (const auto& shname: shaders)
     {
@@ -88,6 +89,7 @@ int main(int argc, char** argv)
         {{ "Pine02",     "pine",         "PineTransp"    }},
         {{ "Stump",      "TreeStump",    "TreeStump03"   }},
         {{ "Watchtower", "watchtower",   "watchtower"    }},
+        {{ "Bonfire",    "bonfire",      "bonfire"       }},
     }};
     for (const auto& meshinfo: meshes)
     {
@@ -138,6 +140,14 @@ int main(int argc, char** argv)
         tower->scale = glm::vec3(1.5f);
         tower->y_rotation = glm::pi<float>();
         scene.give_object(tower);
+    }; 
+    {
+        Object* fire = new Object(
+            resources.get_mesh("Bonfire"),
+            glm::vec3(0.0f, 30.0f, 0.0f),
+            resources.get_shader("diffuse"));
+        //fire->scale = glm::vec3(1.5f);
+        scene.give_object(fire);
     };
 
 
