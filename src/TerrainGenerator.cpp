@@ -7,6 +7,7 @@
 #include <array>
 #include <cmath>
 #include <limits>
+#include <numeric>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -100,24 +101,60 @@ Landscape* TerrainGenerator::landscape()
 // ---------------------------
 // -- Data access functions --
 // ---------------------------
-glm::vec3 TerrainGenerator::get_position(int row, int col)
+glm::vec3 TerrainGenerator::get_position(int row, int col) const
 {
     return positions[size * row + col];
 }
 
-glm::vec3 TerrainGenerator::get_normal(int row, int col)
+glm::vec3 TerrainGenerator::get_normal(int row, int col) const
 {
     return normals[size * row + col];
 }
 
-glm::vec3 TerrainGenerator::get_colour(int row, int col)
+glm::vec3 TerrainGenerator::get_colour(int row, int col) const
 {
     return colours[size * row + col];
 }
 
-TerrainGenerator::Biome TerrainGenerator::get_biome(int row, int col)
+TerrainGenerator::Biome TerrainGenerator::get_biome(int row, int col) const
 {
     return biomes[size * row + col];
+}
+
+glm::vec3 TerrainGenerator::get_closest_pos(float x, float z) const
+{
+    const float step = (2 * edge)/(-1 + size * 2);
+    int row_x = (x + edge/2)/step;
+    int row_z = (z + edge/2)/step;
+    int index = size * row_x + row_z;
+    return glm::vec3(positions.at(index));
+}
+
+float TerrainGenerator::get_height_at(float x, float z) const
+{
+    // Determine the vertices which the point is inside
+    const float step = (2 * edge)/(-1 + size * 2);
+    std::array<glm::vec3, 3> verts;
+    verts[0] = get_closest_pos(x + 0.5f * step, z + 0.5f * step);
+    verts[1] = get_closest_pos(x + step, z);
+    verts[2] = get_closest_pos(x, z + step);
+
+    // Weight the component heights according to the distance to each point.
+    std::array<float, 3> dists;
+    auto dist = [=](float x, float z, const glm::vec3& pos)
+    {
+        return std::sqrt(std::pow(x - pos.x, 2)
+                       + std::pow(z - pos.z, 2));
+    };
+    dists[0] = dist(x, z, verts[0]);
+    dists[1] = dist(x, z, verts[1]);
+    dists[2] = dist(x, z, verts[2]);
+    
+    float sum = std::accumulate(std::begin(dists), std::end(dists), 0.0f);
+
+    return verts[0].y * dists[0] / sum
+         + verts[1].y * dists[1] / sum
+         + verts[2].y * dists[2] / sum;
 }
 
 void TerrainGenerator::set_position(int row, int col, glm::vec3 pos)
@@ -495,12 +532,14 @@ void TerrainGenerator::populate()
                               || get_biome(row, col) == PineForest))
                         {
                             // Get the height at this position.
-                            // TODO: The current implementation of this is a hack.
-                            float height = std::min({
-                                get_position(row, col).y,
-                                get_position(row, col + 1).y,
-                                get_position(row + 1, col).y,
-                                get_position(row + 1, col + 1).y});
+                            const float x = get_position(row, col).x + dr * div_size;
+                            const float z = get_position(row, col).z + dc * div_size;
+                            const float r = 2.0f;
+                            const float y = std::min(
+                                std::min(get_height_at(    x,     z),
+                                         get_height_at(r + x,     z)),
+                                std::min(get_height_at(    x, r + z),
+                                         get_height_at(r + x, r + z)));
 
                             // Select object to generate.
                             float p = randf();
@@ -509,19 +548,9 @@ void TerrainGenerator::populate()
                             else if (p < 0.90f) model = pine02;
                             else                model = stump;
 
-                            glm::vec3 pos = get_position(row, col)
-                                    + glm::vec3(
-                                        dr * div_size,
-                                        0.0f,
-                                        dc * div_size)
-                                    - glm::vec3(
-                                        0.1f * randf(),
-                                        0.0f, 
-                                        0.1f * randf());
-                            pos.y = height;
                             Object* obj = new Object(
                                 model,
-                                pos, 
+                                glm::vec3(x, y, z), 
                                 tex_shader);
                             obj->scale =
                                 glm::vec3(1.0f, 1.0f, 1.0f)
