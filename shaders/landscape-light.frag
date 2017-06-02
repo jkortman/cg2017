@@ -22,9 +22,9 @@ uniform float Time;
 struct LightSource
 {
     vec4    position;
-    float    ambient;
-    float    diffuse;
-    float    specular;
+    float   ambient;
+    float   diffuse;
+    float   specular;
     float   K_constant;
     float   K_linear;
     float   K_quadratic;
@@ -49,12 +49,15 @@ float discretize(float value)
     //      else if (value < 0.75)      return 0.66;
     //      else if (value < 1.00)      return 1.00;
     //      else                        return 1.33;
-    const int N = 5;
+    /*
     if      (value < 0.25)      return 0.00;
     else if (value < 0.50)      return 0.33;
     else if (value < 0.75)      return 0.66;
     else if (value < 1.00)      return 1.00;
     else                        return 1.33;
+    */
+    const float N = 3.0;
+    return floor(N * value) / (N - 1.0);
 }
 
 vec3 calculate_lighting(in LightSource light) {
