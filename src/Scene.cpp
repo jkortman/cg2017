@@ -238,7 +238,7 @@ Landscape* Scene::get_landscape()
 
 void Scene::give_demo(Demo* demo)
 {
-    this->demo = demo;
+    this->demo = std::unique_ptr<Demo>(demo);
 
     console->register_var(
         "demo",

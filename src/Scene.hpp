@@ -30,7 +30,7 @@ public:
     // The player.
     Player player;
     Camera camera;
-    Demo* demo;
+    std::unique_ptr<Demo> demo;
     // The objects present in the scene.
     std::vector<Object*> objects;
     // Directional lights for day and night, which cast shadows.

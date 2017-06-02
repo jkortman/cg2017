@@ -30,8 +30,6 @@ int main(int argc, char** argv)
     
     Renderer renderer;
     Scene scene;
-    Demo demo;
-    demo.initialize();
 
     // Renderer setup
     renderer.initialize(WIREFRAME_MODE, NUM_AA_SAMPLES);
@@ -52,7 +50,10 @@ int main(int argc, char** argv)
         0.05f,                      // near
         far_dist);                  // far
 
-    scene.give_demo(&demo);
+    Demo* demo = new Demo;
+    demo->initialize();
+    scene.give_demo(demo);
+
     // Create resources.
     ResourceManager resources;
 
