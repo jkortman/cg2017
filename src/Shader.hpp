@@ -27,6 +27,7 @@ public:
     // Fail if a uniform does not exist.
     void assert_existence(const std::string& uniform);
     void set_palette(const std::vector<glm::vec3>& palette, int offset=0);
+    void set_ssao(int num_samples, float scale);
 
     // The id of the shader program.
     ShaderID program_id;

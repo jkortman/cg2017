@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <random>
 
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -77,6 +78,42 @@ void Shader::set_palette(const std::vector<glm::vec3>& palette, int offset)
         glUniform3fv(
             glGetUniformLocation(program_id, uniform_name.c_str()),
             1, glm::value_ptr(palette[i + offset]));
+    }
+}
+
+void Shader::set_ssao(int num_samples, float scale)
+{
+    // Generate num_ssao_samples samples, each a vec3 with each value
+    // varying between -1.0 and 1.0.
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    std::default_random_engine gen;
+    std::vector<glm::vec3> samples;
+
+    for (int i = 0; i < num_samples; i += 1)
+    {
+        glm::vec3 sample_pos(
+            -1.0f + 2.0f * dist(gen),
+            -1.0f + 2.0f * dist(gen),
+            -1.0f + 2.0f * dist(gen));  // disable this when switching to hemispherical
+            //dist(gen));
+        samples.push_back(scale * sample_pos);
+    }
+
+    // Load into shader.
+    glUseProgram(program_id);
+    //assert_existence("SSAONumSamples");
+    glUniform1i(
+        glGetUniformLocation(program_id, "SSAONumSamples"),
+        num_samples);
+
+    for (int i = 0; i < num_samples; i += 1)
+    {
+        // copy samples[i] into shader program.
+        std::string uniform_name = "SSAOSamples[" + std::to_string(i) + "]";
+        //assert_existence(uniform_name);
+        glUniform3fv(
+            glGetUniformLocation(program_id, uniform_name.c_str()),
+            1, glm::value_ptr(samples[i]));
     }
 }
 
