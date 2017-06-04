@@ -52,9 +52,12 @@ private:
     void init_shader(
         const Scene& scene, Shader* shader, RenderMode render_mode);
 
-    GLuint depth_buffer;
-    GLuint depth_texture;
-    const unsigned int depth_tex_size = 2048;
+    GLuint shadow_buffer;
+    GLuint shadow_texture;
+    const unsigned int shadow_texture_size = 2048;
+    //GLuint depth_buffer;
+    //GLuint depth_texture;
+    //const unsigned int depth_tex_size = 2048;
     bool wireframe;
 };
 

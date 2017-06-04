@@ -63,16 +63,16 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // -----------------------------------------
     // -- FBO initialization for depth buffer --
     // -----------------------------------------
-    glGenFramebuffers(1, &depth_buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+    glGenFramebuffers(1, &shadow_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
 
-    glGenTextures(1, &depth_texture);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glGenTextures(1, &shadow_texture);
+    glBindTexture(GL_TEXTURE_2D, shadow_texture);
 
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_DEPTH_COMPONENT32, depth_tex_size, depth_tex_size,
+        0, GL_DEPTH_COMPONENT32, shadow_texture_size, shadow_texture_size,
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
     #define WRAP_BEHAVIOUR GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER
@@ -81,12 +81,12 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
 
-    // Attach depth_texture as depth attachment
+    // Attach shadow_texture as depth attachment
     glFramebufferTexture2D(
         GL_FRAMEBUFFER,
         GL_DEPTH_ATTACHMENT,
         GL_TEXTURE_2D,
-        depth_texture, 0);
+        shadow_texture, 0);
 
     // Instruct openGL that we won't bind a color texture with the current FBO
     glDrawBuffer(GL_NONE); // default here would be GL_FRONT
@@ -600,7 +600,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         // Warning: this seems a litte slow - it's likely glTexParameterfv()
         // are a little too performance-heavy to call per-frame.
         #if WRAP_BEHAVIOUR == GL_CLAMP_TO_BORDER
-            glBindTexture(GL_TEXTURE_2D, depth_texture);
+            glBindTexture(GL_TEXTURE_2D, shadow_texture);
             std::array<float, 4> border_colour_night = {{ 1.0f, 0.0f, 0.0f, 1.0f }};
             std::array<float, 4> border_colour_day   = {{ 0.0f, 0.0f, 0.0f, 1.0f }};
             if (glm::dot(glm::vec3(scene.world_light_day.position), AXIS_Y) >= 0.0f)
@@ -776,10 +776,10 @@ void Renderer::render(const Scene& scene)
     // ----------------------------------
     // -- Pass 1: Render depth buffer. --
     // ----------------------------------
-    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, depth_tex_size, depth_tex_size);
+    glViewport(0, 0, shadow_texture_size, shadow_texture_size);
     draw_scene(scene, RenderMode::Depth);
 
     GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -794,7 +794,7 @@ void Renderer::render(const Scene& scene)
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glBindTexture(GL_TEXTURE_2D, shadow_texture);
     draw_scene(scene, RenderMode::Scene);   
 }
 
