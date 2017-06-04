@@ -193,7 +193,7 @@ void main()
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
     vec3 fog_colour_sun = vec3(1.0, 0.9, 0.7);
-    vec3 fog_colour_night = vec3(0.1, 0.1, 0.1);
+    vec3 fog_colour_night = vec3(0.08, 0.08, 0.2);
     float day_factor = 0.5 + 0.5 * dot(light_dir, vec3(0.0, 1.0, 0.0));
     vec3 fog_colour = mix(fog_colour_night, fog_colour_day, day_factor);
     vec3 fog_sun_colour = mix(fog_colour_night, fog_colour_sun, day_factor);
