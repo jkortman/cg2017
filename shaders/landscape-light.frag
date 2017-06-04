@@ -347,7 +347,7 @@ void main()
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
     vec3 fog_colour_sun = vec3(1.0, 0.9, 0.7);
-    vec3 fog_colour_night = vec3(0.2, 0.3, 0.4);
+    vec3 fog_colour_night = vec3(0.1, 0.1, 0.1);
     float day_factor = 0.5 + 0.5 * dot(light_dir, vec3(0.0, 1.0, 0.0));
     vec3 fog_colour = mix(fog_colour_night, fog_colour_day, day_factor);
     vec3 fog_sun_colour = mix(fog_colour_night, fog_colour_sun, day_factor);
@@ -356,28 +356,22 @@ void main()
               fog_mode_normal = 1,
               fog_mode_scatter = 2;
     const int fog_mode = fog_mode_scatter;
-    if (fog_mode == fog_mode_none)
-    {
-        FragColour = vec4(shaded_colour, 1.0);
-    }
     if (fog_mode == fog_mode_normal)
     {
-        FragColour = vec4(
-            fog(shaded_colour, dist, fog_colour),
-            1.0);
+        shaded_colour = fog(shaded_colour, dist, fog_colour);
     }
     else if (fog_mode == fog_mode_scatter)
     {
-        FragColour = vec4(
-            fog_scatter(
-                shaded_colour,
-                dist,
-                fog_colour, // regular fog colour
-                fog_sun_colour, // colour when aligned with sun
-                view_dir,
-                -light_dir),
-            1.0);
+        shaded_colour = fog_scatter(
+            shaded_colour,
+            dist,
+            fog_colour, // regular fog colour
+            fog_sun_colour, // colour when aligned with sun
+            view_dir,
+            -light_dir);
     }
+
+    FragColour = vec4(shaded_colour, 1.0);
 
 
     // Depth buffer testing
