@@ -148,65 +148,45 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
     return mix(fragment, fog_colour_new, f);
 }
 
-float edge_detection()
+float edge_detect()
 {
-    // --------------------
-    // -- Edge detection -- 
-    // --------------------
-    const int no_edge = 0, simple = 1, sobel = 2;
-    int edge_method = no_edge;
-
-    vec2 st = 0.5 * vec2(
-        float(gl_FragCoord.x) / 640.0,
-        float(gl_FragCoord.y) / 480.0); 
-    const float d_s = 0.75 / 640.0;
-    const float d_t = 0.75 / 480.0;
+    vec2 st = (0.5 + 0.5 * FragPosViewSpace.xyz / FragPosViewSpace.w).xy;
+    float ds = 1.0 / 640.0; 
+    float dt = 1.0 / 640.0; 
     float grad;
 
-    if (edge_method == no_edge)
+    mat3 Mx = mat3( 
+         1.0,  2.0,  1.0, 
+         0.0,  0.0,  0.0, 
+        -1.0, -2.0, -1.0);
+    mat3 My = mat3( 
+        1.0,  0.0, -1.0, 
+        2.0,  0.0, -2.0, 
+        1.0,  0.0, -1.0);
+    mat3 samples;
+    for (int i = -1; i <= 1; i += 1)
     {
-        grad = 1.0;
-    }
-    else if (edge_method == simple)
-    {
-        float above = linearize(texture(ShadowDepthMap, vec2(st.s, st.t - d_t)).x); 
-        float left  = linearize(texture(ShadowDepthMap, vec2(st.s - d_s, st.t)).x); 
-        float depth = linearize(texture(ShadowDepthMap, st).x);
-        const float line_dark = 10.0;
-        grad = 1.0 - line_dark * (2.0 * depth - above - left);
-    }
-    else if (edge_method == sobel)
-    {
-        mat3 Mx = mat3( 
-             1.0,  2.0,  1.0, 
-             0.0,  0.0,  0.0, 
-            -1.0, -2.0, -1.0);
-        mat3 My = mat3( 
-            1.0,  0.0, -1.0, 
-            2.0,  0.0, -2.0, 
-            1.0,  0.0, -1.0);
-        mat3 samples;
-        for (int i = -1; i <= 1; i += 1)
+        for (int j = -1; j <= 1; j += 1)
         {
-            for (int j = -1; j <= 1; j += 1)
-            {
-                samples[i+1][j+1] = linearize(
-                    texture(
-                        ShadowDepthMap,
-                        vec2(st.s - j * d_s, st.t - i * d_t))
-                    .x);
-            }
+            samples[i+1][j+1] = linearize(
+                texture(
+                    DepthMap,
+                    vec2(st.s - j * ds, st.t - i * dt))
+                .x);
         }
-
-        float gx = dot(Mx[0], samples[0]) + dot(Mx[1], samples[1]) + dot(Mx[2], samples[2]); 
-        float gy = dot(My[0], samples[0]) + dot(My[1], samples[1]) + dot(My[2], samples[2]);
-        
-        const float line_dark = 5.0;
-        grad = 1.0 - line_dark * (abs(gx) + abs(gy));             // manhattan dist
-        //grad = 1.0 - line_dark * sqrt(gx*gx + gy*gy); // geometric distance
     }
 
-    return grad;
+    float gx = dot(Mx[0], samples[0]) + dot(Mx[1], samples[1]) + dot(Mx[2], samples[2]); 
+    float gy = dot(My[0], samples[0]) + dot(My[1], samples[1]) + dot(My[2], samples[2]);
+    
+    grad = abs(gx) + abs(gy);       // manhattan dist
+    //grad = sqrt(gx*gx + gy*gy);     // geometric distance
+
+    // Decrease weight factor for heavier lines.
+    // At very low factors, the landscape vertices will become apparent.
+    const float weight_factor = 0.4;
+    float edge_value = 1.0 - pow(grad, weight_factor);
+    return edge_value;
 }
 
 // Returns a vector of weights for each season.
@@ -371,6 +351,9 @@ void main()
             -light_dir);
     }
 
+    float edge = edge_detect();
+    shaded_colour = edge * shaded_colour;
+
     FragColour = vec4(shaded_colour, 1.0);
 
 
@@ -387,6 +370,7 @@ void main()
     depth = linearize(depth);
     //FragColour = vec4(vec3(depth), 1.0);
     //FragColour = vec4(vec3(in_shadow()), 1.0);
+    //FragColour = vec4(vec3(edge), 1.0);
 }
 
 
