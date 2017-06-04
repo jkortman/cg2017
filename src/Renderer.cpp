@@ -391,8 +391,6 @@ static void load_texture_skybox(std::vector<std::string> paths);
 // Read and load mesh textures onto the GPU.
 Mesh* Renderer::create_materials(Mesh* mesh)
 {
-    glActiveTexture(GL_TEXTURE0);
-
     // Maps filenames of already loaded textures to texture IDs.
     std::unordered_map<std::string, unsigned int> loaded_textures;
 
@@ -552,7 +550,19 @@ void Renderer::init_shader(
             1, false, glm::value_ptr(scene.world_light_day.light_space));
     }
 
-    
+    // Set up texture IDs.
+    if (render_mode == RenderMode::Scene)
+    {
+        glUniform1i(
+            glGetUniformLocation(shader->program_id, "DepthMap"),
+            0);
+        glUniform1i(
+            glGetUniformLocation(shader->program_id, "ShadowDepthMap"),
+            1);
+        glUniform1i(
+            glGetUniformLocation(shader->program_id, "Texture"),
+            2);
+    }
 
     // Load light sources.
     glUniform4fv(
@@ -862,7 +872,9 @@ void Renderer::render(const Scene& scene)
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, shadow_texture);
     draw_scene(scene, RenderMode::Scene);   
 }

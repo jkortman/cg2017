@@ -17,7 +17,7 @@ uniform float Time;
 
 uniform vec3 ViewPos;
 
-uniform sampler2D DepthMap;
+uniform sampler2D ShadowDepthMap;
 
 struct LightSource
 {
@@ -133,14 +133,14 @@ float in_shadow(vec3 light_dir)
     if (MULTISAMPLE)
     {
         // The distance to sample neighbouring texels at.
-        float dist = 0.5 / textureSize(DepthMap, 0).x;
+        float dist = 0.5 / textureSize(ShadowDepthMap, 0).x;
         for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
         {
             for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
             {
                 // Get the depth of the texel neightbour i,j
                 vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
-                float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
+                float neighbour_depth = texture(ShadowDepthMap, neighbour_coords).r; 
                 //shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
                 // interpolate from 0 to 1/9 based on how large the difference is.
                 
@@ -160,7 +160,7 @@ float in_shadow(vec3 light_dir)
     else
     {
         // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-        float lit_depth = texture(DepthMap, lit_coords.xy).r; 
+        float lit_depth = texture(ShadowDepthMap, lit_coords.xy).r; 
         shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
     }
 

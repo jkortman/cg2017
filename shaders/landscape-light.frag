@@ -15,7 +15,7 @@ uniform float   MtlShininess;
 
 uniform vec3 ViewPos;
 
-uniform sampler2D DepthMap;
+uniform sampler2D ShadowDepthMap;
 
 uniform float Time;
 
@@ -167,9 +167,9 @@ float edge_detection()
     }
     else if (edge_method == simple)
     {
-        float above = linearize(texture(DepthMap, vec2(st.s, st.t - d_t)).x); 
-        float left  = linearize(texture(DepthMap, vec2(st.s - d_s, st.t)).x); 
-        float depth = linearize(texture(DepthMap, st).x);
+        float above = linearize(texture(ShadowDepthMap, vec2(st.s, st.t - d_t)).x); 
+        float left  = linearize(texture(ShadowDepthMap, vec2(st.s - d_s, st.t)).x); 
+        float depth = linearize(texture(ShadowDepthMap, st).x);
         const float line_dark = 10.0;
         grad = 1.0 - line_dark * (2.0 * depth - above - left);
     }
@@ -190,7 +190,7 @@ float edge_detection()
             {
                 samples[i+1][j+1] = linearize(
                     texture(
-                        DepthMap,
+                        ShadowDepthMap,
                         vec2(st.s - j * d_s, st.t - i * d_t))
                     .x);
             }
@@ -261,14 +261,14 @@ float in_shadow(vec3 light_dir)
     if (MULTISAMPLE)
     {
         // The distance to sample neighbouring texels at.
-        float dist = 0.5 / textureSize(DepthMap, 0).x;
+        float dist = 0.5 / textureSize(ShadowDepthMap, 0).x;
         for (int i = -SAMPLE_RADIUS; i <= SAMPLE_RADIUS; i += 1)
         {
             for (int j = -SAMPLE_RADIUS; j <= SAMPLE_RADIUS; j += 1)
             {
                 // Get the depth of the texel neightbour i,j
                 vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
-                float neighbour_depth = texture(DepthMap, neighbour_coords).r; 
+                float neighbour_depth = texture(ShadowDepthMap, neighbour_coords).r; 
                 //shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
                 // interpolate from 0 to 1/9 based on how large the difference is.
                 
@@ -288,7 +288,7 @@ float in_shadow(vec3 light_dir)
     else
     {
         // Get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-        float lit_depth = texture(DepthMap, lit_coords.xy).r; 
+        float lit_depth = texture(ShadowDepthMap, lit_coords.xy).r; 
         shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
     }
     return shadow;
@@ -382,8 +382,8 @@ void main()
     vec2 st = 0.5 * vec2(
         float(gl_FragCoord.x) / 640.0,
         float(gl_FragCoord.y) / 480.0);
-    //float depth = linearize(texture(DepthMap, st).x);
-    float depth = texture(DepthMap, st).x;
+    //float depth = linearize(texture(ShadowDepthMap, st).x);
+    float depth = texture(ShadowDepthMap, st).x;
     //FragColour = vec4(vec3(depth), 1.0);
     //FragColour = vec4(vec3(in_shadow()), 1.0);
 }
