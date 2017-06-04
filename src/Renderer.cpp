@@ -481,8 +481,6 @@ void Renderer::setup_skybox(Skybox* skybox)
     //return mesh;
 }
 
-
-
 static void draw_object(const RenderUnit& ru, const unsigned int current_program)
 {
     // Draw each shape in the object.
@@ -505,6 +503,7 @@ static void draw_object(const RenderUnit& ru, const unsigned int current_program
             ru.mesh->materials[matID].shininess);
 
         // Load the shape material texture into the shader.
+        glActiveTexture(GL_TEXTURE2);
         GLuint texID = ru.mesh->textureIDs[i];
         glBindTexture(GL_TEXTURE_2D, texID);
 
