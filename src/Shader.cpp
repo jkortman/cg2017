@@ -81,7 +81,13 @@ void Shader::set_palette(const std::vector<glm::vec3>& palette, int offset)
     }
 }
 
-void Shader::set_ssao(int num_samples, float scale)
+// Source: https://learnopengl.com/#!Advanced-Lighting/SSAO
+float lerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}
+
+void Shader::set_ssao(int num_samples)
 {
     // Generate num_ssao_samples samples, each a vec3 with each value
     // varying between -1.0 and 1.0.
@@ -96,7 +102,13 @@ void Shader::set_ssao(int num_samples, float scale)
             -1.0f + 2.0f * dist(gen),
             -1.0f + 2.0f * dist(gen));  // disable this when switching to hemispherical
             //dist(gen));
-        samples.push_back(scale * sample_pos);
+        sample_pos = glm::normalize(sample_pos);
+        sample_pos *= dist(gen);
+        float scale = float(i) / num_samples;
+        scale = lerp(0.1f, 1.0f, scale*scale);
+        sample_pos *= scale;
+
+        samples.push_back(sample_pos);
     }
 
     // Load into shader.

@@ -13,7 +13,7 @@ uniform mat4 LightSpaceMatrix;
 out vec3 Colour;
 out vec3 Normal;
 out vec3 FragPos;
-out vec4 FragPosViewSpace;
+out vec4 FragPosDeviceSpace;
 out vec4 FragPosLightSpace;
 
 void main() {
@@ -26,5 +26,5 @@ void main() {
         * ViewMatrix
         * ModelMatrix
         * vec4(a_Position, 1.0);
-    FragPosViewSpace = gl_Position;
+    FragPosDeviceSpace = gl_Position;
 }
