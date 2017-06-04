@@ -15,7 +15,7 @@ uniform float VertDist;
 out vec3 Colour;
 out vec3 Normal;
 out vec3 FragPos;
-out vec4 FragPosViewSpace;
+out vec4 FragPosDeviceSpace;
 out vec4 FragPosLightSpace;
 
 const float pi = 3.1415;
@@ -101,7 +101,7 @@ void main()
         * ViewMatrix
         * ModelMatrix
         * vec4(pos, 1.0);
-    FragPosViewSpace = gl_Position;
+    FragPosDeviceSpace = gl_Position;
 }
 
 // GLSL textureless classic 2D noise "cnoise",

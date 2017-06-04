@@ -3,7 +3,7 @@
 in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
-in vec4 FragPosViewSpace;
+in vec4 FragPosDeviceSpace;
 in vec4 FragPosLightSpace;
 
 out vec4 FragColour;
@@ -113,7 +113,7 @@ float linearize(float z)
 
 float edge_detect()
 {
-    vec2 st = (0.5 + 0.5 * FragPosViewSpace.xyz / FragPosViewSpace.w).xy;
+    vec2 st = (0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w).xy;
     float ds = 1.0 / 640.0; 
     float dt = 1.0 / 640.0; 
     float grad;
