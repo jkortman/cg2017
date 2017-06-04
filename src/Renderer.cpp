@@ -61,7 +61,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     glEnable(GL_MULTISAMPLE);
 
     // -----------------------------------------
-    // -- FBO initialization for depth buffer --
+    // -- FBO initialization for shadow buffer --
     // -----------------------------------------
     glGenFramebuffers(1, &shadow_buffer);
     glBindFramebuffer(GL_FRAMEBUFFER, shadow_buffer);
@@ -93,10 +93,54 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     glReadBuffer(GL_NONE); // default here would be GL_BACK
 
     // Check that the framebuffer generated correctly
-    GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    fatal_if(
-        fb_status != GL_FRAMEBUFFER_COMPLETE,
-        "Frame buffer error, status: " + std::to_string(fb_status));
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Shadow frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // -----------------------------------------
+    // -- FBO initialization for depth buffer --
+    // -----------------------------------------
+    glGenFramebuffers(1, &depth_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+
+    glGenTextures(1, &depth_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_DEPTH_COMPONENT32, depth_texture_size[0], depth_texture_size[1],
+        0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+    #define WRAP_BEHAVIOUR GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WRAP_BEHAVIOUR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WRAP_BEHAVIOUR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D,
+        depth_texture, 0);
+
+    // Instruct openGL that we won't bind a color texture with the current FBO
+    glDrawBuffer(GL_NONE); // default here would be GL_FRONT
+    glReadBuffer(GL_NONE); // default here would be GL_BACK
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
