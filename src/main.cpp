@@ -81,6 +81,8 @@ int main(int argc, char** argv)
 
     scene.shadow_shader = resources.get_shader("shadow");
     scene.depth_shader = resources.get_shader("depth");
+
+    resources.get_shader("landscape-light")->set_ssao(64, 1.0f);
     
     // Create meshes.
     // Each mesh entry in meshes is a name, dir name, and filename.
