@@ -3,6 +3,7 @@
 in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
+in vec4 FragPosViewSpace;
 in vec4 FragPosLightSpace;
 
 out vec4 FragColour;
@@ -15,6 +16,7 @@ uniform float   MtlShininess;
 
 uniform vec3 ViewPos;
 
+uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
 
 uniform float Time;
@@ -379,11 +381,16 @@ void main()
 
 
     // Depth buffer testing
-    vec2 st = 0.5 * vec2(
-        float(gl_FragCoord.x) / 640.0,
-        float(gl_FragCoord.y) / 480.0);
-    //float depth = linearize(texture(ShadowDepthMap, st).x);
-    float depth = texture(ShadowDepthMap, st).x;
+    vec2 st;
+    vec3 depth_coords;
+    float depth;
+
+    depth_coords = 0.5 + 0.5 * FragPosViewSpace.xyz / FragPosViewSpace.w;
+    //depth_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
+    st = depth_coords.xy;
+    depth = texture(DepthMap, st).x;
+    //depth = texture(ShadowDepthMap, st).x;
+    depth = linearize(depth);
     //FragColour = vec4(vec3(depth), 1.0);
     //FragColour = vec4(vec3(in_shadow()), 1.0);
 }

@@ -528,11 +528,9 @@ void Renderer::init_shader(
     if (render_mode == RenderMode::Shadow)
     {
         shader->assert_existence("LightSpaceMatrix");
-        glm::mat4 ls = scene.camera.projection * scene.camera.view;
         glUniformMatrix4fv(
             glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
             1, false, glm::value_ptr(scene.world_light_day.light_space));
-            //1, false, glm::value_ptr(ls));
     }
     else
     {
@@ -676,7 +674,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glUseProgram(current_program);
         init_shader(scene, scene.shadow_shader, render_mode);
     }
-    else if (render_mode == RenderMode::Shadow)
+    else if (render_mode == RenderMode::Depth)
     {
         current_program = scene.depth_shader->program_id;
         glUseProgram(current_program);
