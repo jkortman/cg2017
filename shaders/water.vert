@@ -15,8 +15,8 @@ uniform float VertDist;
 out vec3 Colour;
 out vec3 Normal;
 out vec3 FragPos;
+out vec4 FragPosViewSpace;
 out vec4 FragPosLightSpace;
-out float crest;
 
 const float pi = 3.1415;
 
@@ -87,21 +87,6 @@ void main()
     vec3 rightward = right - a_Position;
     Normal = normalize(NormalMatrix * cross(rightward, downward));
 
-    // Cresting: If this point is higher than it's neighbours, it is a crest.
-    if (a_Position.y > below.y
-        && a_Position.y > above.y
-        && a_Position.y > right.y
-        && a_Position.y > left.y)
-    {
-        //crest = 1.0;
-        crest = max(
-            max(a_Position.y - below.y, a_Position.y - above.y),
-            max(a_Position.y - right.y, a_Position.y - left.y));
-    } else
-    {
-        crest = 0.0;
-    }
-
     // Colour slightly by height.
     Colour = a_Colour;
     FragPos = vec3(ModelMatrix * vec4(pos, 1.0));
@@ -116,6 +101,7 @@ void main()
         * ViewMatrix
         * ModelMatrix
         * vec4(pos, 1.0);
+    FragPosViewSpace = gl_Position;
 }
 
 // GLSL textureless classic 2D noise "cnoise",

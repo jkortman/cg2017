@@ -3,7 +3,7 @@
 in vec3 FragPos;
 in vec3 Colour;
 in vec3 Normal;
-in float crest;
+in vec4 FragPosViewSpace;
 in vec4 FragPosLightSpace;
 
 out vec4 FragColour;
@@ -13,10 +13,11 @@ uniform vec3    MtlAmbient;     // Not used!
 uniform vec3    MtlDiffuse;     // Not used!
 uniform vec3    MtlSpecular;
 uniform float   MtlShininess;
-uniform float Time;
+uniform float   Time;
 
 uniform vec3 ViewPos;
 
+uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
 
 struct LightSource
@@ -101,6 +102,54 @@ vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fo
     // scattered fog colour using the angle of the sun.
     vec3 fog_colour_new = mix(fog_colour, fog_colour_sun, pow(s, 8.0));
     return mix(fragment, fog_colour_new, f);
+}
+
+float linearize(float z)
+{
+    const float near = 0.05;
+    const float far = 1000.0;
+    return (2.0 * near) / (far + near - z * (far - near));
+}
+
+float edge_detect()
+{
+    vec2 st = (0.5 + 0.5 * FragPosViewSpace.xyz / FragPosViewSpace.w).xy;
+    float ds = 1.0 / 640.0; 
+    float dt = 1.0 / 640.0; 
+    float grad;
+
+    mat3 Mx = mat3( 
+         1.0,  2.0,  1.0, 
+         0.0,  0.0,  0.0, 
+        -1.0, -2.0, -1.0);
+    mat3 My = mat3( 
+        1.0,  0.0, -1.0, 
+        2.0,  0.0, -2.0, 
+        1.0,  0.0, -1.0);
+    mat3 samples;
+    for (int i = -1; i <= 1; i += 1)
+    {
+        for (int j = -1; j <= 1; j += 1)
+        {
+            samples[i+1][j+1] = linearize(
+                texture(
+                    DepthMap,
+                    vec2(st.s - j * ds, st.t - i * dt))
+                .x);
+        }
+    }
+
+    float gx = dot(Mx[0], samples[0]) + dot(Mx[1], samples[1]) + dot(Mx[2], samples[2]); 
+    float gy = dot(My[0], samples[0]) + dot(My[1], samples[1]) + dot(My[2], samples[2]);
+    
+    grad = abs(gx) + abs(gy);       // manhattan dist
+    //grad = sqrt(gx*gx + gy*gy);     // geometric distance
+
+    // Decrease weight factor for heavier lines.
+    // At very low factors, the landscape vertices will become apparent.
+    const float weight_factor = 0.4;
+    float edge_value = 1.0 - pow(grad, weight_factor);
+    return edge_value;
 }
 
 // Set to true to multisample the shadow map for smooth shadows.
@@ -188,7 +237,7 @@ void main()
     // Colour very slightly by depth to give indication of water level.
     float shadow = in_shadow(light_dir);
     float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
-    vec4 shaded_colour = (1.0 - shadow) * colour_mod * match_to_palette(calculate_lighting(LightDay));
+    vec3 shaded_colour = vec3((1.0 - shadow) * colour_mod * match_to_palette(calculate_lighting(LightDay)));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
@@ -202,29 +251,24 @@ void main()
               fog_mode_normal = 1,
               fog_mode_scatter = 2;
     const int fog_mode = fog_mode_scatter;
-    if (fog_mode == fog_mode_none)
-    {
-        FragColour = shaded_colour;
-    }
+    
     if (fog_mode == fog_mode_normal)
     {
-        FragColour = vec4(
-            fog(shaded_colour.xyz, dist, fog_colour),
-            1.0);
+        shaded_colour = fog(shaded_colour, dist, fog_colour);
     }
     else if (fog_mode == fog_mode_scatter)
     {
-        FragColour = vec4(
-            fog_scatter(
-                shaded_colour.xyz,
-                dist,
-                fog_colour, // regular fog colour
-                fog_sun_colour, // colour when aligned with sun
-                view_dir,
-                -light_dir),
-            1.0);
+        shaded_colour = fog_scatter(
+            shaded_colour,
+            dist,
+            fog_colour, // regular fog colour
+            fog_sun_colour, // colour when aligned with sun
+            view_dir,
+            -light_dir);
     }
-    //FragColour = vec4(vec3(1.0-shadow), 1.0);
-    //FragColour = vec4(0.5 + 0.5 * Normal, 1.0);
-    //FragColour = vec4(vec3(FragPos.y / (0.05 * 128.0)), 1.0);
+
+    //float edge = edge_detect();
+    //shaded_colour = edge * shaded_colour;
+
+    FragColour = vec4(vec3(shaded_colour), 1.0);
 }
