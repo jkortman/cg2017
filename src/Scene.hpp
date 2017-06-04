@@ -49,7 +49,8 @@ public:
     Shader* skybox_shader;
     // The elapsed time.
     float time_elapsed;
-    // The shader for the depth pass.
+    // The shader for the shadow and depth pass.
+    Shader* shadow_shader;
     Shader* depth_shader;
     
 

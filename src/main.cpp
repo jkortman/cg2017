@@ -64,6 +64,7 @@ int main(int argc, char** argv)
         "water",
         "bplight",
         "depth",
+        "shadow",
         "texture",
         "obj-cel",
         "simple-sky",
@@ -78,6 +79,7 @@ int main(int argc, char** argv)
                                          "shaders/" + shname + ".frag"));
     }
 
+    scene.shadow_shader = resources.get_shader("shadow");
     scene.depth_shader = resources.get_shader("depth");
     
     // Create meshes.
