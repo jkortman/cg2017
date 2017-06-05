@@ -5,10 +5,15 @@ in vec3 FragPosWorld;
 
 struct LightSource
 {
-    vec4 position;
-    vec3 ambient;
-    vec3 diffuse;
-    vec3 specular;
+    vec4    position;
+    float   ambient;
+    float   diffuse;
+    float   specular;
+    float   K_constant;
+    float   K_linear;
+    float   K_quadratic;
+    vec3    spot_direction;
+    float   spot_cos_angle;
 };
 
 uniform LightSource LightDay;

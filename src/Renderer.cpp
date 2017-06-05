@@ -13,6 +13,39 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+static constexpr bool fail_on_error = true;
+static void get_error(int line = -1)
+{
+    std::string err;
+    switch (glGetError())
+    {
+        case GL_NO_ERROR:
+            return;
+        case GL_INVALID_ENUM:
+            err = "GL_INVALID_ENUM"; break;
+        case GL_INVALID_VALUE:
+            err = "GL_INVALID_VALUE"; break;
+        case GL_INVALID_OPERATION:
+            err = "GL_INVALID_OPERATION"; break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            err = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+        case GL_OUT_OF_MEMORY:
+            err = "GL_OUT_OF_MEMORY"; break;
+        default:
+            err = "UNKNOWN_ERROR";
+    }
+    if (line != -1)
+    {
+        err = "Error at line " + std::to_string(line) + ": " + err;
+    }
+    else
+    {
+        err = "Error: " + err;
+    }
+    std::fprintf(stderr, "%s\n", err.c_str());
+    if (fail_on_error) std::exit(EXIT_FAILURE);
+}
+
 Renderer::Renderer()
 {}
 
@@ -57,8 +90,10 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Setup OpenGL.
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
+
+    get_error(__LINE__);
 
     // -----------------------------------------
     // -- FBO initialization for shadow buffer --
@@ -101,6 +136,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
 
     // -----------------------------------------
     // -- FBO initialization for depth buffer --
@@ -117,9 +153,8 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         0, GL_DEPTH_COMPONENT32, depth_texture_size[0], depth_texture_size[1],
         0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
-    #define WRAP_BEHAVIOUR GL_CLAMP_TO_EDGE // GL_CLAMP_TO_BORDER
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WRAP_BEHAVIOUR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WRAP_BEHAVIOUR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
 
@@ -143,6 +178,73 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
+    // -----------------------------------------
+    // -- FBO initialization for scene buffer --
+    // -----------------------------------------
+    glGenFramebuffers(1, &scene_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, scene_buffer);
+
+    glGenTextures(1, &scene_texture);
+    glBindTexture(GL_TEXTURE_2D, scene_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_RGB, scene_texture_size[0], scene_texture_size[1],
+        0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        scene_texture, 0);
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
+    // --------------------------
+    // -- Postprocessing setup --
+    // --------------------------
+    // Create a quad to render the final scene to.
+    /*
+    const float positions[] = {
+        -1.0f, -1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,
+    };*/
+    const float positions[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f,
+    };
+    glGenVertexArrays(1, &quad_vao);
+    glBindVertexArray(quad_vao);
+    unsigned int buffer;
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), positions, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    get_error(__LINE__);
 }
 
 // Callback for window resize
@@ -152,8 +254,7 @@ void reshape(int width, int height)
     glViewport(0, 0, width, height);
     window_width = width;
     window_height = height;
-
-    // TODO: Update projection matrix.
+    get_error(__LINE__);
 }
 
 // Register InputHandler functions as callbacks.
@@ -217,6 +318,8 @@ void assign_generic_vao(
         sizeof(float) * indices.size(),
         indices.data(),
         GL_STATIC_DRAW);
+
+    get_error(__LINE__);
 }
 
 // Generate and assign a VAO to a landscape object.
@@ -268,6 +371,7 @@ Landscape* Renderer::assign_vao(Landscape* landscape)
         landscape->indices.data(),
         GL_STATIC_DRAW);
 
+    get_error(__LINE__);
     return landscape;
 }
 
@@ -319,6 +423,7 @@ Water* Renderer::assign_vao(Water* water)
         water->indices.data(),
         GL_STATIC_DRAW);
 
+    get_error(__LINE__);
     return water;
 }
 
@@ -360,6 +465,7 @@ Skybox* Renderer::assign_vao(Skybox* skybox)
         skybox->indices.data(),
         GL_STATIC_DRAW);
 
+    get_error(__LINE__);
     return skybox;
 }
 
@@ -379,6 +485,7 @@ Mesh* Renderer::assign_vao(Mesh* mesh)
             mesh->shapes[i].mesh.indices);
     }
 
+    get_error(__LINE__);
     return mesh;
 }
 
@@ -441,6 +548,7 @@ Mesh* Renderer::create_materials(Mesh* mesh)
         mesh->textureIDs.push_back(texID);
     }
 
+    get_error(__LINE__);
     return mesh;
 }
 
@@ -455,10 +563,6 @@ void Renderer::setup_skybox(Skybox* skybox)
     paths.push_back("skybox/sky_bottom.jpg");
     paths.push_back("skybox/sky_back.jpg");
     paths.push_back("skybox/sky_front.jpg");
-
-    
-
-    
         
     // Check if the texture is already loaded.
     GLuint texID = -1;
@@ -479,6 +583,8 @@ void Renderer::setup_skybox(Skybox* skybox)
     
     skybox->texID =texID;
     //return mesh;
+
+    get_error(__LINE__);
 }
 
 static void draw_object(const RenderUnit& ru, const unsigned int current_program)
@@ -547,6 +653,8 @@ void Renderer::init_shader(
             1, false, glm::value_ptr(scene.world_light_day.light_space));
     }
 
+    get_error(__LINE__);
+
     // Set up texture IDs.
     if (render_mode == RenderMode::Scene)
     {
@@ -560,6 +668,8 @@ void Renderer::init_shader(
             glGetUniformLocation(shader->program_id, "Texture"),
             2);
     }
+    
+    get_error(__LINE__);
 
     // Load light sources.
     glUniform4fv(
@@ -574,10 +684,11 @@ void Renderer::init_shader(
     glUniform1f(
         glGetUniformLocation(shader->program_id, "LightDay.specular"),
         scene.world_light_day.specular);
-
     glUniform1i(
         glGetUniformLocation(shader->program_id, "NumLights"),
         int(scene.lights.size()));
+
+    get_error(__LINE__);
 
     for (int i = 0; i < scene.lights.size(); i += 1)
     {
@@ -629,6 +740,7 @@ void Renderer::init_shader(
             glm::cos(glm::radians(scene.lights[i].spot_angle)));
 
     }
+    get_error(__LINE__);
 
     // Load view position.
     glUniform3fv(
@@ -681,6 +793,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         init_shader(scene, scene.depth_shader, render_mode);
     }
 
+    get_error(__LINE__);
+
     // Render the landscape.
     Landscape* landscape = scene.landscape.get();
     if (landscape != nullptr)
@@ -726,6 +840,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glBindVertexArray(0);
     }
 
+    get_error(__LINE__);
+
     // Render ocean.
     Water* water = scene.water.get();
     if (water != nullptr)
@@ -766,6 +882,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glBindVertexArray(0);
     }
 
+    get_error(__LINE__);
+
     // Render skybox.
     // Skybox doesn't casr any shadows, so it's unnecessary when rendering
     // the depth map.
@@ -778,6 +896,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             current_program = scene.skybox_shader->program_id;
             glUseProgram(current_program);
             init_shader(scene, scene.skybox_shader, render_mode);
+    get_error(__LINE__);
 
             glUniform1f(
                 glGetUniformLocation(current_program, "Time"),
@@ -788,6 +907,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
                 glGetUniformLocation(current_program, "ModelMatrix"),
                 1, false, glm::value_ptr(skybox->model_matrix));
 
+            get_error(__LINE__);
             glBindTexture(GL_TEXTURE_2D, skybox->texID);
 
             glBindVertexArray(skybox->vao);
@@ -799,6 +919,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             glBindVertexArray(0);
         }
     }
+
+    get_error(__LINE__);
 
     // Load and draw each object in the scene.
     for (const auto& object : scene.objects)
@@ -846,6 +968,7 @@ void Renderer::render(const Scene& scene)
             fb_status != GL_FRAMEBUFFER_COMPLETE,
             "Frame buffer error, status: " + std::to_string(fb_status));
     }
+    get_error(__LINE__);
 
     // ----------------------------------
     // -- Pass 2: Render depth buffer. --
@@ -861,19 +984,54 @@ void Renderer::render(const Scene& scene)
             fb_status != GL_FRAMEBUFFER_COMPLETE,
             "Frame buffer error, status: " + std::to_string(fb_status));
     }
+    get_error(__LINE__);
 
-    // ---------------------------
-    // -- Pass 2: Render scene. --
-    // ---------------------------
+    // ----------------------------------
+    // -- Pass 3: Render scene buffer. --
+    // ----------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
+    get_error(__LINE__);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, shadow_texture);
-    draw_scene(scene, RenderMode::Scene);   
+    get_error(__LINE__);
+
+    draw_scene(scene, RenderMode::Scene);
+    get_error(__LINE__);
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Frame buffer error, status: " + std::to_string(fb_status));
+    }
+    get_error(__LINE__);
+
+    // -----------------------------------------
+    // -- Pass 4: Render postprocessed scene. --
+    // -----------------------------------------
+    #if 0
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, window_width, window_height);
+
+    glUseProgram(scene.postprocess_shader->program_id);
+    //glUniform1i(
+    //    glGetUniformLocation(scene.postprocess_shader->program_id, "SceneMap"),
+    //    0);
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, scene_texture);
+    glBindVertexArray(quad_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    get_error(__LINE__);
+    #endif
 }
 
 // Cleanup after a single render

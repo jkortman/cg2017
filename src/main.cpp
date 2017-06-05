@@ -65,6 +65,7 @@ int main(int argc, char** argv)
         "bplight",
         "depth",
         "shadow",
+        "postprocess",
         "texture",
         "obj-cel",
         "simple-sky",
@@ -79,8 +80,9 @@ int main(int argc, char** argv)
                                          "shaders/" + shname + ".frag"));
     }
 
-    scene.shadow_shader = resources.get_shader("shadow");
-    scene.depth_shader = resources.get_shader("depth");
+    scene.shadow_shader         = resources.get_shader("shadow");
+    scene.depth_shader          = resources.get_shader("depth");
+    scene.postprocess_shader    = resources.get_shader("postprocess");
 
     resources.get_shader("landscape-light")->set_ssao(64);
     

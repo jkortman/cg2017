@@ -57,7 +57,14 @@ private:
     const unsigned int shadow_texture_size = 1024;
     GLuint depth_buffer;
     GLuint depth_texture;
-    const std::array<unsigned int, 2> depth_texture_size = {{ 640, 480 }};
+    const std::array<unsigned int, 2> depth_texture_size =
+        {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+    GLuint scene_buffer;
+    GLuint scene_texture;
+    const std::array<unsigned int, 2> scene_texture_size = 
+        {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+    GLuint quad_vao;
+    unsigned int quad_size;
     bool wireframe;
 };
 
