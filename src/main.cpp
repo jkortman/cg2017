@@ -66,7 +66,7 @@ int main(int argc, char** argv)
         "depth",
         "shadow",
         "postprocess",
-        "topdown",
+        "reflect",
         "texture",
         "obj-cel",
         "simple-sky",
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     scene.shadow_shader         = resources.get_shader("shadow");
     scene.depth_shader          = resources.get_shader("depth");
     scene.postprocess_shader    = resources.get_shader("postprocess");
-    scene.reflect_shader        = resources.get_shader("topdown");
+    scene.reflect_shader        = resources.get_shader("reflect");
 
     resources.get_shader("landscape-light")->set_ssao(64);
     
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
         landscape = renderer.assign_vao(tg.landscape());
         scene.give_landscape(landscape, resources.get_shader("landscape-light"));
         resources.get_shader("landscape-light")->set_palette(landscape->palette);
-        resources.get_shader("topdown")->set_palette(landscape->palette);
+        resources.get_shader("reflect")->set_palette(landscape->palette);
         scene.player.position =
             landscape->get_pos_at(glm::vec3(0.0f, 0.0f, 0.0f))
             + glm::vec3(0.0f, 1.0f, 0.0f);
