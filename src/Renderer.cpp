@@ -704,7 +704,7 @@ void Renderer::init_shader(
             glGetUniformLocation(shader->program_id, "Texture"),
             2);
         glUniform1i(
-            glGetUniformLocation(shader->program_id, "TopDownMap"),
+            glGetUniformLocation(shader->program_id, "ReflectMap"),
             3);
     }
 

@@ -22,7 +22,6 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
-uniform sampler2D TopDownMap;
 
 uniform float Time;
 

@@ -19,7 +19,7 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
-uniform sampler2D TopDownMap;
+uniform sampler2D ReflectMap;
 
 struct LightSource
 {
@@ -251,20 +251,20 @@ vec4 world_reflection_bad(vec3 view_dir)
     st = vec2(clamp(st.s, 0.0, 1.0),
               clamp(st.t, 0.0, 1.0));
 
-    vec4 col = texture(TopDownMap, st);
+    vec4 col = texture(ReflectMap, st);
 
     // blur the colour.
     float dist = 1.0 / 1024.0;
     col = (
-        texture(TopDownMap, st + vec2(-dist, -dist)),
-        texture(TopDownMap, st + vec2(  0.0, -dist)),
-        texture(TopDownMap, st + vec2( dist, -dist)),
-        texture(TopDownMap, st + vec2(-dist,   0.0)),
-        texture(TopDownMap, st + vec2(  0.0,   0.0)),
-        texture(TopDownMap, st + vec2( dist,   0.0)),
-        texture(TopDownMap, st + vec2(-dist,  dist)),
-        texture(TopDownMap, st + vec2(  0.0,  dist)),
-        texture(TopDownMap, st + vec2( dist,  dist))) / 9.0;
+        texture(ReflectMap, st + vec2(-dist, -dist)),
+        texture(ReflectMap, st + vec2(  0.0, -dist)),
+        texture(ReflectMap, st + vec2( dist, -dist)),
+        texture(ReflectMap, st + vec2(-dist,   0.0)),
+        texture(ReflectMap, st + vec2(  0.0,   0.0)),
+        texture(ReflectMap, st + vec2( dist,   0.0)),
+        texture(ReflectMap, st + vec2(-dist,  dist)),
+        texture(ReflectMap, st + vec2(  0.0,  dist)),
+        texture(ReflectMap, st + vec2( dist,  dist))) / 9.0;
 
     if (col.xyz == vec3(0.0))
     {
@@ -330,7 +330,7 @@ void main()
 
     #if 1
     vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
-    vec4 reflected_colour = texture(TopDownMap, coords.st);
+    vec4 reflected_colour = texture(ReflectMap, coords.st);
     float reflect_amt = 0.5;
     if (reflected_colour.a > 0.0)
     {

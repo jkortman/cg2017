@@ -57,7 +57,7 @@ private:
     //  0   DepthMap          The view-perspective depth map.
     //  1   ShadowDepthMap    The light-perspective depth map.
     //  2   Texture           A texture for a shape in a Mesh object.
-    //  3   TopDownMap        The color map for a top-down ortho view of the scene.
+    //  3   ReflectMap        The color map for a top-down ortho view of the scene.
 
     // The FBO and texture for light-perspective depth map (for shadow mapping).
     GLuint shadow_buffer;
