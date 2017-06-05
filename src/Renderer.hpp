@@ -69,9 +69,9 @@ private:
     const std::array<unsigned int, 2> depth_texture_size =
         {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
     // The FBO and texture to render the landscape from a top-down perspective.
-    GLuint topdown_buffer;
-    GLuint topdown_texture;
-    const unsigned int topdown_texture_size = 1024;
+    GLuint reflect_buffer;
+    GLuint reflect_texture;
+    const unsigned int reflect_texture_size = 1024;
     // The FBO and texture to render the scene to, for postprocessing.
     GLuint scene_buffer;
     GLuint scene_texture;

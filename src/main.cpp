@@ -84,7 +84,7 @@ int main(int argc, char** argv)
     scene.shadow_shader         = resources.get_shader("shadow");
     scene.depth_shader          = resources.get_shader("depth");
     scene.postprocess_shader    = resources.get_shader("postprocess");
-    scene.topdown_shader        = resources.get_shader("topdown");
+    scene.reflect_shader        = resources.get_shader("topdown");
 
     resources.get_shader("landscape-light")->set_ssao(64);
     

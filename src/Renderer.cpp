@@ -181,18 +181,18 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     get_error(__LINE__);
 
     // ------------------------------------------------
-    // -- FBO initialization for topdown view buffer --
+    // -- FBO initialization for reflect view buffer --
     // ------------------------------------------------
-    glGenFramebuffers(1, &topdown_buffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
+    glGenFramebuffers(1, &reflect_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, reflect_buffer);
 
-    glGenTextures(1, &topdown_texture);
-    glBindTexture(GL_TEXTURE_2D, topdown_texture);
+    glGenTextures(1, &reflect_texture);
+    glBindTexture(GL_TEXTURE_2D, reflect_texture);
 
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_RGB, topdown_texture_size, topdown_texture_size,
+        0, GL_RGB, reflect_texture_size, reflect_texture_size,
         0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -203,7 +203,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         GL_FRAMEBUFFER,
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
-        topdown_texture, 0);
+        reflect_texture, 0);
 
     // Check that the framebuffer generated correctly
     {
@@ -833,9 +833,9 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     }
     else if (render_mode == RenderMode::Reflect)
     {
-        current_program = scene.topdown_shader->program_id;
+        current_program = scene.reflect_shader->program_id;
         glUseProgram(current_program);
-        init_shader(scene, scene.topdown_shader, render_mode);
+        init_shader(scene, scene.reflect_shader, render_mode);
     }
 
     get_error(__LINE__);
@@ -1032,13 +1032,13 @@ void Renderer::render(const Scene& scene)
     get_error(__LINE__);
 
     // ----------------------------------
-    // -- Pass 3: Render topdown view. --
+    // -- Pass 3: Render reflect view. --
     // ----------------------------------
     glFrontFace(GL_CW);
-    glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, reflect_buffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0, 0, topdown_texture_size, topdown_texture_size);
+    glViewport(0, 0, reflect_texture_size, reflect_texture_size);
 
     draw_scene(scene, RenderMode::Reflect);
 
@@ -1065,7 +1065,7 @@ void Renderer::render(const Scene& scene)
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, shadow_texture);
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, topdown_texture);
+    glBindTexture(GL_TEXTURE_2D, reflect_texture);
 
     draw_scene(scene, RenderMode::Scene);
 
