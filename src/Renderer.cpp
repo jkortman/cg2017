@@ -831,7 +831,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glUseProgram(current_program);
         init_shader(scene, scene.depth_shader, render_mode);
     }
-    else if (render_mode == RenderMode::TopDown)
+    else if (render_mode == RenderMode::Reflect)
     {
         current_program = scene.topdown_shader->program_id;
         glUseProgram(current_program);
@@ -887,7 +887,7 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 
     get_error(__LINE__);
 
-    if (render_mode == RenderMode::TopDown) return;
+    if (render_mode == RenderMode::Reflect) return;
 
     // Render ocean.
     Water* water = scene.water.get();
@@ -1040,7 +1040,7 @@ void Renderer::render(const Scene& scene)
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, topdown_texture_size, topdown_texture_size);
 
-    draw_scene(scene, RenderMode::TopDown);
+    draw_scene(scene, RenderMode::Reflect);
 
     glFrontFace(GL_CCW);
 
