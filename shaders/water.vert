@@ -25,7 +25,7 @@ float cnoise(in vec2 P);
 vec3 wave(vec3 pos, float time)
 {
     vec2 coord = pos.xz * 0.02;
-    const float height_variance = 0.6;
+    const float height_variance = 0.8;
     float a = cnoise(coord + 0.05 * time);
     float b = cnoise(coord + 1.0);
     float c = cnoise(coord + a + 0.07 * time);
@@ -100,8 +100,8 @@ void main()
         ProjectionMatrix
         * ViewMatrix
         * ModelMatrix
-        //* vec4(a_Position, 1.0);
-        * vec4(pos, 1.0);
+        * vec4(a_Position, 1.0);
+        //* vec4(pos, 1.0);
     FragPosDeviceSpace = gl_Position;
 }
 

@@ -280,7 +280,13 @@ vec4 world_reflection_bad(vec3 view_dir)
 
 vec4 world_reflection()
 {
-    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    vec4 norm = ProjectionMatrix * ViewMatrix
+    * vec4(
+        Normal * vec3(1.0, 0.0, 1.0)
+        + vec3(0.0, -0.04, 0.0),         // height correction to remove blue gaps
+        0.0);
+    vec4 reflect_pos = FragPosDeviceSpace + 10.0*norm;
+    vec3 coords = 0.5 + 0.5 * reflect_pos.xyz / reflect_pos.w;
     return texture(ReflectMap, coords.st);
 }
 
