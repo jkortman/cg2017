@@ -21,7 +21,6 @@ out vec4 FragPosLightSpace;
 const float pi = 3.1415;
 
 float cnoise(in vec2 P);
-
 vec3 wave(vec3 pos, float time)
 {
     vec2 coord = pos.xz * 0.02;
