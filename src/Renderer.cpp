@@ -1056,7 +1056,7 @@ void Renderer::render(const Scene& scene)
     // -- Pass 3: Render topdown view. --
     // ----------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, topdown_texture_size, topdown_texture_size);
 

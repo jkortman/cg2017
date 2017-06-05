@@ -19,6 +19,7 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
+uniform sampler2D TopDownMap;
 
 struct LightSource
 {
@@ -221,6 +222,63 @@ float in_shadow(vec3 light_dir)
     return shadow;
 }
 
+// Get the world reflection colour.
+// If alpha channel is zero, the landscape has no reflection
+// at the current viewing angle.
+vec4 world_reflection_bad(vec3 view_dir)
+{
+    //           --------- landscape map face
+    //         ^      ^
+    //       h |      |
+    //         v      | /
+    // view dir -----> / water surface
+    //                /
+    // h is the effective height of the landscape map.
+    const float h = 10.0;
+
+    // Flat surfaces reflect nothing.
+    if (Normal == vec3(0.0, 1.0, 0.0)) return vec4(0.0);
+
+    // Reflect the view direction on the water surface.
+    vec3 r = reflect(view_dir, Normal);
+
+    // Project the vector r onto the landscape surface.
+    float x = h / r.y;
+    vec3 p = FragPos + x * r;
+
+    // Map p.xz to [0, 1] from [-200, 200]
+    vec2 st = 0.5 + 0.5 * p.xz / 200.0;
+    st = vec2(clamp(st.s, 0.0, 1.0),
+              clamp(st.t, 0.0, 1.0));
+
+    vec4 col = texture(TopDownMap, st);
+
+    // blur the colour.
+    float dist = 1.0 / 1024.0;
+    col = (
+        texture(TopDownMap, st + vec2(-dist, -dist)),
+        texture(TopDownMap, st + vec2(  0.0, -dist)),
+        texture(TopDownMap, st + vec2( dist, -dist)),
+        texture(TopDownMap, st + vec2(-dist,   0.0)),
+        texture(TopDownMap, st + vec2(  0.0,   0.0)),
+        texture(TopDownMap, st + vec2( dist,   0.0)),
+        texture(TopDownMap, st + vec2(-dist,  dist)),
+        texture(TopDownMap, st + vec2(  0.0,  dist)),
+        texture(TopDownMap, st + vec2( dist,  dist))) / 9.0;
+
+    if (col.xyz == vec3(0.0))
+    {
+        return vec4(0.0);
+    }
+
+    return col;
+}
+
+
+vec4 world_reflection(vec3 view_dir)
+{
+    return vec4(0.0);
+}
 
 void main()
 {
@@ -270,5 +328,14 @@ void main()
     //float edge = edge_detect();
     //shaded_colour = edge * shaded_colour;
 
+    #if 0
+    vec4 reflected_colour = world_reflection(view_dir);
+    float reflect_amt = 0.5;
+    if (reflected_colour.a > 0.0)
+    {
+        shaded_colour = (1.0 - reflect_amt) * shaded_colour
+                        + reflect_amt * vec3(reflected_colour);
+    }
+    #endif
     FragColour = vec4(vec3(shaded_colour), 1.0);
 }
