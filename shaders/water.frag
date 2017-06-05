@@ -43,33 +43,68 @@ uniform LightSource Lights[4];
 uniform vec3 Palette[16];
 uniform int PaletteSize;
 
-vec4 calculate_lighting(in LightSource light, in vec3 colour) {
+float discretize(float value)
+{
+    // We map a continuous value to one of N
+    // fixed values between 0 and 1+W, where W is some factor to force white
+    // highlights on the landscape.
+    // For N = 5 this is equivalent to:
+    //      if      (value < 0.25)      return 0.00;
+    //      else if (value < 0.50)      return 0.33;
+    //      else if (value < 0.75)      return 0.66;
+    //      else if (value < 1.00)      return 1.00;
+    //      else                        return 1.33;
+    /*
+    if      (value < 0.25)      return 0.00;
+    else if (value < 0.50)      return 0.33;
+    else if (value < 0.75)      return 0.66;
+    else if (value < 1.00)      return 1.00;
+    else                        return 1.33;
+    */
+    const float N = 7.0;
+    return floor(N * value) / (N - 1.0);
+}
+
+vec3 calculate_lighting(in LightSource light) {
     vec3 norm = normalize(Normal);
 
     vec3 light_dir;
+    float attenuation;
     if (light.position.w == 0.0) {
+        // Directional light
         light_dir = normalize(-light.position.xyz);
+        attenuation = 1.0;
     } else {
+        // Point or spot light
         light_dir = normalize(vec3(light.position) - FragPos);
+        float dist = length(vec3(light.position) - FragPos);
+        attenuation = 1.0 / (  light.K_constant
+                             + light.K_linear * dist
+                             + light.K_quadratic * dist * dist);
+        // If a spot light, attenuate by the error.
+        float cos_angle = dot(light_dir, normalize(-light.spot_direction));
+        if (cos_angle < light.spot_cos_angle)
+        {
+            float amt = light.spot_cos_angle - cos_angle;
+            attenuation -= amt;
+        }
     }
 
     // Calculate ambient component.
-    vec3 ambient = colour * light.ambient;
+    float ambi = 1.0;
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
-    vec3 diffuse = diff * colour;// * light.diffuse;
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
-    float spec = pow(max(dot(norm, halfway_dir), 0.0), 100.0);
-    vec3 specular = vec3(light.specular * spec);
+    float spec = pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
 
-    return vec4(ambient + diffuse + specular, 1.0);
+    return attenuation * vec3(ambi, diff, spec);
 }
 
-vec4 match_to_palette(vec4 colour) {
+vec3 match_to_palette(vec3 colour) {
     float min_dist = 1.0 / 0.0; // infinity
     int min_index = 0;
 
@@ -84,7 +119,7 @@ vec4 match_to_palette(vec4 colour) {
         }
     }
 
-    return vec4(Palette[min_index], colour.a);
+    return Palette[min_index];
 }
 
 // Fog calculation.
@@ -308,16 +343,28 @@ void main()
     vec3 reflect_colour = vec3(world_reflection());
     vec3 base_colour = (1.0 - reflect_amt) * water_colour
                      + reflect_amt * vec3(reflect_colour);
+    
+    // Get the shaded, lit colour.
+    float shadow = in_shadow(light_dir);
+    vec3 light_day_intensity = calculate_lighting(LightDay);
+    // Point/spot lighting is currently unimplemented for water.
+    vec3 light_point_intensity = vec3(0.0);
+    float ambi = max(light_day_intensity.x, light_point_intensity.x);
+    float diff = max(
+        (1.0 - shadow) * discretize(light_day_intensity.y),
+        discretize(light_point_intensity.y));
+    float spec = max(
+        (1.0 - shadow) * discretize(light_day_intensity.z),
+        discretize(light_point_intensity.z));
+
+    // TODO: Replace these with material properties added by Water generation code.
+    vec3 shaded_colour = 
+        base_colour * (0.15 * ambi + 0.8 * diff)
+        + 0.5 * spec;
 
     // Colour very slightly by depth to give indication of water level.
-    float shadow = in_shadow(light_dir);
-    float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
-    float shadow_amt = 0.85;
-    vec3 shaded_colour = vec3(
-        (1.0 - shadow)
-        * colour_mod
-        * ((1.0 - reflect_amt)*match_to_palette(calculate_lighting(LightDay, water_colour))
-           + reflect_amt*calculate_lighting(LightDay, reflect_colour)));
+    float colour_mod = 1.0 + 0.15 * (FragPos.y - water_level);
+    shaded_colour = colour_mod * shaded_colour;
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);

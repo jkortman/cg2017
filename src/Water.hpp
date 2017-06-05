@@ -37,6 +37,9 @@ struct Water
 
     // Material data.
     struct {
+        glm::vec3 ambient;
+        glm::vec3 diffuse;
+        glm::vec3 specular;
         float shininess;
     } material;
 

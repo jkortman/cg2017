@@ -908,6 +908,15 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             glGetUniformLocation(current_program, "NormalMatrix"),
             1, false, glm::value_ptr(water->normal_matrix));
         // Load the shape material properties into the shader.
+        glUniform3fv(
+            glGetUniformLocation(current_program, "MtlAmbient"),
+            1, glm::value_ptr(water->material.ambient));
+        glUniform3fv(
+            glGetUniformLocation(current_program, "MtlDiffuse"),
+            1, glm::value_ptr(water->material.diffuse));
+        glUniform3fv(
+            glGetUniformLocation(current_program, "MtlSpecular"),
+            1, glm::value_ptr(water->material.specular));
         glUniform1f(
             glGetUniformLocation(current_program, "MtlShininess"),
             water->material.shininess);
