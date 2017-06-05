@@ -159,8 +159,8 @@ void season_colours(out vec3 mul, out vec3 add)
 
 void main()
 {
-    // Discard fragments below water level.
-    if (FragPos.y <= 0.05 * 128.0) discard;
+    float water_level = 0.05*128.0;
+    if (FragPos.y > water_level) discard;
 
     // --------------------------------
     // -- Fragment colour processing --

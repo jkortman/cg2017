@@ -90,7 +90,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Setup OpenGL.
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
 
     get_error(__LINE__);
@@ -674,27 +674,6 @@ void Renderer::init_shader(
             glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
             1, false, glm::value_ptr(scene.world_light_day.light_space));
     }
-    else if (render_mode == RenderMode::TopDown)
-    {
-        shader->assert_existence("ProjectionMatrix");
-        shader->assert_existence("ViewMatrix");
-        float scale = 192.0f;
-        glm::mat4 projection =
-            glm::ortho(-scale, scale, -scale, scale, 0.05f, 1200.0f);
-        glm::mat4 view = glm::lookAt(
-            700.0f * glm::vec3(0.0f, 1.0f, 0.0f),
-            glm::vec3(0.0f),
-            AXIS_Z);
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
-            1, false, glm::value_ptr(projection));
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "ViewMatrix"),
-            1, false, glm::value_ptr(view));
-        glUniformMatrix4fv(
-            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
-            1, false, glm::value_ptr(scene.world_light_day.light_space));
-    }
     else
     {
         shader->assert_existence("ProjectionMatrix");
@@ -1055,12 +1034,15 @@ void Renderer::render(const Scene& scene)
     // ----------------------------------
     // -- Pass 3: Render topdown view. --
     // ----------------------------------
+    glFrontFace(GL_CW);
     glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, topdown_texture_size, topdown_texture_size);
 
     draw_scene(scene, RenderMode::TopDown);
+
+    glFrontFace(GL_CCW);
 
     {
         GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

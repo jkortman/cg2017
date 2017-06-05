@@ -328,8 +328,9 @@ void main()
     //float edge = edge_detect();
     //shaded_colour = edge * shaded_colour;
 
-    #if 0
-    vec4 reflected_colour = world_reflection(view_dir);
+    #if 1
+    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    vec4 reflected_colour = texture(TopDownMap, coords.st);
     float reflect_amt = 0.5;
     if (reflected_colour.a > 0.0)
     {
@@ -338,4 +339,5 @@ void main()
     }
     #endif
     FragColour = vec4(vec3(shaded_colour), 1.0);
+
 }
