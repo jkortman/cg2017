@@ -15,6 +15,9 @@ uniform vec3    MtlSpecular;
 uniform float   MtlShininess;
 uniform float   Time;
 
+uniform mat4 ProjectionMatrix;
+uniform mat4 ViewMatrix;
+
 uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
@@ -40,7 +43,7 @@ uniform LightSource Lights[4];
 uniform vec3 Palette[16];
 uniform int PaletteSize;
 
-vec4 calculate_lighting(in LightSource light) {
+vec4 calculate_lighting(in LightSource light, in vec3 colour) {
     vec3 norm = normalize(Normal);
 
     vec3 light_dir;
@@ -51,11 +54,11 @@ vec4 calculate_lighting(in LightSource light) {
     }
 
     // Calculate ambient component.
-    vec3 ambient = Colour * light.ambient;
+    vec3 ambient = colour * light.ambient;
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
-    vec3 diffuse = diff * Colour;// * light.diffuse;
+    vec3 diffuse = diff * colour;// * light.diffuse;
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
@@ -275,9 +278,10 @@ vec4 world_reflection_bad(vec3 view_dir)
 }
 
 
-vec4 world_reflection(vec3 view_dir)
+vec4 world_reflection()
 {
-    return vec4(0.0);
+    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    return texture(ReflectMap, coords.st);
 }
 
 void main()
@@ -292,10 +296,22 @@ void main()
     vec3 light_dir = normalize(-LightDay.position.xyz);
     float dist = length(ViewPos - FragPos);
 
+    // Colour by reflection.
+    const vec3 water_colour = vec3(0.30, 0.30, 1.00);
+    float reflect_amt = 0.7;
+    vec3 reflect_colour = vec3(world_reflection());
+    vec3 base_colour = (1.0 - reflect_amt) * water_colour
+                     + reflect_amt * vec3(reflect_colour);
+
     // Colour very slightly by depth to give indication of water level.
     float shadow = in_shadow(light_dir);
     float colour_mod = 1.0 + 0.30 * (FragPos.y - water_level);
-    vec3 shaded_colour = vec3((1.0 - shadow) * colour_mod * match_to_palette(calculate_lighting(LightDay)));
+    float shadow_amt = 0.85;
+    vec3 shaded_colour = vec3(
+        (1.0 - shadow)
+        * colour_mod
+        * ((1.0 - reflect_amt)*match_to_palette(calculate_lighting(LightDay, water_colour))
+           + reflect_amt*calculate_lighting(LightDay, reflect_colour)));
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
@@ -328,16 +344,6 @@ void main()
     //float edge = edge_detect();
     //shaded_colour = edge * shaded_colour;
 
-    #if 1
-    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
-    vec4 reflected_colour = texture(ReflectMap, coords.st);
-    float reflect_amt = 0.5;
-    if (reflected_colour.a > 0.0)
-    {
-        shaded_colour = (1.0 - reflect_amt) * shaded_colour
-                        + reflect_amt * vec3(reflected_colour);
-    }
-    #endif
     FragColour = vec4(vec3(shaded_colour), 1.0);
 
 }

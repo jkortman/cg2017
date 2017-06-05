@@ -93,8 +93,8 @@ void main()
     // The fragment position for calculating shadows not perturbed by noise.
     // If it was the waves would cast shadows on the water. This looks good,
     // but obscures the sun specularity during sunset, which looks bad.
-    //FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
-    FragPosLightSpace = LightSpaceMatrix * vec4(a_Position, 1.0);
+    FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
+    //FragPosLightSpace = LightSpaceMatrix * vec4(a_Position, 1.0);
 
     gl_Position =
         ProjectionMatrix

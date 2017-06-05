@@ -112,6 +112,7 @@ int main(int argc, char** argv)
     scene.world_light_day = LightSource(
         glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
         0.2f, 0.5f, 1.0f);
+
     #if 0
     scene.lights.push_back(LightSource(
         glm::vec4(0.0f, 1.0f, 0.0f, 0.0f),

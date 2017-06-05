@@ -21,7 +21,7 @@ Water::Water(
     material.shininess = 20.0f;
 
     // Generate palette.
-    base_colour = glm::vec3(0.30f, 0.30f, 1.00f);
+    base_colour = WATER_COLOUR;
     palette = {{
         glm::vec3(0.90f, 0.90f, 1.00f),
         glm::vec3(0.75f, 0.75f, 1.00f),

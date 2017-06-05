@@ -427,9 +427,11 @@ void main()
             -light_dir);
     }
 
+    #if 0
     float edge = edge_detect();
     //float ssao = ambient_occlusion();
     shaded_colour = edge * shaded_colour;
+    #endif
 
     FragColour = vec4(shaded_colour, 1.0);
     //FragColour = vec4(vec3(ssao), 1.0);

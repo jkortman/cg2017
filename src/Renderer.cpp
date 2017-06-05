@@ -1034,14 +1034,17 @@ void Renderer::render(const Scene& scene)
     // ----------------------------------
     // -- Pass 3: Render reflect view. --
     // ----------------------------------
+    // Switch front-facing triangles to clockwise,
+    // as they flip when we reflect.
     glFrontFace(GL_CW);
     glBindFramebuffer(GL_FRAMEBUFFER, reflect_buffer);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClearColor(WATER_COLOUR.x, WATER_COLOUR.y, WATER_COLOUR.z, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     glViewport(0, 0, reflect_texture_size, reflect_texture_size);
 
     draw_scene(scene, RenderMode::Reflect);
 
+    // Switch front-facing triangles back to counter-clockwise.
     glFrontFace(GL_CCW);
 
     {
