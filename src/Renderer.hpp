@@ -47,7 +47,7 @@ public:
     bool should_end();
 
 private:
-    enum class RenderMode { Scene, Shadow, Depth };
+    enum class RenderMode { Scene, Shadow, Depth, TopDown };
     void draw_scene(const Scene& scene, RenderMode render_mode);
     void init_shader(
         const Scene& scene, Shader* shader, RenderMode render_mode);
@@ -68,6 +68,10 @@ private:
     GLuint depth_texture;
     const std::array<unsigned int, 2> depth_texture_size =
         {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+    // The FBO and texture to render the landscape from a top-down perspective.
+    GLuint topdown_buffer;
+    GLuint topdown_texture;
+    const unsigned int topdown_texture_size = 1024;
     // The FBO and texture to render the scene to, for postprocessing.
     GLuint scene_buffer;
     GLuint scene_texture;

@@ -180,6 +180,42 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     get_error(__LINE__);
 
+    // ------------------------------------------------
+    // -- FBO initialization for topdown view buffer --
+    // ------------------------------------------------
+    glGenFramebuffers(1, &topdown_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
+
+    glGenTextures(1, &topdown_texture);
+    glBindTexture(GL_TEXTURE_2D, topdown_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_RGB, topdown_texture_size, topdown_texture_size,
+        0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        topdown_texture, 0);
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
     // -----------------------------------------
     // -- FBO initialization for scene buffer --
     // -----------------------------------------
@@ -192,8 +228,8 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Generate an empty image for OpenGL.
     glTexImage2D(
         GL_TEXTURE_2D,
-        0, GL_RGB, scene_texture_size[0], scene_texture_size[1],
-        0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        0, GL_RGBA, scene_texture_size[0], scene_texture_size[1],
+        0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
@@ -638,6 +674,27 @@ void Renderer::init_shader(
             glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
             1, false, glm::value_ptr(scene.world_light_day.light_space));
     }
+    else if (render_mode == RenderMode::TopDown)
+    {
+        shader->assert_existence("ProjectionMatrix");
+        shader->assert_existence("ViewMatrix");
+        float scale = 192.0f;
+        glm::mat4 projection =
+            glm::ortho(-scale, scale, -scale, scale, 0.05f, 1200.0f);
+        glm::mat4 view = glm::lookAt(
+            700.0f * glm::vec3(0.0f, 1.0f, 0.0f),
+            glm::vec3(0.0f),
+            AXIS_Z);
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ProjectionMatrix"),
+            1, false, glm::value_ptr(projection));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "ViewMatrix"),
+            1, false, glm::value_ptr(view));
+        glUniformMatrix4fv(
+            glGetUniformLocation(shader->program_id, "LightSpaceMatrix"),
+            1, false, glm::value_ptr(scene.world_light_day.light_space));
+    }
     else
     {
         shader->assert_existence("ProjectionMatrix");
@@ -667,8 +724,11 @@ void Renderer::init_shader(
         glUniform1i(
             glGetUniformLocation(shader->program_id, "Texture"),
             2);
+        glUniform1i(
+            glGetUniformLocation(shader->program_id, "TopDownMap"),
+            3);
     }
-    
+
     get_error(__LINE__);
 
     // Load light sources.
@@ -792,6 +852,12 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glUseProgram(current_program);
         init_shader(scene, scene.depth_shader, render_mode);
     }
+    else if (render_mode == RenderMode::TopDown)
+    {
+        current_program = scene.topdown_shader->program_id;
+        glUseProgram(current_program);
+        init_shader(scene, scene.topdown_shader, render_mode);
+    }
 
     get_error(__LINE__);
 
@@ -841,6 +907,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
     }
 
     get_error(__LINE__);
+
+    if (render_mode == RenderMode::TopDown) return;
 
     // Render ocean.
     Water* water = scene.water.get();
@@ -896,7 +964,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
             current_program = scene.skybox_shader->program_id;
             glUseProgram(current_program);
             init_shader(scene, scene.skybox_shader, render_mode);
-    get_error(__LINE__);
 
             glUniform1f(
                 glGetUniformLocation(current_program, "Time"),
@@ -907,7 +974,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
                 glGetUniformLocation(current_program, "ModelMatrix"),
                 1, false, glm::value_ptr(skybox->model_matrix));
 
-            get_error(__LINE__);
             glBindTexture(GL_TEXTURE_2D, skybox->texID);
 
             glBindVertexArray(skybox->vao);
@@ -987,22 +1053,40 @@ void Renderer::render(const Scene& scene)
     get_error(__LINE__);
 
     // ----------------------------------
+    // -- Pass 3: Render topdown view. --
+    // ----------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, topdown_buffer);
+    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, topdown_texture_size, topdown_texture_size);
+
+    draw_scene(scene, RenderMode::TopDown);
+
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Frame buffer error, status: " + std::to_string(fb_status));
+    }
+    get_error(__LINE__);
+
+    // ----------------------------------
     // -- Pass 3: Render scene buffer. --
     // ----------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
-    get_error(__LINE__);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, shadow_texture);
-    get_error(__LINE__);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, topdown_texture);
 
     draw_scene(scene, RenderMode::Scene);
-    get_error(__LINE__);
+
     {
         GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         fatal_if(

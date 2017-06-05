@@ -22,6 +22,7 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
+uniform sampler2D TopDownMap;
 
 uniform float Time;
 
@@ -437,17 +438,17 @@ void main()
     // Depth buffer testing
     #if 0
     vec2 st;
-    vec3 depth_coords;
+    vec3 coords;
     float depth;
 
-    depth_coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
-    //depth_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
-    st = depth_coords.xy;
-    depth = texture(DepthMap, st).x;
+    coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    //coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
+    st = coords.xy;
+    //depth = texture(DepthMap, st).x;
     //depth = texture(ShadowDepthMap, st).x;
-    depth = linearize(depth);
+    //depth = linearize(depth);
     //FragColour = vec4(vec3(depth), 1.0);
-    //FragColour = vec4(vec3(in_shadow()), 1.0);
+    FragColour = texture(TopDownMap, st);
     //FragColour = vec4(vec3(edge), 1.0);
     #endif
 }
