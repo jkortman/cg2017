@@ -52,17 +52,28 @@ private:
     void init_shader(
         const Scene& scene, Shader* shader, RenderMode render_mode);
 
+    // Internally, textures are assigned the following numbers:
+    //  Num Name              Usage
+    //  0   DepthMap          The view-perspective depth map.
+    //  1   ShadowDepthMap    The light-perspective depth map.
+    //  2   Texture           A texture for a shape in a Mesh object.
+    //  3   TopDownMap        The color map for a top-down ortho view of the scene.
+
+    // The FBO and texture for light-perspective depth map (for shadow mapping).
     GLuint shadow_buffer;
     GLuint shadow_texture;
     const unsigned int shadow_texture_size = 1024;
+    // The FBO and texture for camera-perspective depth map.
     GLuint depth_buffer;
     GLuint depth_texture;
     const std::array<unsigned int, 2> depth_texture_size =
         {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+    // The FBO and texture to render the scene to, for postprocessing.
     GLuint scene_buffer;
     GLuint scene_texture;
     const std::array<unsigned int, 2> scene_texture_size = 
         {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+    // The quad to draw on, for postprocessing.
     GLuint quad_vao;
     unsigned int quad_size;
     bool wireframe;
