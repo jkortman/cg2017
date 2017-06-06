@@ -324,7 +324,7 @@ void main()
     // TODO: Replace these with material properties added by Water generation code.
     vec3 shaded_colour = 
         base_colour * (ambi + diff)
-        //+ 0.1 * caustic_factor()
+        + 0.02 * caustic_factor()
         + spec;
 
     // Colour very slightly by depth to give indication of water level.
@@ -375,6 +375,7 @@ vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
+const float rate = 0.1;
 vec3 voronoi( in vec2 x ) {
     vec2 n = floor(x);
     vec2 f = fract(x);
@@ -386,7 +387,7 @@ vec3 voronoi( in vec2 x ) {
         for (int i= -1; i <= 1; i++) {
             vec2 g = vec2(float(i),float(j));
             vec2 o = random2( n + g );
-            o = 0.5 + 0.5*sin( Time + 6.2831*o );
+            o = 0.5 + 0.5*sin( rate*Time + 6.2831*o );
   
             vec2 r = g + o - f;
             float d = dot(r,r);
@@ -405,7 +406,7 @@ vec3 voronoi( in vec2 x ) {
         for (int i= -2; i <= 2; i++) {
             vec2 g = mg + vec2(float(i),float(j));
             vec2 o = random2( n + g );
-            o = 0.5 + 0.5*sin( Time + 6.2831*o );
+            o = 0.5 + 0.5*sin( rate*Time + 6.2831*o );
 
             vec2 r = g + o - f;
 

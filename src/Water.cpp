@@ -18,7 +18,7 @@ Water::Water(
     positions.resize(size * size);
     normals.resize(size * size);
     colours.resize(size * size);
-    material.shininess = 20.0f;
+    material.shininess = 50.0f;
 
     // Generate palette.
     base_colour = WATER_COLOUR;
