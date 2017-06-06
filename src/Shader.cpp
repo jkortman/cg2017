@@ -100,8 +100,8 @@ void Shader::set_ssao(int num_samples)
         glm::vec3 sample_pos(
             -1.0f + 2.0f * dist(gen),
             -1.0f + 2.0f * dist(gen),
-            -1.0f + 2.0f * dist(gen));  // disable this when switching to hemispherical
-            //dist(gen));
+            //-1.0f + 2.0f * dist(gen));  // spherical
+            dist(gen));                 // hemispherical
         sample_pos = glm::normalize(sample_pos);
         sample_pos *= dist(gen);
         float scale = float(i) / num_samples;

@@ -302,54 +302,43 @@ float in_shadow(vec3 light_dir)
     return shadow;
 }
 
-float ambient_occlusion()
+vec2 random2(vec2 p);
+float ambient_occlusion(vec3 pos)
 {
-    // For each sample, convert it to view space,
-    // then check if it is obscured by the mesh.
-    vec3 samples[] = vec3[](
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, 0.0, 1.0),
-        vec3(0.0, 1.0, 0.0),
-        vec3(0.0, 1.0, 1.0),
-        vec3(1.0, 0.0, 0.0),
-        vec3(1.0, 1.0, 1.0),
-        vec3(1.0, 1.0, 0.0),
-        vec3(1.0, 0.0, 1.0),
-        vec3(1.0, 0.0, 0.0),
-        vec3(1.0, 1.0, 1.0));
-
     // The matrix used to rotate the samples to match the normal.
-    // At the moment the sample kernel is spherical, so this isn't needed.
+    // TBN calculation code is from:
+    // http://john-chapman-graphics.blogspot.com.au/2013/01/ssao-tutorial.html
+    // (c) John Chapman
+    const float rvecscale = 0.1;
     vec3 random_vec = vec3(
-        cnoise(vec2(FragPos.x, FragPos.x)),
-        cnoise(vec2(FragPos.y, FragPos.y)),
-        cnoise(vec2(FragPos.x, FragPos.y)));
+        random2(rvecscale * pos.xy).x,
+        random2(rvecscale * pos.yz).x,
+        random2(rvecscale * pos.zx).x);
     vec3 tangent = normalize(random_vec - Normal * dot(random_vec, Normal));
     vec3 bitangent = cross(Normal, tangent);
     mat3 tbn = mat3(tangent, bitangent, Normal);
 
-    float radius = 0.5;
+    float radius = 50.0;
     float bias = 0.001;
     float occlusion = 0.0;
     // The fragment position in view space.
-    vec4 frag_view = ViewMatrix * vec4(FragPos, 1.0);
+    vec4 frag_view = ViewMatrix * vec4(pos, 1.0);
     for (int i = 0; i < SSAONumSamples; i += 1)
     {
         // Get view-space position of sample, relative to the fragment.
-        vec3 sample = SSAOSamples[i];
+        vec3 sample = tbn * SSAOSamples[i];
         sample = sample * radius + frag_view.xyz;
 
         // Get the depth of the sample according to the depth map.
         vec4 proj = ProjectionMatrix * vec4(sample, 1.0);
-        proj.xyz = proj.xyz / proj.w;
-        proj = 0.5 + 0.5 * proj;
-        float sample_depth = linearize(texture(DepthMap, proj.xy).r);
-
-        // sample.z always greater than sample_depth? why?
+        proj.xyz = 0.5 + 0.5 * proj.xyz / proj.w;
+        float sample_depth = texture(DepthMap, proj.xy).r;
+        
+        float in_range = (abs(proj.z - sample_depth) < radius) ? 1.0 : 0.0;
         occlusion += 
-            ((sample_depth <= frag_view.z) ? 1.0 : 0.0);
+            in_range * ((sample_depth <= proj.z) ? 1.0 : 0.0);
     }
-    return occlusion / SSAONumSamples;
+    return 1.0 - occlusion / SSAONumSamples;
 }
 
 void main()
@@ -395,14 +384,15 @@ void main()
         (1.0 - shadow) * discretize(light_day_intensity.z),
         discretize(light_point_intensity.z));
 
+    // Lighting application
     // TODO: Replace these with material properties added by TerrainGenerator
-    vec3 shaded_colour = 
-        colour
-          * (0.15 * ambi + 0.8 * diff + 0.3 * spec);
+    #if 1
+    colour = colour * (0.15 * ambi + 0.8 * diff + 0.3 * spec);
+    #endif
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
-    vec3 fog_colour_sun = vec3(1.0, 0.9, 0.7);
+    vec3 fog_colour_sun = vec3(1.0, 0.9, 0.6);
     vec3 fog_colour_night = vec3(0.08, 0.08, 0.2);
     float day_factor = 0.5 + 0.5 * dot(light_dir, vec3(0.0, 1.0, 0.0));
     vec3 fog_colour = mix(fog_colour_night, fog_colour_day, day_factor);
@@ -412,29 +402,41 @@ void main()
               fog_mode_normal = 1,
               fog_mode_scatter = 2;
     const int fog_mode = fog_mode_scatter;
+    // Perform fog colour modification
+    #if 1
     if (fog_mode == fog_mode_normal)
     {
-        shaded_colour = fog(shaded_colour, dist, fog_colour);
+        colour = fog(colour, dist, fog_colour);
     }
     else if (fog_mode == fog_mode_scatter)
     {
-        shaded_colour = fog_scatter(
-            shaded_colour,
+        colour = fog_scatter(
+            colour,
             dist,
             fog_colour, // regular fog colour
             fog_sun_colour, // colour when aligned with sun
             view_dir,
             -light_dir);
     }
-
-    #if 0
-    float edge = edge_detect();
-    //float ssao = ambient_occlusion();
-    shaded_colour = edge * shaded_colour;
     #endif
 
-    FragColour = vec4(shaded_colour, 1.0);
-    //FragColour = vec4(vec3(ssao), 1.0);
+    // Sobel edge highlighting
+    #if 0
+    colour = edge_detect() * colour;
+    #endif
+
+    // SSAO
+    #if 0
+    colour = 1.3 * ambient_occlusion(FragPos) * colour;
+    #endif
+
+    FragColour = vec4(colour, 1.0);
+
+    // SSAO testing
+    #if 0
+    float ssao = ambient_occlusion(FragPos);
+    FragColour = vec4(vec3(ssao), 1.0);
+    #endif
 
     // Depth buffer testing
     #if 0
@@ -449,120 +451,15 @@ void main()
     //depth = texture(ShadowDepthMap, st).x;
     //depth = linearize(depth);
     //FragColour = vec4(vec3(depth), 1.0);
-    FragColour = texture(TopDownMap, st);
+    //FragColour = texture(TopDownMap, st);
     //FragColour = vec4(vec3(edge), 1.0);
     #endif
 }
 
-// GLSL textureless classic 2D noise "cnoise",
-// with an RSL-style periodic variant "pnoise".
-// Author:  Stefan Gustavson (stefan.gustavson@liu.se)
-// Version: 2011-08-22
-//
-// Many thanks to Ian McEwan of Ashima Arts for the
-// ideas for permutation and gradient selection.
-//
-// Copyright (c) 2011 Stefan Gustavson. All rights reserved.
-// Distributed under the MIT license. See LICENSE file.
-// https://github.com/ashima/webgl-noise
-//
+// Created by inigo quilez - iq/2013
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
+// http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm
 
-vec4 mod289(vec4 x)
-{
-    return x - floor(x * (1.0 / 289.0)) * 289.0;
-}
-
-vec4 permute(vec4 x)
-{
-    return mod289(((x*34.0)+1.0)*x);
-}
-
-vec4 taylorInvSqrt(vec4 r)
-{
-    return 1.79284291400159 - 0.85373472095314 * r;
-}
-
-vec2 fade(vec2 t) {
-    return t*t*t*(t*(t*6.0-15.0)+10.0);
-}
-
-// Classic Perlin noise
-float cnoise(vec2 P)
-{
-    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
-    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-    Pi = mod289(Pi); // To avoid truncation effects in permutation
-    vec4 ix = Pi.xzxz;
-    vec4 iy = Pi.yyww;
-    vec4 fx = Pf.xzxz;
-    vec4 fy = Pf.yyww;
-    
-    vec4 i = permute(permute(ix) + iy);
-    
-    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
-    vec4 gy = abs(gx) - 0.5 ;
-    vec4 tx = floor(gx + 0.5);
-    gx = gx - tx;
-    
-    vec2 g00 = vec2(gx.x,gy.x);
-    vec2 g10 = vec2(gx.y,gy.y);
-    vec2 g01 = vec2(gx.z,gy.z);
-    vec2 g11 = vec2(gx.w,gy.w);
-    
-    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-    g00 *= norm.x;
-    g01 *= norm.y;
-    g10 *= norm.z;
-    g11 *= norm.w;
-    
-    float n00 = dot(g00, vec2(fx.x, fy.x));
-    float n10 = dot(g10, vec2(fx.y, fy.y));
-    float n01 = dot(g01, vec2(fx.z, fy.z));
-    float n11 = dot(g11, vec2(fx.w, fy.w));
-    
-    vec2 fade_xy = fade(Pf.xy);
-    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-    return 2.3 * n_xy;
-}
-
-// Classic Perlin noise, periodic variant
-float pnoise(vec2 P, vec2 rep)
-{
-    vec4 Pi = floor(P.xyxy) + vec4(0.0, 0.0, 1.0, 1.0);
-    vec4 Pf = fract(P.xyxy) - vec4(0.0, 0.0, 1.0, 1.0);
-    Pi = mod(Pi, rep.xyxy); // To create noise with explicit period
-    Pi = mod289(Pi);        // To avoid truncation effects in permutation
-    vec4 ix = Pi.xzxz;
-    vec4 iy = Pi.yyww;
-    vec4 fx = Pf.xzxz;
-    vec4 fy = Pf.yyww;
-    
-    vec4 i = permute(permute(ix) + iy);
-    
-    vec4 gx = fract(i * (1.0 / 41.0)) * 2.0 - 1.0 ;
-    vec4 gy = abs(gx) - 0.5 ;
-    vec4 tx = floor(gx + 0.5);
-    gx = gx - tx;
-    
-    vec2 g00 = vec2(gx.x,gy.x);
-    vec2 g10 = vec2(gx.y,gy.y);
-    vec2 g01 = vec2(gx.z,gy.z);
-    vec2 g11 = vec2(gx.w,gy.w);
-    
-    vec4 norm = taylorInvSqrt(vec4(dot(g00, g00), dot(g01, g01), dot(g10, g10), dot(g11, g11)));
-    g00 *= norm.x;
-    g01 *= norm.y;
-    g10 *= norm.z;
-    g11 *= norm.w;
-    
-    float n00 = dot(g00, vec2(fx.x, fy.x));
-    float n10 = dot(g10, vec2(fx.y, fy.y));
-    float n01 = dot(g01, vec2(fx.z, fy.z));
-    float n11 = dot(g11, vec2(fx.w, fy.w));
-    
-    vec2 fade_xy = fade(Pf.xy);
-    vec2 n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x);
-    float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
-    return 2.3 * n_xy;
+vec2 random2( vec2 p ) {
+    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }

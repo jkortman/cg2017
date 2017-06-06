@@ -303,7 +303,7 @@ void main()
     float dist = length(ViewPos - FragPos);
 
     // Colour by reflection.
-    float reflect_amt = 0.7;
+    float reflect_amt = 0.6;
     vec3 reflect_colour = vec3(world_reflection());
     vec3 base_colour = (1.0 - reflect_amt) * Colour
                      + reflect_amt * vec3(reflect_colour);
@@ -333,7 +333,7 @@ void main()
 
     // Determine fog colours by time of day.
     vec3 fog_colour_day = vec3(0.5, 0.6, 0.7);
-    vec3 fog_colour_sun = vec3(1.0, 0.9, 0.7);
+    vec3 fog_colour_sun = vec3(1.0, 0.9, 0.6);
     vec3 fog_colour_night = vec3(0.08, 0.08, 0.2);
     float day_factor = 0.5 + 0.5 * dot(light_dir, vec3(0.0, 1.0, 0.0));
     vec3 fog_colour = mix(fog_colour_night, fog_colour_day, day_factor);
