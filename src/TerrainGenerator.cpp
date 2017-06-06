@@ -146,15 +146,30 @@ float TerrainGenerator::get_height_at(float x, float z) const
         return std::sqrt(std::pow(x - pos.x, 2)
                        + std::pow(z - pos.z, 2));
     };
+
     dists[0] = dist(x, z, verts[0]);
     dists[1] = dist(x, z, verts[1]);
     dists[2] = dist(x, z, verts[2]);
-    
-    float sum = std::accumulate(std::begin(dists), std::end(dists), 0.0f);
 
-    return verts[0].y * dists[0] / sum
-         + verts[1].y * dists[1] / sum
-         + verts[2].y * dists[2] / sum;
+    float sum = dists[0] + dists[1] + dists[2];
+    float y = verts[0].y * dists[0] / sum
+            + verts[1].y * dists[1] / sum
+            + verts[2].y * dists[2] / sum;
+    
+    #if 0
+    fprintf(stderr,
+            "height calc:\n"
+            "  <%4.1f, %4.1f, %4.1f> <%4.1f, %4.1f, %4.1f>\n"
+            "           <%4.1f, %4.1f, %4.1f>\n"
+            "  <%4.1f, %4.1f, %4.1f> <%4.1f, %4.1f, %4.1f>\n",
+            verts[0].x, verts[0].y, verts[0].z,
+            verts[1].x, verts[1].y, verts[1].z,
+            x, y, z,
+            verts[2].x, verts[2].y, verts[2].z,
+            verts[3].x, verts[3].y, verts[3].z);
+    #endif
+
+    return y;
 }
 
 void TerrainGenerator::set_position(int row, int col, glm::vec3 pos)
@@ -534,12 +549,7 @@ void TerrainGenerator::populate()
                             // Get the height at this position.
                             const float x = get_position(row, col).x + dr * div_size;
                             const float z = get_position(row, col).z + dc * div_size;
-                            const float r = 2.0f;
-                            const float y = std::min(
-                                std::min(get_height_at(    x,     z),
-                                         get_height_at(r + x,     z)),
-                                std::min(get_height_at(    x, r + z),
-                                         get_height_at(r + x, r + z)));
+                            const float y = get_height_at(x, z);
 
                             // Select object to generate.
                             float p = randf();

@@ -1086,7 +1086,7 @@ void Renderer::render(const Scene& scene)
     // -----------------------------------------
     // -- Pass 4: Render postprocessed scene. --
     // -----------------------------------------
-    #if 1
+    #if 0
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
