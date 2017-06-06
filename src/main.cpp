@@ -112,7 +112,7 @@ int main(int argc, char** argv)
     // Create lights.
     scene.world_light_day = LightSource(
         glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
-        0.2f, 0.5f, 1.0f);
+        0.2f, 1.0f, 1.0f);
 
     #if 0
     scene.lights.push_back(LightSource(
@@ -131,14 +131,15 @@ int main(int argc, char** argv)
         tower->scale = glm::vec3(1.5f);
         tower->y_rotation = glm::pi<float>();
         scene.give_object(tower);
+        glm::vec3 light_pos(7.572213f, 27.408897f, 56.127350f);
+        glm::vec3 light_target(99.163513, 13.608925, 80.486885);
         // Spotlight from watchtower.
-
         scene.lights.push_back(LightSource(
-            glm::vec4(7.572213f, 27.408897f, 56.127350f, 1.0f),
-            1.0f, 1.0f, 1.0f,
-            1.0f, 0.027f, 0.0028f,
-            glm::vec3(0.770494f, -0.363808f, 0.523431f),
-            45.0f
+            glm::vec4(light_pos, 1.0f),
+            0.0f, 1.0f, 0.0f,
+            1.0f, 0.0014f, 0.000007f,
+            light_target - light_pos,
+            0.01f
         ));
     }
 
@@ -151,7 +152,7 @@ int main(int argc, char** argv)
         // Campfire point light.
         scene.lights.push_back(LightSource(
             glm::vec4(33.584152f, 8.208922f, -54.512539f, 1.0f),
-            1.0f, 1.0f, 1.0f,
+            0.0f, 1.0f, 0.0f,
             1.0f, 0.09f, 0.0032f
         ));
     }

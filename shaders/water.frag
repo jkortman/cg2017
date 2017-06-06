@@ -95,12 +95,12 @@ vec3 calculate_lighting(in LightSource light) {
     float ambi = light.ambient;
 
     // Calculate diffuse component.
-    float diff = max(dot(norm, light_dir), 0.0);
+    float diff = light.diffuse * max(dot(norm, light_dir), 0.0);
 
     // Calculate specular component.
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 halfway_dir = normalize(light_dir + view_dir);
-    float spec = pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
+    float spec = light.specular * pow(max(dot(norm, halfway_dir), 0.0), MtlShininess);
 
     return attenuation * vec3(ambi, diff, spec);
 }
@@ -111,7 +111,7 @@ vec3 match_to_palette(vec3 colour) {
 
     for (int i = 0; i < PaletteSize; i += 1) {
         float dist =
-            (pow(Palette[i].r - colour.r, 2)
+            ( pow(Palette[i].r - colour.r, 2)
             + pow(Palette[i].g - colour.g, 2)
             + pow(Palette[i].b - colour.b, 2));
         if (dist < min_dist) {
@@ -311,8 +311,13 @@ void main()
     // Get the shaded, lit colour.
     float shadow = in_shadow(light_dir);
     vec3 light_day_intensity = calculate_lighting(LightDay);
-    // Point/spot lighting is currently unimplemented for water.
     vec3 light_point_intensity = vec3(0.0);
+
+    for (int i = 0; i < NumLights; i += 1)
+    {
+        light_point_intensity += calculate_lighting(Lights[i]);
+    }
+
     float ambi = max(light_day_intensity.x, light_point_intensity.x);
     float diff = max(
         (1.0 - shadow) * discretize(light_day_intensity.y),
