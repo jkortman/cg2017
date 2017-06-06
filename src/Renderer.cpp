@@ -256,7 +256,6 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // -- Postprocessing setup --
     // --------------------------
     // Create a quad to render the final scene to.
-    /*
     const float positions[] = {
         -1.0f, -1.0f, 0.0f,
          1.0f, -1.0f, 0.0f,
@@ -264,18 +263,13 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         -1.0f,  1.0f, 0.0f,
          1.0f, -1.0f, 0.0f,
          1.0f,  1.0f, 0.0f,
-    };*/
-    const float positions[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
     };
     glGenVertexArrays(1, &quad_vao);
     glBindVertexArray(quad_vao);
     unsigned int buffer;
     glGenBuffers(1, &buffer);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), positions, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions), positions, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, VALS_PER_VERT, GL_FLOAT, GL_FALSE, 0, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1092,7 +1086,7 @@ void Renderer::render(const Scene& scene)
     // -----------------------------------------
     // -- Pass 4: Render postprocessed scene. --
     // -----------------------------------------
-    #if 0
+    #if 1
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -1107,7 +1101,7 @@ void Renderer::render(const Scene& scene)
     //glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, scene_texture);
     glBindVertexArray(quad_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     get_error(__LINE__);
     #endif
 }

@@ -1,6 +1,6 @@
 #version 330
 
-//in vec2 TexCoord;
+in vec2 TexCoord;
 
 out vec4 FragColour;
 
@@ -9,5 +9,5 @@ out vec4 FragColour;
 void main()
 {
     //FragColour = texture(SceneMap, TexCoord);
-    FragColour = vec4(1.0, 0.0, 0.0, 1.0);
+    FragColour = vec4(TexCoord.s, TexCoord.t, 0.0, 1.0);
 }
