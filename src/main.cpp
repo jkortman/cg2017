@@ -136,7 +136,7 @@ int main(int argc, char** argv)
         // Spotlight from watchtower.
         scene.lights.push_back(LightSource(
             glm::vec4(light_pos, 1.0f),
-            0.0f, 1.0f, 0.0f,
+            0.1f, 1.0f, 0.0f,
             1.0f, 0.0014f, 0.000007f,
             light_target - light_pos,
             0.01f
@@ -152,7 +152,7 @@ int main(int argc, char** argv)
         // Campfire point light.
         scene.lights.push_back(LightSource(
             glm::vec4(33.584152f, 8.208922f, -54.512539f, 1.0f),
-            0.0f, 1.0f, 0.0f,
+            0.8f, 1.0f, 0.0f,
             1.0f, 0.09f, 0.0032f
         ));
     }

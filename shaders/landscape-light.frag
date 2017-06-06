@@ -70,7 +70,7 @@ float discretize(float value)
     else if (value < 1.00)      return 1.00;
     else                        return 1.33;
     */
-    const float N = 3.0;
+    const float N = 5.0;
     return floor(N * value) / (N - 1.0);
 }
 
