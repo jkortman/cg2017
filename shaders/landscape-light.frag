@@ -352,8 +352,6 @@ void main()
     // Each season has a multiplicative and additive colour.
     // The season values are interpolated between based on the time.
     #if 0
-        //vec3 mseason_summer = vec3( 1.0,  0.6,  0.5);
-        //vec3 aseason_summer = vec3( 0.1,  0.2,  0.0);
         vec3 mul;
         vec3 add;
         season_colours(mul, add);
@@ -459,7 +457,6 @@ void main()
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm
-
 vec2 random2( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }

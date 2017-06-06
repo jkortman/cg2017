@@ -24,5 +24,5 @@ uniform LightSource LightDay;
 
 void main()
 {
-    FragColour = vec4(MtlAmbient, 1.0);
+    FragColour = vec4(MtlDiffuse, 1.0);
 }
