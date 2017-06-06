@@ -92,7 +92,7 @@ vec3 calculate_lighting(in LightSource light) {
     }
 
     // Calculate ambient component.
-    float ambi = 1.0;
+    float ambi = light.ambient;
 
     // Calculate diffuse component.
     float diff = max(dot(norm, light_dir), 0.0);
@@ -203,8 +203,9 @@ float in_shadow(vec3 light_dir)
     // The threshold at which shadows are on by default.
     // Between 0.0 and night_thresh, we interpolate between proper shadows
     // and full shadows.
-    const float night_thresh = -0.2;
-    if (light_angle < night_thresh) return 1.0;
+    const float night_thresh = 0.1;
+    // Day factor is 1.0 at day and 0.0 at night.
+    float day_factor = clamp(light_angle / night_thresh, 0.0, 1.0);
 
     // perform perspective divide
     vec3 lit_coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
@@ -216,7 +217,7 @@ float in_shadow(vec3 light_dir)
     // If outside of light view and it's day, default to no shadows.
     if (light_angle > 0.0
         && (lit_coords.s > 1.0 || lit_coords.s < 0.0
-            || lit_coords.t > 1.0 || lit_coords.t < 0.0)) return 0.0;
+            || lit_coords.t > 1.0 || lit_coords.t < 0.0)) return 1.0 - day_factor;
 
     float shadow = 0.0;
     if (MULTISAMPLE)
@@ -253,66 +254,8 @@ float in_shadow(vec3 light_dir)
         shadow = (frag_depth - bias) > lit_depth  ? 1.0 : 0.0;
     }
 
-    if (light_angle < 0.0)
-    {
-        float x = light_angle / night_thresh;
-        shadow = x + (1.0 - x) * shadow;
-    }
-    return shadow;
+    return max(shadow, 1.0 - day_factor);
 }
-
-// Get the world reflection colour.
-// If alpha channel is zero, the landscape has no reflection
-// at the current viewing angle.
-vec4 world_reflection_bad(vec3 view_dir)
-{
-    //           --------- landscape map face
-    //         ^      ^
-    //       h |      |
-    //         v      | /
-    // view dir -----> / water surface
-    //                /
-    // h is the effective height of the landscape map.
-    const float h = 10.0;
-
-    // Flat surfaces reflect nothing.
-    if (Normal == vec3(0.0, 1.0, 0.0)) return vec4(0.0);
-
-    // Reflect the view direction on the water surface.
-    vec3 r = reflect(view_dir, Normal);
-
-    // Project the vector r onto the landscape surface.
-    float x = h / r.y;
-    vec3 p = FragPos + x * r;
-
-    // Map p.xz to [0, 1] from [-200, 200]
-    vec2 st = 0.5 + 0.5 * p.xz / 200.0;
-    st = vec2(clamp(st.s, 0.0, 1.0),
-              clamp(st.t, 0.0, 1.0));
-
-    vec4 col = texture(ReflectMap, st);
-
-    // blur the colour.
-    float dist = 1.0 / 1024.0;
-    col = (
-        texture(ReflectMap, st + vec2(-dist, -dist)),
-        texture(ReflectMap, st + vec2(  0.0, -dist)),
-        texture(ReflectMap, st + vec2( dist, -dist)),
-        texture(ReflectMap, st + vec2(-dist,   0.0)),
-        texture(ReflectMap, st + vec2(  0.0,   0.0)),
-        texture(ReflectMap, st + vec2( dist,   0.0)),
-        texture(ReflectMap, st + vec2(-dist,  dist)),
-        texture(ReflectMap, st + vec2(  0.0,  dist)),
-        texture(ReflectMap, st + vec2( dist,  dist))) / 9.0;
-
-    if (col.xyz == vec3(0.0))
-    {
-        return vec4(0.0);
-    }
-
-    return col;
-}
-
 
 vec4 world_reflection()
 {
@@ -360,10 +303,9 @@ void main()
     float dist = length(ViewPos - FragPos);
 
     // Colour by reflection.
-    const vec3 water_colour = vec3(0.30, 0.30, 1.00);
     float reflect_amt = 0.7;
     vec3 reflect_colour = vec3(world_reflection());
-    vec3 base_colour = (1.0 - reflect_amt) * water_colour
+    vec3 base_colour = (1.0 - reflect_amt) * Colour
                      + reflect_amt * vec3(reflect_colour);
     
     // Get the shaded, lit colour.
@@ -381,9 +323,9 @@ void main()
 
     // TODO: Replace these with material properties added by Water generation code.
     vec3 shaded_colour = 
-        base_colour * (0.15 * ambi + 0.8 * diff)
-        + 0.5 * spec
-        + 0.1 * caustic_factor();
+        base_colour * (ambi + diff)
+        //+ 0.1 * caustic_factor()
+        + spec;
 
     // Colour very slightly by depth to give indication of water level.
     float colour_mod = 1.0 + 0.15 * (FragPos.y - water_level);
@@ -421,6 +363,7 @@ void main()
     //shaded_colour = edge * shaded_colour;
 
     FragColour = vec4(vec3(shaded_colour), 1.0);
+    //FragColour = vec4(vec3(1.0 - in_shadow(light_dir)), 1.0);
     //FragColour = vec4(vec3(caustic_factor()), 1.0);
 }
 
