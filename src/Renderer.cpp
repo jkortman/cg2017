@@ -1095,11 +1095,11 @@ void Renderer::render(const Scene& scene)
     glViewport(0, 0, window_width, window_height);
 
     glUseProgram(scene.postprocess_shader->program_id);
-    //glUniform1i(
-    //    glGetUniformLocation(scene.postprocess_shader->program_id, "SceneMap"),
-    //    0);
-    //glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, scene_texture);
+    glUniform1i(
+        glGetUniformLocation(scene.postprocess_shader->program_id, "SceneMap"),
+        4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, reflect_texture);
     glBindVertexArray(quad_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     get_error(__LINE__);
