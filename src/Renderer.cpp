@@ -84,6 +84,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Initialize GLEW.
     glewExperimental = true;
     fatal_if(glewInit() != GLEW_OK, "Failed to initialise GLEW");
+    glGetError(); // See https://stackoverflow.com/questions/20034615/why-does-glewinit-result-in-gl-invalid-enum-after-making-some-calls-to-glfwwin
 
     if (wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
