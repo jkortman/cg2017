@@ -231,8 +231,8 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         0, GL_RGB, ssao_texture_size[0], ssao_texture_size[1],
         0, GL_RGB, GL_UNSIGNED_SHORT, 0);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  
 
     // Attach shadow_texture as depth attachment
     glFramebufferTexture2D(

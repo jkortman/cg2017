@@ -426,25 +426,31 @@ void main()
 
     // SSAO
     #if 1
-    colour = ambient_occlusion(FragPos) * colour;
+    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    vec2 offset = vec2(0.003);
+    float occlusion = 0.0;
+    const int radius = 4;
+    for (int i = -radius; i <= radius; i += 1)
+    {
+        for (int j = -radius; j <= radius; j += 1)
+        {
+            
+            occlusion += texture(SSAOMap, coords.xy + offset * vec2(i,j)).r;
+
+        }
+    }
+    colour =
+        (occlusion / float(pow(2 * radius + 1, 2)))
+        * colour;
     #endif
 
     FragColour = vec4(colour, 1.0);
 
     // SSAO testing
-    #if 1
+    #if 0
 
     vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
     FragColour = texture(SSAOMap, coords.xy);
-    #if 0
-    float r = 
-    float ssao = 0.2 * (
-        ambient_occlusion(FragPos)
-        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
-        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
-        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
-        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0)));
-    #endif
     //float ssao = ambient_occlusion(FragPos);
     //FragColour = vec4(vec3(ssao), 1.0);
     //FragColour = vec4(vec3(FragPosDeviceSpace.z) / 1200.0, 1.0);

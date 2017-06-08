@@ -75,8 +75,10 @@ private:
     // The FBO and texture to render the SSAO mapping.
     GLuint ssao_buffer;
     GLuint ssao_texture;
+    const float ssao_tex_scale = 1.00f;
     const std::array<unsigned int, 2> ssao_texture_size = 
-        {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+        {{ (unsigned int)(ssao_tex_scale * DEFAULT_WINDOW_WIDTH),
+           (unsigned int)(ssao_tex_scale * DEFAULT_WINDOW_HEIGHT) }};
     // The FBO and texture to render the scene to, for postprocessing.
     GLuint scene_buffer;
     GLuint scene_texture;
