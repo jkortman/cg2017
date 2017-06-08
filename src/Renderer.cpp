@@ -216,6 +216,56 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     get_error(__LINE__);
 
+    // ----------------------------------------
+    // -- FBO initialization for SSAO buffer --
+    // ----------------------------------------
+    glGenFramebuffers(1, &ssao_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, ssao_buffer);
+
+    glGenTextures(1, &ssao_texture);
+    glBindTexture(GL_TEXTURE_2D, ssao_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_RGB, ssao_texture_size[0], ssao_texture_size[1],
+        0, GL_RGB, GL_UNSIGNED_SHORT, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        ssao_texture, 0);
+
+    // Create a depth attachment RBO.
+    #if 1
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(
+        GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+        ssao_texture_size[0], ssao_texture_size[1]);
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_RENDERBUFFER, rbo);
+    #endif  
+
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
     // -----------------------------------------
     // -- FBO initialization for scene buffer --
     // -----------------------------------------
@@ -686,11 +736,15 @@ void Renderer::init_shader(
     get_error(__LINE__);
 
     // Set up texture IDs.
-    if (render_mode == RenderMode::Scene)
+    if (render_mode == RenderMode::Scene
+        || render_mode == RenderMode::SSAO)
     {
         glUniform1i(
             glGetUniformLocation(shader->program_id, "DepthMap"),
             0);
+    }
+    if (render_mode == RenderMode::Scene)
+    {
         glUniform1i(
             glGetUniformLocation(shader->program_id, "ShadowDepthMap"),
             1);
@@ -700,6 +754,9 @@ void Renderer::init_shader(
         glUniform1i(
             glGetUniformLocation(shader->program_id, "ReflectMap"),
             3);
+        glUniform1i(
+            glGetUniformLocation(shader->program_id, "SSAOMap"),
+            4);
     }
 
     get_error(__LINE__);
@@ -831,6 +888,13 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
         glUseProgram(current_program);
         init_shader(scene, scene.reflect_shader, render_mode);
     }
+    else if (render_mode == RenderMode::SSAO)
+    {
+        current_program = scene.ssao_shader->program_id;
+        glUseProgram(current_program);
+        init_shader(scene, scene.ssao_shader, render_mode);
+    }
+
 
     get_error(__LINE__);
 
@@ -881,7 +945,8 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 
     get_error(__LINE__);
 
-    if (render_mode == RenderMode::Reflect) return;
+    if (render_mode == RenderMode::Reflect
+        || render_mode == RenderMode::SSAO) return;
 
     // Render ocean.
     Water* water = scene.water.get();
@@ -1059,7 +1124,25 @@ void Renderer::render(const Scene& scene)
     get_error(__LINE__);
 
     // ----------------------------------
-    // -- Pass 3: Render scene buffer. --
+    // -- Pass 4: Render SSAO texture. --
+    // ----------------------------------
+    glBindFramebuffer(GL_FRAMEBUFFER, ssao_buffer);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, ssao_texture_size[0], ssao_texture_size[1]);
+
+    draw_scene(scene, RenderMode::SSAO);
+
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Frame buffer error, status: " + std::to_string(fb_status));
+    }
+    get_error(__LINE__);
+
+    // ----------------------------------
+    // -- Pass 5: Render scene buffer. --
     // ----------------------------------
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
@@ -1072,6 +1155,8 @@ void Renderer::render(const Scene& scene)
     glBindTexture(GL_TEXTURE_2D, shadow_texture);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, reflect_texture);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, ssao_texture);
 
     draw_scene(scene, RenderMode::Scene);
 

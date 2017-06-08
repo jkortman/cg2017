@@ -130,46 +130,12 @@ glm::vec3 TerrainGenerator::get_closest_pos(float x, float z) const
     return glm::vec3(positions.at(index));
 }
 
+
+std::array<int, 3> get_tri(float x, float z);
+
 float TerrainGenerator::get_height_at(float x, float z) const
 {
-    // Determine the vertices which the point is inside
-    const float step = (2 * edge)/(-1 + size * 2);
-    std::array<glm::vec3, 3> verts;
-    verts[0] = get_closest_pos(x + 0.5f * step, z + 0.5f * step);
-    verts[1] = get_closest_pos(x + step, z);
-    verts[2] = get_closest_pos(x, z + step);
-
-    // Weight the component heights according to the distance to each point.
-    std::array<float, 3> dists;
-    auto dist = [=](float x, float z, const glm::vec3& pos)
-    {
-        return std::sqrt(std::pow(x - pos.x, 2)
-                       + std::pow(z - pos.z, 2));
-    };
-
-    dists[0] = dist(x, z, verts[0]);
-    dists[1] = dist(x, z, verts[1]);
-    dists[2] = dist(x, z, verts[2]);
-
-    float sum = dists[0] + dists[1] + dists[2];
-    float y = verts[0].y * dists[0] / sum
-            + verts[1].y * dists[1] / sum
-            + verts[2].y * dists[2] / sum;
-    
-    #if 0
-    fprintf(stderr,
-            "height calc:\n"
-            "  <%4.1f, %4.1f, %4.1f> <%4.1f, %4.1f, %4.1f>\n"
-            "           <%4.1f, %4.1f, %4.1f>\n"
-            "  <%4.1f, %4.1f, %4.1f> <%4.1f, %4.1f, %4.1f>\n",
-            verts[0].x, verts[0].y, verts[0].z,
-            verts[1].x, verts[1].y, verts[1].z,
-            x, y, z,
-            verts[2].x, verts[2].y, verts[2].z,
-            verts[3].x, verts[3].y, verts[3].z);
-    #endif
-
-    return y;
+    return 0.0f;
 }
 
 void TerrainGenerator::set_position(int row, int col, glm::vec3 pos)

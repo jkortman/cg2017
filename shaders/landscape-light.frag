@@ -22,6 +22,7 @@ uniform vec3 ViewPos;
 
 uniform sampler2D DepthMap;
 uniform sampler2D ShadowDepthMap;
+uniform sampler2D SSAOMap;
 
 uniform float Time;
 
@@ -424,16 +425,29 @@ void main()
     #endif
 
     // SSAO
-    #if 0
-    colour = 1.3 * ambient_occlusion(FragPos) * colour;
+    #if 1
+    colour = ambient_occlusion(FragPos) * colour;
     #endif
 
     FragColour = vec4(colour, 1.0);
 
     // SSAO testing
+    #if 1
+
+    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
+    FragColour = texture(SSAOMap, coords.xy);
     #if 0
-    float ssao = ambient_occlusion(FragPos);
-    FragColour = vec4(vec3(ssao), 1.0);
+    float r = 
+    float ssao = 0.2 * (
+        ambient_occlusion(FragPos)
+        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
+        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
+        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0))
+        + ambient_occlusion(FragPos + vec3(r, 0.0, 0.0)));
+    #endif
+    //float ssao = ambient_occlusion(FragPos);
+    //FragColour = vec4(vec3(ssao), 1.0);
+    //FragColour = vec4(vec3(FragPosDeviceSpace.z) / 1200.0, 1.0);
     #endif
 
     // Depth buffer testing
@@ -445,10 +459,10 @@ void main()
     coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
     //coords = 0.5 + 0.5 * FragPosLightSpace.xyz / FragPosLightSpace.w;
     st = coords.xy;
-    //depth = texture(DepthMap, st).x;
+    depth = texture(DepthMap, st).a;
     //depth = texture(ShadowDepthMap, st).x;
     //depth = linearize(depth);
-    //FragColour = vec4(vec3(depth), 1.0);
+    FragColour = vec4(vec3(depth), 1.0);
     //FragColour = texture(TopDownMap, st);
     //FragColour = vec4(vec3(edge), 1.0);
     #endif

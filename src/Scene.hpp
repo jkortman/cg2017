@@ -54,6 +54,7 @@ public:
     Shader* depth_shader;
     Shader* postprocess_shader;
     Shader* reflect_shader;
+    Shader* ssao_shader;
     
     // Update the scene after given an elapsed amount of time.
     void update(float dt);

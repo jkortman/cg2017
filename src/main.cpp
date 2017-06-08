@@ -47,7 +47,7 @@ int main(int argc, char** argv)
         scene.player.direction,     // target
         DEFAULT_FOV,                // fov
         DEFAULT_ASPECT,             // aspect
-        0.05f,                      // near
+        1.0f,                      // near
         far_dist);                  // far
 
     Demo* demo = new Demo;
@@ -67,6 +67,7 @@ int main(int argc, char** argv)
         "shadow",
         "postprocess",
         "reflect",
+        "ssao",
         "texture",
         "obj-cel",
         "simple-sky",
@@ -85,7 +86,9 @@ int main(int argc, char** argv)
     scene.depth_shader          = resources.get_shader("depth");
     scene.postprocess_shader    = resources.get_shader("postprocess");
     scene.reflect_shader        = resources.get_shader("reflect");
+    scene.ssao_shader           = resources.get_shader("ssao");
 
+    resources.get_shader("ssao")->set_ssao(64);
     resources.get_shader("landscape-light")->set_ssao(64);
     
     // Create meshes.
