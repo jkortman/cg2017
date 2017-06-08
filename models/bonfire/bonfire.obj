@@ -1,6 +1,5 @@
-# Blender v2.77 (sub 0) OBJ File: 'Survival bonfire.blend'
-# www.blender.org
-mtllib Survival bonfire.mtl
+
+mtllib bonfire.mtl
 o Plane
 v -1.147343 -0.543023 -1.648467
 v 0.374915 -0.293529 1.578504
