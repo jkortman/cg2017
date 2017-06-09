@@ -54,39 +54,30 @@ void Scene::update(float dt)
     glm::vec3 right_direction = glm::cross(player.direction, AXIS_Y);
 
     glm::vec3 movement = player.position;
-    glm::vec3 dir = glm::vec3(0.0,0.0,0.0);
 
     if (InputHandler::keys[GLFW_KEY_W])
     {
         movement.x += move_speed * player.direction.x;
-        //player.position.y += move_speed * player.direction.y;
+        movement.y += move_speed * player.direction.y;
         movement.z += move_speed * player.direction.z;
-        dir.x += player.direction.x;
-        dir.z += player.direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_S])
     {
         movement.x -= move_speed * player.direction.x;
-        //player.position.y -= move_speed * player.direction.y;
+        movement.y -= move_speed * player.direction.y;
         movement.z -= move_speed * player.direction.z;
-        dir.x -= player.direction.x;
-        dir.z -= player.direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_A])
     {
         movement.x -= move_speed * right_direction.x;
-        //player.position.y -= move_speed * right_direction.y;
+        movement.y -= move_speed * right_direction.y;
         movement.z -= move_speed * right_direction.z;
-        dir.x -= right_direction.x;
-        dir.z -= right_direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_D])
     {
         movement.x += move_speed * right_direction.x;
-        //player.position.y += move_speed * right_direction.y;
+        movement.y += move_speed * right_direction.y;
         movement.z += move_speed * right_direction.z;
-        dir.x += right_direction.x;
-        dir.z += right_direction.z;
     }
     if (InputHandler::keys[GLFW_KEY_SPACE])
     {
@@ -97,28 +88,6 @@ void Scene::update(float dt)
         movement.y -= move_speed; 
     }
 
-    // Toggle off for noclip / camera modes
-    if (!no_clip) 
-    {
-
-        /*if (length(movement - player.position) > 0)
-        {
-            movement.y = landscape->get_pos_at(movement).y;
-            //movement.y = landscape->get_height_at(movement.x, movement.z);
-            movement = player.position + move_speed*normalize(movement-player.position);
-
-        }*/
-        
-    }
-
-    // TO TRY: Use Bezier curves
-    // > Compare proposed point to terrain point and find proportion of distance to proposed point from currrent
-    // 
-
-
-    /*movement.y +=
-        (landscape->get_pos_at(movement)).y
-        - (landscape->get_pos_at(player.position)).y;*/
     player.position = check_collisions(player.position, movement);
 
     // Rotations
@@ -280,28 +249,14 @@ void Scene::give_demo(Demo* demo)
 glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
 {
     if (no_clip) return proposed;
-    float radius = 2;
     
-    // glm::vec3 prop = current + proposed;
-    // prop.y += get_pos_at(prop)-current.y;
-
-
-
     // Check terrain
-/*    if ( current.y <(landscape->get_pos_at(proposed)).y + player.height ) 
+    //if ( proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height) return current;
+    if (proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height)
     {
-        // proposed.y = landscape->get_pos_at(proposed).y
-        // proposed = current + move_speed*normalize(proposed-current);
-
-        //current.y *= 1.05;
-        std::cout << "STUCK!" << "\n";
-        current.y = (landscape->get_pos_at(proposed)).y + player.height;
-        return current;
+        proposed.y = landscape->get_height_at(proposed.x, proposed.z) + player.height;
     }
-    else if (current.y == (landscape->get_pos_at(proposed)).y + player.height )
-    {
 
-    }*/
 
     // Check objects
     for (auto& object : objects)

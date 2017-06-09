@@ -13,6 +13,80 @@ Landscape::Landscape()
         glm::transpose(glm::inverse(model_matrix)));
 }
 
+
+// Get the triangle that encloses point (x,z),
+// as indices.
+std::array<int, 3> Landscape::get_tri(float x, float z) const
+{
+    std::array<int, 3> indices;
+
+    const float step = (2 * edge)/(-1 + size * 2);
+    int row_x = (x + edge/2)/step;
+    int row_z = (z + edge/2)/step;
+    indices[0] = size * row_x + row_z;
+    indices[1] = indices[0] + 1;
+    indices[2] = indices[0] + size;
+    
+    #if 0
+    fprintf(
+        stderr,
+        "(%.2f, %.2f) is inside:\n"
+        "  (%.2f, %.2f).__.(%.2f, %.2f)\n"
+        "                  | /\n"
+        "  (%.2f, %.2f)|/\n",
+        x, z,
+        positions.at(indices[0]).x, positions.at(indices[0]).z, 
+        positions.at(indices[1]).x, positions.at(indices[1]).z, 
+        positions.at(indices[2]).x, positions.at(indices[2]).z);
+    #endif
+
+    return indices;
+}
+
+float Landscape::get_height_at(float x, float z) const
+{
+    std::array<int, 3> indices = get_tri(x, z);
+    glm::vec3 downward = 
+        positions.at(indices[1])
+        - positions.at(indices[0]);
+    glm::vec3 rightward = 
+        positions.at(indices[2])
+        - positions.at(indices[0]);
+
+    rightward = (1.0f / rightward.x) * rightward;
+    downward = (1.0f / downward.z) * downward;
+    float dx = x - positions.at(indices[0]).x;
+    float dz = z - positions.at(indices[0]).z;
+    glm::vec3 position =
+        positions.at(indices[0])
+        + dx * rightward
+        + dz * downward;
+
+    #if 0
+    fprintf(stderr,
+        "get_height_at(%.2f, %.2f) -> (%.2f, %.2f, %.2f)\n",
+        x, z, position.x, position.y, position.z);
+    fprintf(stderr,
+        "position =\n"
+        "  (%.2f, %.2f, %.2f)\n"
+        "  + %.2f * (%.2f, %.2f, %.2f)\n"
+        "  + %.2f * (%.2f, %.2f, %.2f)\n",
+        positions.at(indices[0]).x,
+        positions.at(indices[0]).y,
+        positions.at(indices[0]).z,
+        dx, rightward.x, rightward.y, rightward.z,
+        dz, downward.x, downward.y, downward.z);
+    #endif
+
+    return position.y;
+}
+
+
+
+
+
+
+
 glm::vec3 Landscape::get_pos_at(glm::vec3 player_pos) const
 {
     const float step = (2 * edge)/(-1 + size * 2);
@@ -22,6 +96,7 @@ glm::vec3 Landscape::get_pos_at(glm::vec3 player_pos) const
     return glm::vec3(positions.at(index));
 }
 
+/*
 float Landscape::get_height_at(float x, float z) const
 {
     // Determine the vertices which the point is inside
@@ -47,4 +122,4 @@ float Landscape::get_height_at(float x, float z) const
     return verts[0].y * dists[0] / sum
          + verts[1].y * dists[1] / sum
          + verts[2].y * dists[2] / sum;
-}
+}*/
