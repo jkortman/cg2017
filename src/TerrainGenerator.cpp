@@ -130,8 +130,26 @@ glm::vec3 TerrainGenerator::get_closest_pos(float x, float z) const
     return glm::vec3(positions.at(index));
 }
 
+// Get the triangle that encloses point (x,z),
+// as indices.
+std::array<int, 3> get_tri(float x, float z)
+{
+    std::array<int, 3> indices;
+    
 
-std::array<int, 3> get_tri(float x, float z);
+    #if 0
+    fprintf(
+        stderr,
+        "(%f, %f) is inside:\n"
+        "  (%f, %f).__.(%f, %f)\n"
+        "          | /\n"
+        "  (%f, %f)|/\n",
+        x, z,
+        )
+    #endif
+
+    return indices;
+}
 
 float TerrainGenerator::get_height_at(float x, float z) const
 {
@@ -475,10 +493,9 @@ void TerrainGenerator::generate_indices()
 void TerrainGenerator::populate()
 {
     // The objects required are:
-    Mesh* pine01        = resources->get_mesh("Pine01");
-    Mesh* pine02        = resources->get_mesh("Pine02");
+    Mesh* pine          = resources->get_mesh("Pine02");
     Mesh* stump         = resources->get_mesh("Stump");
-    Shader* tex_shader  = resources->get_shader("texture");
+    Shader* tex_shader  = resources->get_shader("obj-cel");
     /*new Object(
         resources.get_mesh("Pine01"),     // mesh
         glm::vec3(-20.0f, 20.0f, 0.0f),     // position
@@ -520,9 +537,8 @@ void TerrainGenerator::populate()
                             // Select object to generate.
                             float p = randf();
                             Mesh* model;
-                            if      (p < 0.45f) model = pine01;
-                            else if (p < 0.90f) model = pine02;
-                            else                model = stump;
+                            if (p < 0.90f) model = pine;
+                            else           model = stump;
 
                             Object* obj = new Object(
                                 model,
