@@ -12,11 +12,17 @@
 
 #include "tiny_obj_loader.h"
 
+enum bound_type {box, cylinder, sphere};
+struct Bound {bound_type type; glm::vec3 center; glm::vec3 dims;};
+
 struct Mesh
 {
     // Create a Mesh
     static Mesh* load_obj(
         const std::string& dir, const std::string& objfile);
+    // Imports Bound
+    
+
     // Mesh properties.
     std::vector<tinyobj::shape_t> shapes;
     int num_shapes;
@@ -29,6 +35,8 @@ struct Mesh
     std::string dir;
     // The palette, if one exists.
     std::vector<glm::vec3> palette;
+    // Bounding Boxes
+    std::vector<Bound> bounds;
 };
 
 #endif // MESH_H

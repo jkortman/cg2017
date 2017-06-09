@@ -16,7 +16,7 @@ Scene::Scene()
     : world_light_night_index(-1),
       time_elapsed(0.0f)
 {
-    no_clip = true;
+    no_clip = false;
     console->register_var(
         "player.pos",
         Float,
@@ -101,13 +101,13 @@ void Scene::update(float dt)
     if (!no_clip) 
     {
 
-        if (length(movement - player.position) > 0)
+        /*if (length(movement - player.position) > 0)
         {
             movement.y = landscape->get_pos_at(movement).y;
             //movement.y = landscape->get_height_at(movement.x, movement.z);
             movement = player.position + move_speed*normalize(movement-player.position);
 
-        }
+        }*/
         
     }
 
@@ -282,17 +282,17 @@ glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
     if (no_clip) return proposed;
     float radius = 2;
     
-    /*glm::vec3 prop = current + proposed;
-    prop.y += get_pos_at(prop)-current.y;
-*/
+    // glm::vec3 prop = current + proposed;
+    // prop.y += get_pos_at(prop)-current.y;
+
 
 
     // Check terrain
-    if ( current.y <(landscape->get_pos_at(proposed)).y + player.height ) 
+/*    if ( current.y <(landscape->get_pos_at(proposed)).y + player.height ) 
     {
-  /*      proposed.y = landscape->get_pos_at(proposed).y
-        proposed = current + move_speed*normalize(proposed-current);
-*/
+        // proposed.y = landscape->get_pos_at(proposed).y
+        // proposed = current + move_speed*normalize(proposed-current);
+
         //current.y *= 1.05;
         std::cout << "STUCK!" << "\n";
         current.y = (landscape->get_pos_at(proposed)).y + player.height;
@@ -301,12 +301,44 @@ glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
     else if (current.y == (landscape->get_pos_at(proposed)).y + player.height )
     {
 
-    }
+    }*/
 
     // Check objects
     for (auto& object : objects)
     {
-        if ( glm::length(object->position - glm::vec4(proposed, 0.0f)) < radius) return current;
+        std::vector<Bound> bounds = object->render_unit.mesh->bounds;
+        //std::cout << object->position.x << "\n";
+        for (int i = 0; i < bounds.size(); i++)
+        {
+            //std::cout << "Here?\n";
+            Bound bound = bounds.at(i);
+            switch (bound.type)
+            {
+                case box:
+                {
+                    //std::cout << "Box!\n";
+                    if (   (object->position.x + bound.center.x + bound.dims.x > proposed.x)
+                        && (object->position.x + bound.center.x - bound.dims.x < proposed.x)
+                        && (object->position.y + bound.center.y + bound.dims.y > proposed.y)
+                        && (object->position.y + bound.center.y - bound.dims.y < proposed.y)
+                        && (object->position.z + bound.center.z + bound.dims.z > proposed.z)
+                        && (object->position.z + bound.center.z - bound.dims.z < proposed.z) ) return current;
+                }
+                break;
+                case cylinder:
+                {
+                    if ( glm::length(glm::vec2(object->position.x, object->position.z) - glm::vec2(proposed.x, proposed.z)) < bound.dims.x
+                        && (object->position.y + bound.center.y + bound.dims.y  > proposed.y)
+                        && (object->position.y + bound.center.y - bound.dims.y < proposed.y) ) return current;
+                }
+                break;
+                case sphere:
+                {
+                    if ( glm::length(object->position - glm::vec4(proposed, 0.0f)) < bound.dims.x) return current;
+                }
+                break;
+            }
+        }
     }
     return proposed;
 }
