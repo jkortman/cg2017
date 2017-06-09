@@ -17,8 +17,11 @@ INC = -I include -I external_files
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) $(CPPFLAGS) $(INC) -o $(TARGET) $(OBJS) $(LIB)
+LoadShaders.o: external_files/LoadShaders.cpp
+	$(CC) $(CPPFLAGS) $(INC) -c -o build/LoadShaders.o $<
+
+$(TARGET): $(OBJS) LoadShaders.o
+	$(CC) $(CPPFLAGS) $(INC) -o $(TARGET) $(OBJS) build/LoadShaders.o $(LIB)
 
 build/%.o: src/%.cpp src/%.hpp
 	$(CC) $(CPPFLAGS) $(INC) -c -o $@ $<
