@@ -129,16 +129,46 @@ void Shader::set_ssao(int num_samples)
     }
 }
 
-// TODO: Cite where this comes from!
-int CompileShader(const char *ShaderPath, const GLuint ShaderID)
+// Load the shared shader library, used to store third-party GLSL code.
+std::string LibraryCode()
 {
     // Read shader code from file
-    std::string ShaderCode;
+    const std::string ShaderPath("external_files/shaderlib.glsl");
+    std::string LibraryCode;
     std::ifstream ShaderStream (ShaderPath, std::ios::in);
     if (ShaderStream.is_open()) {
         std::string Line = "";
         while (getline(ShaderStream, Line)) {
+            LibraryCode += "\n" + Line;
+        }
+        ShaderStream.close();
+    }
+    else {
+        std::cerr << "    Cannot open " << ShaderPath << ". Are you in the right directory?" << std::endl;
+        return std::string();
+    }
+    //fprintf(stderr, "%s\n", LibraryCode.c_str());
+    return LibraryCode;
+}
+
+int CompileShader(const char *ShaderPath, const GLuint ShaderID)
+{
+
+    // Read shader code from file
+    std::string ShaderCode;
+    std::ifstream ShaderStream (ShaderPath, std::ios::in);
+    bool library_loaded = false;
+    if (ShaderStream.is_open()) {
+        std::string Line = "";
+        while (getline(ShaderStream, Line)) {
             ShaderCode += "\n" + Line;
+            // If line contains #version directive, insert shared library code.
+            if (Line.substr(0, 8) == std::string("#version"))
+            {
+                assert(!library_loaded);
+                ShaderCode = ShaderCode + "\n" + LibraryCode();
+                library_loaded = true;
+            }
         }
         ShaderStream.close();
     }
@@ -146,6 +176,8 @@ int CompileShader(const char *ShaderPath, const GLuint ShaderID)
         std::cerr << "    Cannot open " << ShaderPath << ". Are you in the right directory?" << std::endl;
         return 0;
     }
+    assert(library_loaded);
+    //fprintf(stderr, "%s", ShaderCode.c_str());
 
     // Compile Shader
     char const *SourcePointer = ShaderCode.c_str();

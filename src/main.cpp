@@ -138,13 +138,15 @@ int main(int argc, char** argv)
         glm::vec3 light_pos(7.572213f, 27.408897f, 56.127350f);
         glm::vec3 light_target(99.163513, 13.608925, 80.486885);
         // Spotlight from watchtower.
+        #if 0
         scene.lights.push_back(LightSource(
             glm::vec4(light_pos, 1.0f),
-            0.0f, 0.6f, 0.0f,
+            0.0f, 1.0f, 0.0f,
             1.0f, 0.0014f, 0.000007f,
             light_target - light_pos,
             0.01f
         ));
+        #endif
     }
 
     {

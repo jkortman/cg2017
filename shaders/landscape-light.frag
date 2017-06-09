@@ -51,8 +51,6 @@ uniform vec3 SSAOSamples[64];
 uniform int SSAONumSamples;
 
 
-float cnoise(in vec2 P);
-
 float discretize(float value)
 {
     // We map a continuous value to one of N
@@ -303,7 +301,6 @@ float in_shadow(vec3 light_dir)
     return shadow;
 }
 
-vec2 random2(vec2 p);
 float ambient_occlusion(vec3 pos)
 {
     // The matrix used to rotate the samples to match the normal.
@@ -474,9 +471,3 @@ void main()
     #endif
 }
 
-// Created by inigo quilez - iq/2013
-// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-// http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm
-vec2 random2( vec2 p ) {
-    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
-}
