@@ -301,44 +301,6 @@ float in_shadow(vec3 light_dir)
     return shadow;
 }
 
-float ambient_occlusion(vec3 pos)
-{
-    // The matrix used to rotate the samples to match the normal.
-    // TBN calculation code is from:
-    // http://john-chapman-graphics.blogspot.com.au/2013/01/ssao-tutorial.html
-    // (c) John Chapman
-    const float rvecscale = 0.1;
-    vec3 random_vec = vec3(
-        random2(rvecscale * pos.xy).x,
-        random2(rvecscale * pos.yz).x,
-        random2(rvecscale * pos.zx).x);
-    vec3 tangent = normalize(random_vec - Normal * dot(random_vec, Normal));
-    vec3 bitangent = cross(Normal, tangent);
-    mat3 tbn = mat3(tangent, bitangent, Normal);
-
-    float radius = 50.0;
-    float bias = 0.001;
-    float occlusion = 0.0;
-    // The fragment position in view space.
-    vec4 frag_view = ViewMatrix * vec4(pos, 1.0);
-    for (int i = 0; i < SSAONumSamples; i += 1)
-    {
-        // Get view-space position of sample, relative to the fragment.
-        vec3 sample = tbn * SSAOSamples[i];
-        sample = sample * radius + frag_view.xyz;
-
-        // Get the depth of the sample according to the depth map.
-        vec4 proj = ProjectionMatrix * vec4(sample, 1.0);
-        proj.xyz = 0.5 + 0.5 * proj.xyz / proj.w;
-        float sample_depth = texture(DepthMap, proj.xy).r;
-        
-        float in_range = (abs(proj.z - sample_depth) < radius) ? 1.0 : 0.0;
-        occlusion += 
-            in_range * ((sample_depth <= proj.z) ? 1.0 : 0.0);
-    }
-    return 1.0 - occlusion / SSAONumSamples;
-}
-
 void main()
 {
     // --------------------------------
@@ -442,16 +404,6 @@ void main()
     #endif
 
     FragColour = vec4(colour, 1.0);
-
-    // SSAO testing
-    #if 0
-
-    vec3 coords = 0.5 + 0.5 * FragPosDeviceSpace.xyz / FragPosDeviceSpace.w;
-    FragColour = texture(SSAOMap, coords.xy);
-    //float ssao = ambient_occlusion(FragPos);
-    //FragColour = vec4(vec3(ssao), 1.0);
-    //FragColour = vec4(vec3(FragPosDeviceSpace.z) / 1200.0, 1.0);
-    #endif
 
     // Depth buffer testing
     #if 0

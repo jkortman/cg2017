@@ -243,18 +243,17 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         ssao_texture, 0);
 
     // Create a depth attachment RBO.
-    #if 1
-    unsigned int rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(
-        GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-        ssao_texture_size[0], ssao_texture_size[1]);
-    glFramebufferRenderbuffer(
-        GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER, rbo);
-    #endif  
-
+    {
+        unsigned int rbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(
+            GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            ssao_texture_size[0], ssao_texture_size[1]);
+        glFramebufferRenderbuffer(
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, rbo);
+    }
 
     // Check that the framebuffer generated correctly
     {
@@ -291,6 +290,91 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         scene_texture, 0);
+
+    // Create a depth attachment RBO.
+    {
+        unsigned int rbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(
+            GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            scene_texture_size[0], scene_texture_size[1]);
+        glFramebufferRenderbuffer(
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, rbo);
+    }
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
+    // -----------------------------------------
+    // -- FBO initialization for bloom buffer --
+    // -----------------------------------------
+    glGenFramebuffers(1, &bloom_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, bloom_buffer);
+
+    glGenTextures(1, &bloom_texture);
+    glBindTexture(GL_TEXTURE_2D, bloom_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_RGBA, scene_texture_size[0], scene_texture_size[1],
+        0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        bloom_texture, 0);
+
+    // Check that the framebuffer generated correctly
+    {
+        GLenum fb_status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        fatal_if(
+            fb_status != GL_FRAMEBUFFER_COMPLETE,
+            "Depth frame buffer error, status: " + std::to_string(fb_status));
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    get_error(__LINE__);
+
+    // ------------------------------------------------------
+    // -- FBO initialization for bloom intermediate buffer --
+    // ------------------------------------------------------
+    glGenFramebuffers(1, &bloom_intermediate_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, bloom_intermediate_buffer);
+
+    glGenTextures(1, &bloom_intermediate_texture);
+    glBindTexture(GL_TEXTURE_2D, bloom_intermediate_texture);
+
+    // Generate an empty image for OpenGL.
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, GL_RGBA, scene_texture_size[0], scene_texture_size[1],
+        0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);  
+
+    // Attach shadow_texture as depth attachment
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER,
+        GL_COLOR_ATTACHMENT0,
+        GL_TEXTURE_2D,
+        bloom_intermediate_texture, 0);
 
     // Check that the framebuffer generated correctly
     {
@@ -814,8 +898,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 
     if (render_mode == RenderMode::Scene)
     {
-        reshape(window_width, window_height);
-
         // The default shadow state is no shadows when the sun is above
         // the horizon, and shadows when the sun is below the horizon.
         // This is important for below the horizon.
@@ -1111,10 +1193,10 @@ void Renderer::render(const Scene& scene)
     // ----------------------------------
     // -- Pass 5: Render scene buffer. --
     // ----------------------------------
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, scene_buffer);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, window_width, window_height);
+    glViewport(0, 0, scene_texture_size[0], scene_texture_size[1]);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
@@ -1135,23 +1217,91 @@ void Renderer::render(const Scene& scene)
     }
     get_error(__LINE__);
 
-    // -----------------------------------------
-    // -- Pass 4: Render postprocessed scene. --
-    // -----------------------------------------
-    #if 0
+    // ------------------------------------------------
+    // -- Pass 6: Extract bright regions from scene. --
+    // ------------------------------------------------
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBindFramebuffer(GL_FRAMEBUFFER, bloom_buffer);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, scene_texture_size[0], scene_texture_size[1]);
+
+    glUseProgram(scene.extract_brightness_shader->program_id);
+    glUniform1i(
+        glGetUniformLocation(scene.extract_brightness_shader->program_id, "SceneMap"),
+        4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, scene_texture);
+    glBindVertexArray(quad_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    get_error(__LINE__);
+
+    // ------------------------------------------------
+    // -- Pass 7 and 8: Blur the bloom texture. --
+    // ------------------------------------------------
+    // Horizontal blur pass.
+    glBindFramebuffer(GL_FRAMEBUFFER, bloom_intermediate_buffer);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, scene_texture_size[0], scene_texture_size[1]);
+
+    glUseProgram(scene.blur_shader->program_id);
+    glUniform1i(
+        glGetUniformLocation(scene.blur_shader->program_id, "BlurDirection"),
+        0);
+    glUniform1i(
+        glGetUniformLocation(scene.blur_shader->program_id, "BloomMap"),
+        4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, bloom_texture);
+    glBindVertexArray(quad_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Vertical blur pass.
+    glBindFramebuffer(GL_FRAMEBUFFER, bloom_buffer);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0, 0, scene_texture_size[0], scene_texture_size[1]);
+
+    glUseProgram(scene.blur_shader->program_id);
+    glUniform1i(
+        glGetUniformLocation(scene.blur_shader->program_id, "BlurDirection"),
+        1);
+    glUniform1i(
+        glGetUniformLocation(scene.blur_shader->program_id, "BloomMap"),
+        4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, bloom_intermediate_texture);
+    glBindVertexArray(quad_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    get_error(__LINE__);
+
+    // ------------------------------------------------
+    // -- Pass 9: Render entire scene onto a quad. --
+    // ------------------------------------------------
+    #if 1
+    reshape(window_width, window_height);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
-    glUseProgram(scene.postprocess_shader->program_id);
+    glUseProgram(scene.hdr_shader->program_id);
     glUniform1i(
-        glGetUniformLocation(scene.postprocess_shader->program_id, "SceneMap"),
+        glGetUniformLocation(scene.hdr_shader->program_id, "SceneMap"),
         4);
+    glUniform1i(
+        glGetUniformLocation(scene.hdr_shader->program_id, "BloomMap"),
+        5);
     glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, reflect_texture);
+    glBindTexture(GL_TEXTURE_2D, scene_texture);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, bloom_texture);
     glBindVertexArray(quad_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     get_error(__LINE__);

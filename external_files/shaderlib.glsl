@@ -249,3 +249,39 @@ float snoise(vec3 v){
                                 dot(p2,x2), dot(p3,x3) ) );
 }
 
+// TBN calculation code is from:
+// http://john-chapman-graphics.blogspot.com.au/2013/01/ssao-tutorial.html
+// (c) John Chapman
+mat3 create_tbn(vec3 pos, vec3 normal)
+{
+    const float rvecscale = 0.1;
+    vec3 random_vec = vec3(
+        random2(rvecscale * pos.xy).x,
+        random2(rvecscale * pos.yz).x,
+        random2(rvecscale * pos.zx).x);
+    vec3 tangent = normalize(random_vec - normal * dot(random_vec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    return mat3(tangent, bitangent, normal);
+}
+
+// (c) Sam Hocevar
+// https://stackoverflow.com/questions/15095909/from-rgb-to-hsv-in-opengl-glsl
+vec3 rgb2hsv(vec3 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+ 
+
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+

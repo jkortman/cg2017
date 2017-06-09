@@ -82,7 +82,12 @@ private:
     GLuint scene_buffer;
     GLuint scene_texture;
     const std::array<unsigned int, 2> scene_texture_size = 
-        {{ DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT }};
+        {{ 2 * DEFAULT_WINDOW_WIDTH, 2 * DEFAULT_WINDOW_HEIGHT }};
+    // The FBO and texture to render the bloom regions to.
+    GLuint bloom_buffer;
+    GLuint bloom_texture;
+    GLuint bloom_intermediate_buffer;
+    GLuint bloom_intermediate_texture;
     // The quad to draw on, for postprocessing.
     GLuint quad_vao;
     unsigned int quad_size;

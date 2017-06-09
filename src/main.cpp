@@ -65,6 +65,7 @@ int main(int argc, char** argv)
         "bplight",
         "depth",
         "shadow",
+        "extract-brightness",
         "postprocess",
         "reflect",
         "ssao",
@@ -74,6 +75,8 @@ int main(int argc, char** argv)
         "skybox",
         "horizon",
         "diffuse",
+        "blur",
+        "hdr",
     }};
     for (const auto& shname: shaders)
     {
@@ -82,11 +85,15 @@ int main(int argc, char** argv)
                                          "shaders/" + shname + ".frag"));
     }
 
-    scene.shadow_shader         = resources.get_shader("shadow");
-    scene.depth_shader          = resources.get_shader("depth");
-    scene.postprocess_shader    = resources.get_shader("postprocess");
-    scene.reflect_shader        = resources.get_shader("reflect");
-    scene.ssao_shader           = resources.get_shader("ssao");
+    scene.shadow_shader             = resources.get_shader("shadow");
+    scene.depth_shader              = resources.get_shader("depth");
+    scene.render_tex_shader         = resources.get_shader("postprocess");
+    scene.extract_brightness_shader = resources.get_shader("extract-brightness");
+    scene.reflect_shader            = resources.get_shader("reflect");
+    scene.ssao_shader               = resources.get_shader("ssao");
+    scene.blur_shader               = resources.get_shader("blur");
+    scene.hdr_shader                = resources.get_shader("hdr");
+
 
     resources.get_shader("ssao")->set_ssao(64);
     resources.get_shader("landscape-light")->set_ssao(64);
