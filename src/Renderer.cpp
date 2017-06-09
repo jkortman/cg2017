@@ -243,18 +243,17 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         ssao_texture, 0);
 
     // Create a depth attachment RBO.
-    #if 1
-    unsigned int rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(
-        GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-        ssao_texture_size[0], ssao_texture_size[1]);
-    glFramebufferRenderbuffer(
-        GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER, rbo);
-    #endif  
-
+    {
+        unsigned int rbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(
+            GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            ssao_texture_size[0], ssao_texture_size[1]);
+        glFramebufferRenderbuffer(
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, rbo);
+    }
 
     // Check that the framebuffer generated correctly
     {
@@ -291,6 +290,19 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         GL_COLOR_ATTACHMENT0,
         GL_TEXTURE_2D,
         scene_texture, 0);
+
+    // Create a depth attachment RBO.
+    {
+        unsigned int rbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(
+            GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            ssao_texture_size[0], ssao_texture_size[1]);
+        glFramebufferRenderbuffer(
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, rbo);
+    }
 
     // Check that the framebuffer generated correctly
     {
@@ -1145,7 +1157,7 @@ void Renderer::render(const Scene& scene)
     // ----------------------------------
     // -- Pass 5: Render scene buffer. --
     // ----------------------------------
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, scene_buffer);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
@@ -1172,12 +1184,12 @@ void Renderer::render(const Scene& scene)
     // -----------------------------------------
     // -- Pass 4: Render postprocessed scene. --
     // -----------------------------------------
-    #if 0
+    #if 1
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, window_width, window_height);
 
     glUseProgram(scene.postprocess_shader->program_id);
@@ -1185,7 +1197,7 @@ void Renderer::render(const Scene& scene)
         glGetUniformLocation(scene.postprocess_shader->program_id, "SceneMap"),
         4);
     glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, reflect_texture);
+    glBindTexture(GL_TEXTURE_2D, scene_texture);
     glBindVertexArray(quad_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     get_error(__LINE__);
