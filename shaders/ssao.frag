@@ -38,7 +38,6 @@ float discretize(float value)
     return floor(N * value) / (N - 1.0);
 }
 
-vec2 random2(vec2 p);
 float ambient_occlusion(vec3 pos)
 {
     // The matrix used to rotate the samples to match the normal.
@@ -84,9 +83,3 @@ void main()
     //FragColour = vec3(gl_Position.z);
 }
 
-// Created by inigo quilez - iq/2013
-// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-// http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm
-vec2 random2( vec2 p ) {
-    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
-}
