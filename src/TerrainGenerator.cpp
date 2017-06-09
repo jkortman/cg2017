@@ -132,20 +132,28 @@ glm::vec3 TerrainGenerator::get_closest_pos(float x, float z) const
 
 // Get the triangle that encloses point (x,z),
 // as indices.
-std::array<int, 3> get_tri(float x, float z)
+std::array<int, 3> TerrainGenerator::get_tri(float x, float z) const
 {
     std::array<int, 3> indices;
-    
 
-    #if 0
+    const float step = (2 * edge)/(-1 + size * 2);
+    int row_x = (x + edge/2)/step;
+    int row_z = (z + edge/2)/step;
+    indices[0] = size * row_x + row_z;
+    indices[1] = indices[0] + 1;
+    indices[2] = indices[0] + size;
+    
+    #if 1
     fprintf(
         stderr,
-        "(%f, %f) is inside:\n"
-        "  (%f, %f).__.(%f, %f)\n"
-        "          | /\n"
-        "  (%f, %f)|/\n",
+        "(%.2f, %.2f) is inside:\n"
+        "  (%.2f, %.2f).__.(%.2f, %.2f)\n"
+        "                  | /\n"
+        "  (%.2f, %.2f)|/\n",
         x, z,
-        )
+        positions.at(indices[0]).x, positions.at(indices[0]).z, 
+        positions.at(indices[1]).x, positions.at(indices[1]).z, 
+        positions.at(indices[2]).x, positions.at(indices[2]).z);
     #endif
 
     return indices;
@@ -153,7 +161,40 @@ std::array<int, 3> get_tri(float x, float z)
 
 float TerrainGenerator::get_height_at(float x, float z) const
 {
-    return 0.0f;
+    std::array<int, 3> indices = get_tri(x, z);
+    glm::vec3 downward = 
+        positions.at(indices[1])
+        - positions.at(indices[0]);
+    glm::vec3 rightward = 
+        positions.at(indices[2])
+        - positions.at(indices[0]);
+
+    rightward = (1.0f / rightward.x) * rightward;
+    downward = (1.0f / downward.z) * downward;
+    float dx = x - positions.at(indices[0]).x;
+    float dz = z - positions.at(indices[0]).z;
+    glm::vec3 position =
+        positions.at(indices[0])
+        + dx * rightward
+        + dz * downward;
+
+    #if 0
+    fprintf(stderr,
+        "get_height_at(%.2f, %.2f) -> (%.2f, %.2f, %.2f)\n",
+        x, z, position.x, position.y, position.z);
+    fprintf(stderr,
+        "position =\n"
+        "  (%.2f, %.2f, %.2f)\n"
+        "  + %.2f * (%.2f, %.2f, %.2f)\n"
+        "  + %.2f * (%.2f, %.2f, %.2f)\n",
+        positions.at(indices[0]).x,
+        positions.at(indices[0]).y,
+        positions.at(indices[0]).z,
+        dx, rightward.x, rightward.y, rightward.z,
+        dz, downward.x, downward.y, downward.z);
+    #endif
+
+    return position.y;
 }
 
 void TerrainGenerator::set_position(int row, int col, glm::vec3 pos)
@@ -496,11 +537,6 @@ void TerrainGenerator::populate()
     Mesh* pine          = resources->get_mesh("Pine02");
     Mesh* stump         = resources->get_mesh("Stump");
     Shader* tex_shader  = resources->get_shader("obj-cel");
-    /*new Object(
-        resources.get_mesh("Pine01"),     // mesh
-        glm::vec3(-20.0f, 20.0f, 0.0f),     // position
-        resources.get_shader("texture")   // shader
-    )*/
 
     // To place objects, we evaluate some noise function and
     // select the local maxima, and place an object there with some
@@ -539,6 +575,11 @@ void TerrainGenerator::populate()
                             Mesh* model;
                             if (p < 0.90f) model = pine;
                             else           model = stump;
+
+                            glm::vec3 offset(
+                                randf() * 0.5f * div_size,
+                                -0.7f,
+                                randf() * 0.5f * div_size);
 
                             Object* obj = new Object(
                                 model,
