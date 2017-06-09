@@ -143,7 +143,7 @@ std::array<int, 3> TerrainGenerator::get_tri(float x, float z) const
     indices[1] = indices[0] + 1;
     indices[2] = indices[0] + size;
     
-    #if 1
+    #if 0
     fprintf(
         stderr,
         "(%.2f, %.2f) is inside:\n"

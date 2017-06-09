@@ -36,6 +36,7 @@ public:
     // Directional lights for day and night, which cast shadows.
     LightSource world_light_day;
     int world_light_night_index;
+    int lighthouse_light_index;
     // Point light sources.
     std::vector<LightSource> lights;
     // The landscape.

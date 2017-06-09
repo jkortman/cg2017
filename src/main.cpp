@@ -99,7 +99,8 @@ int main(int argc, char** argv)
         {{ "Pine02",     "pine",         "PineTransp"    }},
         {{ "Stump",      "TreeStump",    "TreeStump03"   }},
         {{ "Watchtower", "watchtower",   "watchtower"    }},
-        {{ "Bonfire",    "bonfire",      "bonfire"    }},
+        {{ "Bonfire",    "bonfire",      "bonfire"       }},
+        {{ "Lighthouse", "lighthouse",   "lighthouse"    }},
     }};
     for (const auto& meshinfo: meshes)
     {
@@ -139,13 +140,32 @@ int main(int argc, char** argv)
         // Spotlight from watchtower.
         scene.lights.push_back(LightSource(
             glm::vec4(light_pos, 1.0f),
-            0.1f, 1.0f, 0.0f,
+            0.0f, 0.6f, 0.0f,
             1.0f, 0.0014f, 0.000007f,
             light_target - light_pos,
             0.01f
         ));
     }
 
+    {
+        Object* lighthouse = new Object(
+            resources.get_mesh("Lighthouse"),
+            glm::vec3(110.330582, 10.8, 173.194229),
+            resources.get_shader("texture"));
+        lighthouse->scale = glm::vec3(1.7f);
+        //lighthouse->y_rotation = glm::pi<float>();
+        scene.give_object(lighthouse);
+        // Spotlight for lighthouse.
+        scene.lights.push_back(LightSource(
+            glm::vec4(110.330582, 32.508884, 173.194229, 1.0f),
+            0.1f, 1.0f, 0.0f,
+            1.0f, 0.0014f, 0.000007f,
+            glm::vec3(0.0f, -0.05f, 1.0f),
+            0.01f
+        ));
+        scene.lighthouse_light_index = scene.lights.size() - 1;
+    }
+    
     {
         Object* bonfire = new Object(
             resources.get_mesh("Bonfire"),

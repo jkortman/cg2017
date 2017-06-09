@@ -165,11 +165,31 @@ void Scene::update(float dt)
     world_light_day.position.z = daylight_dir.z;
     world_light_day.update_view();
 
+    // night_factor is >0 at day, <0 at night.
+    float night_factor = glm::dot(daylight_dir, AXIS_Y);
+    // Filter night_factor so it is 0 at day, 1 through most of the night.
+    night_factor = std::max(0.0f, -night_factor);
+    //night_factor = std::pow(night_factor, 0.3f);
+
     if (world_light_night_index != -1)
     {
         lights[world_light_night_index].position.x = -daylight_dir.x;
         lights[world_light_night_index].position.y = -daylight_dir.y;
         lights[world_light_night_index].position.z = -daylight_dir.z;
+        // modify intensity based on night/day.
+        lights[world_light_night_index].ambient = 0.2f * night_factor;
+        lights[world_light_night_index].diffuse = 0.5f * night_factor;
+        lights[world_light_night_index].specular = 1.0f * night_factor;
+    }
+
+    // Rotate the lighthouse light.
+    if (lighthouse_light_index != -1)
+    {
+        lights[lighthouse_light_index].spot_direction = glm::rotate(
+            lights[lighthouse_light_index].spot_direction,
+            float(dt * 1.0f),
+            AXIS_Y);
+        //lights[lighthouse_light_index].diffuse = night_factor;
     }
 
     // Update the model and normal matrices for each object.
