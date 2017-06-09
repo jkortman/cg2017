@@ -298,7 +298,7 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
         glRenderbufferStorage(
             GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-            ssao_texture_size[0], ssao_texture_size[1]);
+            scene_texture_size[0], scene_texture_size[1]);
         glFramebufferRenderbuffer(
             GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
             GL_RENDERBUFFER, rbo);
@@ -860,8 +860,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
 
     if (render_mode == RenderMode::Scene)
     {
-        reshape(window_width, window_height);
-
         // The default shadow state is no shadows when the sun is above
         // the horizon, and shadows when the sun is below the horizon.
         // This is important for below the horizon.
@@ -1160,7 +1158,7 @@ void Renderer::render(const Scene& scene)
     glBindFramebuffer(GL_FRAMEBUFFER, scene_buffer);
     glClearColor(0.75f, 0.85f, 1.0f, 1.0f);   // Sky blue
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0, 0, window_width, window_height);
+    glViewport(0, 0, scene_texture_size[0], scene_texture_size[1]);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depth_texture);
@@ -1185,6 +1183,8 @@ void Renderer::render(const Scene& scene)
     // -- Pass 4: Render postprocessed scene. --
     // -----------------------------------------
     #if 1
+    reshape(window_width, window_height);
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
