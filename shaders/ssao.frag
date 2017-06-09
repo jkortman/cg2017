@@ -40,6 +40,8 @@ float discretize(float value)
 
 float ambient_occlusion(vec3 pos)
 {
+    // Create the TBN matrix, which rotates the sample kernel up against
+    // the normal vector.
     mat3 tbn = create_tbn(pos, Normal);
 
     float radius = 50.0;
