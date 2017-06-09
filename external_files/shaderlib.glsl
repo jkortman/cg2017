@@ -175,3 +175,20 @@ float pnoise(vec2 P, vec2 rep)
     float n_xy = mix(n_x.x, n_x.y, fade_xy.y);
     return 2.3 * n_xy;
 }
+
+
+// TBN calculation code is from:
+// http://john-chapman-graphics.blogspot.com.au/2013/01/ssao-tutorial.html
+// (c) John Chapman
+mat3 create_tbn(vec3 pos, vec3 normal)
+{
+    const float rvecscale = 0.1;
+    vec3 random_vec = vec3(
+        random2(rvecscale * pos.xy).x,
+        random2(rvecscale * pos.yz).x,
+        random2(rvecscale * pos.zx).x);
+    vec3 tangent = normalize(random_vec - normal * dot(random_vec, normal));
+    vec3 bitangent = cross(normal, tangent);
+    return mat3(tangent, bitangent, normal);
+}
+

@@ -303,18 +303,7 @@ float in_shadow(vec3 light_dir)
 
 float ambient_occlusion(vec3 pos)
 {
-    // The matrix used to rotate the samples to match the normal.
-    // TBN calculation code is from:
-    // http://john-chapman-graphics.blogspot.com.au/2013/01/ssao-tutorial.html
-    // (c) John Chapman
-    const float rvecscale = 0.1;
-    vec3 random_vec = vec3(
-        random2(rvecscale * pos.xy).x,
-        random2(rvecscale * pos.yz).x,
-        random2(rvecscale * pos.zx).x);
-    vec3 tangent = normalize(random_vec - Normal * dot(random_vec, Normal));
-    vec3 bitangent = cross(Normal, tangent);
-    mat3 tbn = mat3(tangent, bitangent, Normal);
+    mat3 tbn = create_tbn(pos, Normal);
 
     float radius = 50.0;
     float bias = 0.001;
