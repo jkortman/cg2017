@@ -61,13 +61,13 @@ void main() {
     vec4 day_colour = vec4(110.0/256.0, 170.0/256.0, 225.0/256.0, 1.0);//vec4(0.7,0.7,0.8+ FragPos.y / 5000.0,1.0);
     vec4 night_colour = vec4(0.0, 10.0/256.0, 40.0/256.0, 1.0); //vec4(0.0, 0.149 - FragPos.y / 2400.0, 0.301 - FragPos.y / 2400.0, 1.0);//
     
+    // Stars
     float amp = snoise(Pos*50);
     if (amp < 0.9) amp = 0;
-
     night_colour += vec4(amp,amp,amp,1.0); 
 
+    // Horizon Gradient   
     vec3 level = normalize(ViewPos-FragPosWorld);
-    vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
 
     float bound = 0.2;
     if ( -level.y < bound  )
@@ -107,7 +107,7 @@ void main() {
     }
     
 
-    // Sun/moon
+    // Sun
     if (length(SunPos) < 0.08) FragColour = vec4(1.0,0.7,0.3,1.0);
     if (length(SunPos) < 0.065) FragColour = vec4(1.0,0.9,0.4,1.0);
     if (length(SunPos) < 0.057) FragColour = vec4(1.0,1.0,0.5,1.0); 
@@ -117,6 +117,7 @@ void main() {
     // Maybe vary size over time to simulate getting closer/further away
     // Maybe simulate change in form - track 
     
+    // Moon (with phases)
     float q = 0.065; // Radius of Moon
     float a = cos(Time/5.0)*q; // Edge of Moon Shadow
     a = 0.03;
@@ -151,13 +152,12 @@ void main() {
         }
         
     }
-
-   //FragColour = vec4(0.7,0.7,0.7,1.0);
-    
-    
+   
 
 
-     // Clouds
+    // Clouds
+    // Process for creating clouds based off http://lodev.org/cgtutor/randomnoise.html
+    vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
     float phi = Time*0.02;
     mat3 rot;
     rot[0] = vec3(1.0,0.0,0.0);
@@ -170,18 +170,14 @@ void main() {
     while (size >= 1)
     {
         val += snoise(100*(rot*cloud_level +vec3(0.0,0.0,phi)) /size) * size;
-        //val += cnoise(1000*(clouds) /size) * size;
         size /= 2.0;
     }
     float col_val = val / init_size;
-    //FragColour = vec4(0.0,0.0,0.0,1.0);//vec4(0.5, 0.7, 0.9, 1.0);
-    if (col_val < 0) col_val = 0;
-    //level.y -= 0.5;
 
-    //if ( -level.y > 0.2  )
-    {
-        FragColour += vec4(col_val, col_val, col_val, 0.0);
-    }
+    if (col_val < 0) col_val = 0;
+
+    FragColour += vec4(col_val, col_val, col_val, 0.0);
+
 
  
 }

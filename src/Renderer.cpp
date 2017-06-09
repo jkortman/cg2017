@@ -658,7 +658,6 @@ Mesh* Renderer::assign_vao(Mesh* mesh)
 enum ImageFormat {JPEG, PNG, UNKNOWN};
 static ImageFormat get_image_type(const std::string& path);
 static void load_texture(const std::string& path);
-static void load_texture_skybox(std::vector<std::string> paths);
 
 // Read and load mesh textures onto the GPU.
 Mesh* Renderer::create_materials(Mesh* mesh)
@@ -1070,7 +1069,6 @@ void Renderer::draw_scene(const Scene& scene, RenderMode render_mode)
                 glGetUniformLocation(current_program, "ModelMatrix"),
                 1, false, glm::value_ptr(skybox->model_matrix));
 
-            glBindTexture(GL_TEXTURE_2D, skybox->texID);
 
             glBindVertexArray(skybox->vao);
             glDrawElements(
