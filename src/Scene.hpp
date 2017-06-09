@@ -50,12 +50,15 @@ public:
     Shader* skybox_shader;
     // The elapsed time.
     float time_elapsed;
-    // The shader for the shadow and depth pass.
+    // The shader for the each specialized pass.
     Shader* shadow_shader;
     Shader* depth_shader;
-    Shader* postprocess_shader;
+    Shader* render_tex_shader;
+    Shader* extract_brightness_shader;
     Shader* reflect_shader;
     Shader* ssao_shader;
+    Shader* blur_shader;
+    Shader* hdr_shader;
     
     // Update the scene after given an elapsed amount of time.
     void update(float dt);
