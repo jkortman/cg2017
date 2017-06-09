@@ -61,7 +61,13 @@ void main() {
     vec4 day_colour = vec4(110.0/256.0, 170.0/256.0, 225.0/256.0, 1.0);//vec4(0.7,0.7,0.8+ FragPos.y / 5000.0,1.0);
     vec4 night_colour = vec4(0.0, 10.0/256.0, 40.0/256.0, 1.0); //vec4(0.0, 0.149 - FragPos.y / 2400.0, 0.301 - FragPos.y / 2400.0, 1.0);//
     
+    float amp = snoise(Pos*50);
+    if (amp < 0.9) amp = 0;
+
+    night_colour += vec4(amp,amp,amp,1.0); 
+
     vec3 level = normalize(ViewPos-FragPosWorld);
+    vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
 
     float bound = 0.2;
     if ( -level.y < bound  )
@@ -120,22 +126,20 @@ void main() {
     float h = (pow(q,2.0) - pow(a,2.0))/(-2.0*a); // Distance of Moon Shadow circle from Moon
     float r = sqrt(pow(h,2.0)+pow(q,2.0)); // Radius of Moon Shadow
 
-    theta = h*1.24  ;
-    mat3 rot;
-    rot[0] = vec3(cos(theta),0,sin(theta));
-    rot[1] = vec3(0,1,0);
-    rot[2] = vec3(-sin(theta),0,cos(theta));
+    // In theory, would have it change but the math isn't quite aligned correctly
+    theta = h*1.12  ;
+    
 
     ShadowPos = Pos - normalize(vec3(0.1*cos(theta) + 0.1*sin(theta), 0.1, -0.1*sin(theta)+0.1*cos(theta)));
 
     // Rotation mostly there. Possibly the angle wrong because of distance.
 
+    vec4 moon_colour = (1.1-factor)*vec4(1.0,1.0,1.0,1.0);
     
     if (length(MoonPos) < q)
     {
         // Left zone
-        FragColour += (1.1-factor)*vec4(1.0,1.0,1.0,1.0);
-        FragColour = vec4(1.0,1.0,1.0,1.0);
+        FragColour += moon_colour;
         // Right zone
         if (a < 0) FragColour = sky_colour; 
 
@@ -143,12 +147,42 @@ void main() {
         if (length(ShadowPos) < r)
         {
             FragColour = sky_colour; // Left Zone
-            if (a < 0) FragColour = vec4(1.0,1.0,1.0,1.0); // Right Zone
+            if (a < 0) FragColour += moon_colour; // Right Zone
         }
         
     }
 
    //FragColour = vec4(0.7,0.7,0.7,1.0);
-    FragColour = 0.8*FragColour + 0.2*texture(skybox, FragPos);
+    
+    
 
+
+     // Clouds
+    float phi = Time*0.02;
+    mat3 rot;
+    rot[0] = vec3(1.0,0.0,0.0);
+    rot[1] = vec3(0.0, cos(phi), sin(phi));
+    rot[2] = vec3(0.0,-sin(phi), cos(phi));
+
+    float size = 32;
+    float val = 0.0, init_size = size;
+
+    while (size >= 1)
+    {
+        val += snoise(100*(rot*cloud_level +vec3(0.0,0.0,phi)) /size) * size;
+        //val += cnoise(1000*(clouds) /size) * size;
+        size /= 2.0;
+    }
+    float col_val = val / init_size;
+    //FragColour = vec4(0.0,0.0,0.0,1.0);//vec4(0.5, 0.7, 0.9, 1.0);
+    if (col_val < 0) col_val = 0;
+    //level.y -= 0.5;
+
+    //if ( -level.y > 0.2  )
+    {
+        FragColour += vec4(col_val, col_val, col_val, 0.0);
+    }
+
+ 
 }
+
