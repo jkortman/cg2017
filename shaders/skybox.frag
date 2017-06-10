@@ -48,6 +48,14 @@ float discretize(float value)
     return floor(N * value) / (N - 1.0);
 }
 
+vec3 sun_haze_colour(in vec3 view_dir, in vec3 light_dir)
+{
+    vec3 colour_sun = vec3(1.0, 1.0, 0.8);
+    float s = max(dot( view_dir, -light_dir ), 0.0);
+    float amt = pow(s, 22.0);
+    return mix(vec3(1.0), colour_sun, amt);
+}
+
 void main() {
     // TO DO: Need to pass in the horizon location to get the transition right
 
@@ -176,7 +184,6 @@ void main() {
     }
    
 
-
     // Clouds
     // Process for creating clouds based off http://lodev.org/cgtutor/randomnoise.html
     vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
@@ -211,11 +218,19 @@ void main() {
     const float night_colour_amt = 0.1;
     col_val *= factor * (1.0 - night_colour_amt) + night_colour_amt;
 
+
+
     FragColour.xyz = 
         0.97 * vec3(col_val)
         + (1.0 - col_val) * FragColour.xyz
         + col_val * suncloud_colour;
 
- 
+    // Colour the clouds in the area around the sun in the sky.
+    if (length(SunPos) > 0.08)
+    {
+        vec3 view_dir = normalize(ViewPos - FragPos);
+        vec3 light_dir = normalize(-LightDay.position.xyz);
+        FragColour.xyz *= mix(vec3(1.0), sun_haze_colour(view_dir, light_dir), col_val);  
+    }
 }
 
