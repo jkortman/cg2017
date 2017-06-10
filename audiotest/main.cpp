@@ -2,44 +2,65 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <stdio.h>
 
 bool playing = true;
+bool day = true;
 
 void background();
 void ambient();
 
 int main(int argc, char **argv)
 {
-	std::fstream file;
 	std::thread t1(background);
 	std::thread t2(ambient);
 
 	int a;
-	std::cout <<"Press input something to join threads, then ctrl-c once or twice it end early \n";
+	std::cout <<"Input a character then press enter to end program\n";
 	std::cin >> a;
 	playing = false;
+	
+	system("killall play");
 	t1.join();
 	t2.join();
-	std::cout << a << "\n";
-
 	
     return 0;
 }
 
 void background()
 {
+	FILE* file;
+	int val;
 	while (playing)
 	{
-		std::cout << playing <<"\n";
-		system("play -q water.wav fade h 1 15 1");
+		file = popen("pgrep -c play", "r");
+		val = getc(file);
+		if (val < '2')
+		{
+			system("(play -q water.wav fade h 1 15 1)");
+		}
 	}	
 }
 
 void ambient()
 {
+	FILE* file;
+	int val;
 	while (playing)
 	{
-		system("play -q seagull.wav fade h 3 15 3");
-		system("play -q crickets.wav fade h 3 15 3");
-	}
+		file = popen("pgrep -c play", "r");
+		val = getc(file);
+		if (val < '2')
+		{
+			if (day)
+            {
+                system("(play -q seagull.wav fade h 3 15 3)");
+                day = false;
+            } else
+            {
+                system("(play -q crickets.wav fade h 3 15 3)");
+                day = true;
+            }
+		}
+	}	
 }
