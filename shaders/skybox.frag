@@ -50,10 +50,21 @@ float discretize(float value)
 
 vec3 sun_haze_colour(in vec3 view_dir, in vec3 light_dir)
 {
-    vec3 colour_sun = vec3(1.0, 1.0, 0.8);
-    float s = max(dot( view_dir, -light_dir ), 0.0);
+    vec3 colour_sun = vec3(1.0, 1.0, 0.9);
+    float s = max(dot(view_dir, -light_dir), 0.0);
     float amt = pow(s, 22.0);
     return mix(vec3(1.0), colour_sun, amt);
+}
+
+vec3 sunset_colour(in vec3 view_dir,   in vec3 light_dir,
+                   in vec3 day_colour, in vec3 sunset_colour)
+{
+    const float squash = 2.0;
+    // h is 1.0 when the sun is at the horizon, and 0.0 away from the horizon.
+    float h = pow(1.0 - abs(dot(view_dir, vec3(0.0, 1.0, 0.0))), 3.0);
+    float s = max(dot(view_dir, -light_dir), 0.0);
+    float amt = h * pow(s, 10.0);
+    return mix(day_colour, sunset_colour, amt);
 }
 
 void main() {
@@ -65,6 +76,8 @@ void main() {
     float dt = -Time/2.0; // Scales time
     float theta = Time / 2.0;
 
+    vec3 view_dir = normalize(ViewPos - FragPos);
+    vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // Vectors normalized to unit sphere - means only useful for relative direction, 
     // unless original direction tracked
@@ -110,6 +123,11 @@ void main() {
     float factor = (LightWC.y+ViewPos.y + dome_radius*0.2)/bound;  
     if (factor > 1) factor = 1;
     if (factor < 0) factor = 0;
+    
+    // Tint day colour red at sunset.
+    #if 0
+    day_colour.xyz = sunset_colour(view_dir, light_dir, day_colour.xyz, vec3(1.0, 0.5, 1.0));
+    #endif
 
     vec4 sky_colour = day_colour*(factor) + night_colour*(1-factor);
 
@@ -228,8 +246,6 @@ void main() {
     // Colour the clouds in the area around the sun in the sky.
     if (length(SunPos) > 0.08)
     {
-        vec3 view_dir = normalize(ViewPos - FragPos);
-        vec3 light_dir = normalize(-LightDay.position.xyz);
         FragColour.xyz *= mix(vec3(1.0), sun_haze_colour(view_dir, light_dir), col_val);  
     }
 }
