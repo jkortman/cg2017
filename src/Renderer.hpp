@@ -35,8 +35,7 @@ public:
     Skybox* assign_vao(Skybox* skybox);
     Mesh* assign_vao(Mesh* mesh);
     // Read and load mesh textures onto the GPU.
-    Mesh* create_materials(Mesh* mesh);
-    void setup_skybox(Skybox* skybox);
+    Mesh* create_materials(Mesh* mesh);;
     // Render a scene.
     void render(const Scene& scene);
     // Cleanup after a single render cycle

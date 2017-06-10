@@ -223,7 +223,6 @@ int main(int argc, char** argv)
     //             d    by sqrt(3).
     Skybox* skybox = renderer.assign_vao(
         new Skybox((far_dist - 1.0f) / std::sqrt(3)));
-    renderer.setup_skybox(skybox);
     scene.give_skybox(skybox, resources.get_shader("skybox"));
 
     // Create horizon.
