@@ -199,12 +199,22 @@ void main() {
 
     if (col_val < 0) col_val = 0;
 
+    vec3 suncloud_colour = vec3(0.0);
+    float sun_offset = 0.005;
+    float sun_mult = 1.1;
+    if (length(SunPos) < sun_mult * 0.080 + sun_offset) suncloud_colour = vec3(1.0, 0.7, 0.3);
+    if (length(SunPos) < sun_mult * 0.065 + sun_offset) suncloud_colour = vec3(1.0, 0.9, 0.4);
+    if (length(SunPos) < sun_mult * 0.057 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 0.5); 
+    if (length(SunPos) < sun_mult * 0.050 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 0.7);  
+    if (length(SunPos) < sun_mult * 0.040 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 1.0);
+
     const float night_colour_amt = 0.1;
     col_val *= factor * (1.0 - night_colour_amt) + night_colour_amt;
 
     FragColour.xyz = 
-        vec3(col_val)
-        + (1.0 - col_val) * FragColour.xyz;
+        0.97 * vec3(col_val)
+        + (1.0 - col_val) * FragColour.xyz
+        + col_val * suncloud_colour;
 
  
 }
