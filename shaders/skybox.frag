@@ -26,6 +26,28 @@ uniform samplerCube skybox;
 
 out vec4 FragColour; 
 
+float discretize(float value)
+{
+    // We map a continuous value to one of N
+    // fixed values between 0 and 1+W, where W is some factor to force white
+    // highlights on the landscape.
+    // For N = 5 this is equivalent to:
+    //      if      (value < 0.25)      return 0.00;
+    //      else if (value < 0.50)      return 0.33;
+    //      else if (value < 0.75)      return 0.66;
+    //      else if (value < 1.00)      return 1.00;
+    //      else                        return 1.33;
+    /*
+    if      (value < 0.25)      return 0.00;
+    else if (value < 0.50)      return 0.33;
+    else if (value < 0.75)      return 0.66;
+    else if (value < 1.00)      return 1.00;
+    else                        return 1.33;
+    */
+    const float N = 3.0;
+    return floor(N * value) / (N - 1.0);
+}
+
 void main() {
     // TO DO: Need to pass in the horizon location to get the transition right
 
@@ -158,11 +180,12 @@ void main() {
     // Clouds
     // Process for creating clouds based off http://lodev.org/cgtutor/randomnoise.html
     vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
-    float phi = Time*0.02;
+    float phi = Time*0.003;
+    float cs = 0.3;
     mat3 rot;
-    rot[0] = vec3(1.0,0.0,0.0);
-    rot[1] = vec3(0.0, cos(phi), sin(phi));
-    rot[2] = vec3(0.0,-sin(phi), cos(phi));
+    rot[0] = vec3(cs *  cos(phi), 0.0, cs * -sin(phi));
+    rot[1] = vec3(           0.0, 1.0,           0.0);
+    rot[2] = vec3(cs *  sin(phi), 0.0, cs *  cos(phi));
 
     float size = 32;
     float val = 0.0, init_size = size;
@@ -172,12 +195,16 @@ void main() {
         val += snoise(100*(rot*cloud_level +vec3(0.0,0.0,phi)) /size) * size;
         size /= 2.0;
     }
-    float col_val = val / init_size;
+    float col_val = discretize(val / init_size);
 
     if (col_val < 0) col_val = 0;
 
-    FragColour += vec4(col_val, col_val, col_val, 0.0);
+    const float night_colour_amt = 0.1;
+    col_val *= factor * (1.0 - night_colour_amt) + night_colour_amt;
 
+    FragColour.xyz = 
+        vec3(col_val)
+        + (1.0 - col_val) * FragColour.xyz;
 
  
 }
