@@ -4,7 +4,7 @@
 #include "InputHandler.hpp"
 
 #include "Console.hpp"
-#include "Core.hpp"
+#include "core.hpp"
 
 // Declaration of statics.
 std::array<bool, 1024> InputHandler::keys; 
