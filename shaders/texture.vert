@@ -19,8 +19,8 @@ out vec4 FragPosLightSpace;
 void main() {
     TexCoord = a_TexCoord;
     Normal = NormalMatrix * a_Normal;
-    FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
     FragPos = vec3(ModelMatrix * vec4(a_Position, 1.0));
+    FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
     gl_Position =
         ProjectionMatrix
         * ViewMatrix
