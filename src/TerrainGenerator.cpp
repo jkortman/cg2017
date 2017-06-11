@@ -159,15 +159,19 @@ std::array<int, 3> TerrainGenerator::get_tri(float x, float z) const
     return indices;
 }
 
+float TerrainGenerator::get_face_norm_cos_angle(float x, float z) const
+{
+    std::array<int, 3> indices = get_tri(x, z);
+    glm::vec3 downward  = positions.at(indices[1]) - positions.at(indices[0]);
+    glm::vec3 rightward = positions.at(indices[2]) - positions.at(indices[0]);
+    return glm::dot(glm::normalize(glm::cross(downward, rightward)), AXIS_Y);
+}
+
 float TerrainGenerator::get_height_at(float x, float z) const
 {
     std::array<int, 3> indices = get_tri(x, z);
-    glm::vec3 downward = 
-        positions.at(indices[1])
-        - positions.at(indices[0]);
-    glm::vec3 rightward = 
-        positions.at(indices[2])
-        - positions.at(indices[0]);
+    glm::vec3 downward  = positions.at(indices[1]) - positions.at(indices[0]);
+    glm::vec3 rightward = positions.at(indices[2]) - positions.at(indices[0]);
 
     rightward = (1.0f / rightward.x) * rightward;
     downward = (1.0f / downward.z) * downward;
@@ -570,11 +574,23 @@ void TerrainGenerator::populate()
                             const float z = get_position(row, col).z + dc * div_size;
                             const float y = get_height_at(x, z);
 
+                            // Don't generate if we're above a certain gradient.
+                            if (get_face_norm_cos_angle(x, z) < 0.6f) continue;
+
                             // Select object to generate.
                             float p = randf();
                             Mesh* model;
-                            if (p < 0.90f) model = pine;
-                            else           model = stump;
+                            glm::vec3 scale;
+                            if (p < 0.90f)
+                            {
+                                model = pine;
+                                scale = glm::vec3(1.2f);
+                            }
+                            else
+                            {
+                                model = stump;
+                                scale = glm::vec3(1.0f);
+                            }
 
                             glm::vec3 offset(
                                 randf() * 0.5f * div_size,
@@ -585,9 +601,7 @@ void TerrainGenerator::populate()
                                 model,
                                 glm::vec3(x, y, z), 
                                 tex_shader);
-                            obj->scale =
-                                glm::vec3(1.0f, 1.0f, 1.0f)
-                                + 0.1f * randf();
+                            obj->scale = scale + 0.1f * randf();
                             objects.push_back(obj);
                         }
                     }

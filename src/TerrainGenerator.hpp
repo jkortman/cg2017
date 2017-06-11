@@ -96,17 +96,18 @@ private:
     // ---------------------------
     // -- Data access functions --
     // ---------------------------
-    glm::vec3           get_position    (int row, int col) const;
-    glm::vec3           get_normal      (int row, int col) const;
-    glm::vec3           get_colour      (int row, int col) const;
-    Biome               get_biome       (int row, int col) const;
-    glm::vec3           get_closest_pos (float x, float z) const;
-    std::array<int, 3>  get_tri         (float x, float z) const;
-    float               get_height_at   (float x, float z) const;
-    void                set_position    (int row, int col, glm::vec3 pos);
-    void                set_normal      (int row, int col, glm::vec3 norm);
-    void                set_colour      (int row, int col, glm::vec3 colour);
-    void                set_biome       (int row, int col, Biome biome);
+    glm::vec3           get_position            (int row, int col) const;
+    glm::vec3           get_normal              (int row, int col) const;
+    glm::vec3           get_colour              (int row, int col) const;
+    Biome               get_biome               (int row, int col) const;
+    glm::vec3           get_closest_pos         (float x, float z) const;
+    std::array<int, 3>  get_tri                 (float x, float z) const;
+    float               get_face_norm_cos_angle (float x, float z) const;
+    float               get_height_at           (float x, float z) const;
+    void                set_position            (int row, int col, glm::vec3 pos);
+    void                set_normal              (int row, int col, glm::vec3 norm);
+    void                set_colour              (int row, int col, glm::vec3 colour);
+    void                set_biome               (int row, int col, Biome biome);
 
 
     // ---------------------------------------
