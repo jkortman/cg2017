@@ -1,5 +1,7 @@
 File Sources
 
+All files have been modified by being shortened to ~30 seconds long
+
 == crickets ==
 License: Public Domain
 Author: Lisa Redfern
