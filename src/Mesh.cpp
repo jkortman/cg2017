@@ -162,8 +162,9 @@ void import_bounds(Mesh* mesh, std::string dir)
 
         std::vector<std::string> bound_type_str = {"box", "cylinder", "sphere"};
         file = fopen((dir+"bound").c_str(), "w");
-        fprintf(file, "Bounds: %i\n", mesh->bounds.size());
-        for (int i = 0; i < mesh->bounds.size(); i++)
+        int size = mesh->bounds.size();
+        fprintf(file, "Bounds: %i\n", size);
+        for (int i = 0; i < size; i++)
         {
            fprintf(file, "%s %f %f %f ",  
                 bound_type_str.at(mesh->bounds.at(i).type).c_str(),
