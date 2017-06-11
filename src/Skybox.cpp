@@ -1,3 +1,6 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+*/
 // Implementation of Skybox struct member functions.
 
 #include "Skybox.hpp"
@@ -18,6 +21,7 @@ glm::mat4& Skybox::update_model_matrix(glm::vec3 position)
 
 void Skybox::initialize()
 { 
+    // Defines the rendered cube
     positions = {{
         radius * glm::vec3(-1.0f, -1.0f, -1.0f), // left, bottom, far
         radius * glm::vec3(-1.0f, -1.0f,  1.0f), // left, bottom, near

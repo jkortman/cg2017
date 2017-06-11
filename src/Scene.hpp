@@ -21,6 +21,7 @@
 #include "Water.hpp"
 #include "Skybox.hpp"
 #include "Demo.hpp"
+#include "Sound.hpp"
 
 class Scene
 {
@@ -31,6 +32,7 @@ public:
     Player player;
     Camera camera;
     std::unique_ptr<Demo> demo;
+    std::unique_ptr<Sound> sound;
     // The objects present in the scene.
     std::vector<Object*> objects;
     // Directional lights for day and night, which cast shadows.
@@ -82,7 +84,8 @@ public:
     Skybox* get_skybox();
 
     void give_demo(Demo* demo);
-
+    void give_sound(Sound* sound);
+    
     glm::vec3 check_collisions(glm::vec3 current, glm::vec3 proposed);
 
 private:
@@ -93,7 +96,7 @@ private:
     std::vector<std::unique_ptr<Object>> owned_objects;
     bool no_clip;
     bool camera_mode;
-    int frame =0;
+    int frame = 0;
 };
 
 #endif // SCENE_H

@@ -88,6 +88,7 @@ void Scene::update(float dt)
         movement.y -= move_speed; 
     }
 
+    // Checks if suggested move is valid, and handles the result.
     player.position = check_collisions(player.position, movement);
 
     // Rotations
@@ -103,8 +104,9 @@ void Scene::update(float dt)
     
     if (demo->demo_mode)
     {
+        // Detatches the camera from player (disables collisions)
         node cam_pos = demo->update_pos(dt);
-    
+
         camera.position = cam_pos.pos;
         camera.direction = cam_pos.dir;
     }
@@ -123,7 +125,7 @@ void Scene::update(float dt)
     camera.update_view();
 
     // Rotate the day lighting.
-    const float day_cycle_factor = 20.0f;
+    const float day_cycle_factor = 20.0f; // Changing will affect sound sync (currently hardcoded)
     auto daylight_dir = glm::vec3(world_light_day.position);
     daylight_dir = glm::rotate(
         daylight_dir,
@@ -133,6 +135,24 @@ void Scene::update(float dt)
     world_light_day.position.y = daylight_dir.y;
     world_light_day.position.z = daylight_dir.z;
     world_light_day.update_view();
+    
+    if (sound->enabled)
+    {
+        // Checks if dawn/dusk, stops any sounds that are still playing, and starts the new sounds
+        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.005)
+        {
+            system("killall -q play");
+            sound->play("sea");
+            sound->play("seagulls");
+        }
+        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,-1.0)) < 0.005)
+        {
+            system("killall -q play");
+            sound->play("sea");
+            sound->play("crickets");
+        } 
+    }
+    
 
     // night_factor is >0 at day, <0 at night.
     float night_factor = glm::dot(daylight_dir, AXIS_Y);
@@ -244,6 +264,11 @@ void Scene::give_demo(Demo* demo)
     
 }
 
+void Scene::give_sound(Sound* sound)
+{
+    this->sound = std::unique_ptr<Sound>(sound);
+}
+
 
 
 glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
@@ -251,27 +276,26 @@ glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
     if (no_clip) return proposed;
     
     // Check terrain
-    //if ( proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height) return current;
     if (proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height)
     {
+        // Moves player to touch the terrain rather than pass through.
         proposed.y = landscape->get_height_at(proposed.x, proposed.z) + player.height;
-    }
 
+        // Helps handle less well defined behaviour beyond the land, while over water
+        if (length(proposed) > 240 && proposed.y > 30) proposed.y = 6.4f;
+    }
 
     // Check objects
     for (auto& object : objects)
     {
         std::vector<Bound> bounds = object->render_unit.mesh->bounds;
-        //std::cout << object->position.x << "\n";
         for (int i = 0; i < bounds.size(); i++)
         {
-            //std::cout << "Here?\n";
             Bound bound = bounds.at(i);
             switch (bound.type)
             {
                 case box:
                 {
-                    //std::cout << "Box!\n";
                     if (   (object->position.x + bound.center.x + bound.dims.x > proposed.x)
                         && (object->position.x + bound.center.x - bound.dims.x < proposed.x)
                         && (object->position.y + bound.center.y + bound.dims.y > proposed.y)

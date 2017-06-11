@@ -1,3 +1,7 @@
+/*
+Authorship: James Kortman (a16) - load_obj
+            Jeremy Hughes (a1646624) - import_bounds
+*/
 // Implementation of Mesh class member functions.
 
 #include <algorithm>

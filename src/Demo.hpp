@@ -1,3 +1,6 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+*/
 // Demo class
 // Handles setting up and running a camera demo to fly through a scene
 
@@ -15,7 +18,7 @@ class Demo
 public:
     void initialize();
     node update_pos(float dt);
-    // position is a vector for directional lighting.
+
     std::vector<node> path;
     bool demo_mode = false;
     int segment = 0;

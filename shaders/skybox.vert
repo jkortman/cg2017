@@ -1,3 +1,6 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+*/
 #version 330
 
 layout (location = 0) in vec3 a_Position;

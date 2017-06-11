@@ -1,3 +1,12 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+
+Acknowledgements:
+Lode Vandevenne for general method of producing clouds from noise. (http://lodev.org/cgtutor/randomnoise.html)
+Sean Barrett for use of stb_perlin noise function
+*/
+
+
 #version 330
 
 in vec3 FragPos;
@@ -68,13 +77,11 @@ vec3 sunset_colour(in vec3 view_dir,   in vec3 light_dir,
 }
 
 void main() {
-    // TO DO: Need to pass in the horizon location to get the transition right
-
     bool debug = false;
 
-    float dome_radius = 600; // In World Coordinates. Based on terrain generator Edge
-    float dt = -Time/2.0; // Scales time
-    float theta = Time / 2.0;
+    float dome_radius = 600;    // In World Coordinates. Based on terrain generator Edge
+    float dt = -Time/2.0;       // Timer for Moon motion
+    float theta = Time / 2.0;   // Timer for moon phase 
 
     vec3 view_dir = normalize(ViewPos - FragPos);
     vec3 light_dir = normalize(-LightDay.position.xyz);
@@ -89,12 +96,12 @@ void main() {
 
     // (sin(x), sin(x), cos(x)) for Moon first appears at night
     // (sin(x), -sin(x), -cos(x)) for Moon first appears in day
-    vec3 moon_light = normalize(vec3(sin(dt), -sin(dt), -cos(dt) )); //normalize(vec3(0.5,0.5,0.5)); //
-    moon_light = normalize(vec3(0.1,0.1,0.1));
+    // vec3 moon_light = normalize(vec3(sin(dt), -sin(dt), -cos(dt) )); //normalize(vec3(0.5,0.5,0.5)); 
+    vec3 moon_light = normalize(vec3(0.1,0.1,0.1));
     vec3 moon_shadow = normalize(vec3(0.2,0.1,0.2));
     
 
-    vec3 MoonPos = Pos - moon_light ;//Pos + Light;
+    vec3 MoonPos = Pos - moon_light ;
     vec3 SunPosWorld  = PosWorld - Light;
     vec3 MoonPosWorld = PosWorld + Light;
     vec3 ShadowPos = Pos - shadow_pos ;
@@ -112,7 +119,7 @@ void main() {
     // Horizon Gradient   
     vec3 level = normalize(ViewPos-FragPosWorld);
 
-    float bound = 0.2;
+    float bound = 0.2; // Sun diameter, so transition happens with sun centre passes horizon
     if ( -level.y < bound  )
     {
         night_colour += vec4(0.0,(bound+level.y)/4.0, (bound+level.y)/2.0,0.0);
@@ -129,10 +136,12 @@ void main() {
     day_colour.xyz = sunset_colour(view_dir, light_dir, day_colour.xyz, vec3(1.0, 0.5, 1.0));
     #endif
 
+    // Mixes day/night colours during transition
     vec4 sky_colour = day_colour*(factor) + night_colour*(1-factor);
 
     FragColour = sky_colour;
 
+    // Displays the world xyz axes and the skybox xyz axes onto the skybox
     if (debug)
     {
         if (FragPosWorld.y < 10 && FragPosWorld.y > -10) FragColour = vec4(0.0,0.5,0.0,1.0);
@@ -155,34 +164,50 @@ void main() {
     }
     
 
-    // Sun
+    // Sun - discretized levels of colour
     if (length(SunPos) < 0.08) FragColour = vec4(1.0,0.7,0.3,1.0);
     if (length(SunPos) < 0.065) FragColour = vec4(1.0,0.9,0.4,1.0);
     if (length(SunPos) < 0.057) FragColour = vec4(1.0,1.0,0.5,1.0); 
     if (length(SunPos) < 0.05) FragColour = vec4(1.0,1.0,0.7,1.0);  
     if (length(SunPos) < 0.04) FragColour = vec4(1.0,1.0,1.0,1.0);
 
-    // Maybe vary size over time to simulate getting closer/further away
-    // Maybe simulate change in form - track 
     
     // Moon (with phases)
-    float q = 0.065; // Radius of Moon
-    float a = cos(Time/5.0)*q; // Edge of Moon Shadow
-    a = 0.03;
+    /*
+        On a unit circle, take 3 points: (0,1), (0,-1), (a,0), where a in [-1,1].
+        Use these 3 points to define a circle. As a moves along [-1,1], the arc through the 3 points
+        will simulate the appearence of the moon as it changes phase, if one side is coloured white,
+        and the other side the colour of the night sky.
+
+        As the easiest way to draw a circle is colouring fragments within a fixed distance of a point, 
+        we want to find the center and radius of the moon shadow circle. 
+        Use circle form: (x-h)^2 + (y-k)^2 = r^2
+        Our circle won't necessarily be a unit circle, so use points (0,b) and (0,-b) instead.
+        These points tell us that k=0 however, and h^2 + b^2 = r^2
+        Using point (a,0), (a-h)^2 = r^2 = h^2 + b^2.
+        Expand the left side: a^2 - 2ah + h^2 = h^2 + b^2;
+        Which rearranges to: h = -(b^2-a^2)/2a
+        With h, radius just becomes r = a-h.
+
+        Phase changing is disabled as it was hard to actually align the center of the shadow properly,
+        largely due to the skybox being a cube, but trying to make it appear a sphere, and the fact the moon/
+        shadow are spheres. 
+    */
+    float q = 0.065;            // Radius of Moon
+    float a = cos(Time/1.0)*q;  // Edge of Moon Shadow
+    a = 0.03;                   // Keeps moon fixed at nice cresent.
+
     float err = 0.005;
     if (a < err && a > -err) a = -0.01;
 
-    float h = (pow(q,2.0) - pow(a,2.0))/(-2.0*a); // Distance of Moon Shadow circle from Moon
-    float r = sqrt(pow(h,2.0)+pow(q,2.0)); // Radius of Moon Shadow
+    float h = (pow(q,2.0) - pow(a,2.0))/(-2.0*a);   // Distance of Moon Shadow circle from Moon
+    float r = a-h;                                  // Radius of Moon Shadow
+    theta = h*1.12;                                 // Theta is meant to be the arc distance from center of moon to center of shadow
 
-    // In theory, would have it change but the math isn't quite aligned correctly
-    theta = h*1.12  ;
-    
 
     ShadowPos = Pos - normalize(vec3(0.1*cos(theta) + 0.1*sin(theta), 0.1, -0.1*sin(theta)+0.1*cos(theta)));
 
-    // Rotation mostly there. Possibly the angle wrong because of distance.
-
+    // The factor causes it to be visible, but dim during the day, and brightens as it fades to night.
     vec4 moon_colour = (1.1-factor)*vec4(1.0,1.0,1.0,1.0);
     
     if (length(MoonPos) < q)
@@ -203,7 +228,7 @@ void main() {
    
 
     // Clouds
-    // Process for creating clouds based off http://lodev.org/cgtutor/randomnoise.html
+    // Process for creating clouds based off of http://lodev.org/cgtutor/randomnoise.html
     vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
     float phi = Time*0.003;
     float cs = 0.3;
@@ -215,6 +240,7 @@ void main() {
     float size = 32;
     float val = 0.0, init_size = size;
 
+    // Layers noise on top of each other, with 'zoomed in' portions being brighter to create a turbulent/cloud texture
     while (size >= 1)
     {
         val += snoise(100*(rot*cloud_level +vec3(0.0,0.0,phi)) /size) * size;
@@ -224,6 +250,7 @@ void main() {
 
     if (col_val < 0) col_val = 0;
 
+    // Sun behind clouds
     vec3 suncloud_colour = vec3(0.0);
     float sun_offset = 0.005;
     float sun_mult = 1.1;
