@@ -28,6 +28,7 @@ std::array<int, 3> Landscape::get_tri(float x, float z) const
     indices[2] = indices[0] + size;
     
     #if 0
+    // Debug printing.
     fprintf(
         stderr,
         "(%.2f, %.2f) is inside:\n"

@@ -79,7 +79,6 @@ Landscape* TerrainGenerator::landscape()
         landscape->indices.push_back(indices[i][2]);
     }
 
-    // TODO: Make this toggleable.
     // Note that ambient and diffuse probably aren't used in the shader,
     // in favor of the per-vertex colours.
     landscape->material.ambient   = glm::vec3(0.1f, 0.5f, 0.2f);

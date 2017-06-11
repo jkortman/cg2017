@@ -20,9 +20,6 @@ struct Mesh
     // Create a Mesh
     static Mesh* load_obj(
         const std::string& dir, const std::string& objfile);
-    // Imports Bound
-    
-
     // Mesh properties.
     std::vector<tinyobj::shape_t> shapes;
     int num_shapes;
