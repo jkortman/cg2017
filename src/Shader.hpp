@@ -32,7 +32,8 @@ public:
     // The id of the shader program.
     ShaderID program_id;
     // The name of the shader program.
-    // warning: this is not necessarily consistent with the name used by a Scene
+    // This is not necessarily consistent with the name used by a Scene,
+    // and is intended only for debugging purposes.
     std::string name;
 };
 

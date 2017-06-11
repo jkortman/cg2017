@@ -8,16 +8,23 @@ uniform mat4 ProjectionMatrix;
 uniform mat4 ViewMatrix;
 uniform mat4 ModelMatrix;
 uniform mat3 NormalMatrix;
+uniform mat4 LightSpaceMatrix;
 
-out vec4 Colour;
+out vec3 Colour;
 out vec3 Normal;
+out vec3 FragPos;
+out vec4 FragPosDeviceSpace;
+out vec4 FragPosLightSpace;
 
 void main() {
-    Colour = vec4(a_Colour, 1.0);
+    FragPos = vec3(ModelMatrix * vec4(a_Position, 1.0));
+    Colour = a_Colour;
     Normal = NormalMatrix * a_Normal;
+    FragPosLightSpace = LightSpaceMatrix * vec4(FragPos, 1.0);
     gl_Position =
         ProjectionMatrix
         * ViewMatrix
         * ModelMatrix
         * vec4(a_Position, 1.0);
+    FragPosDeviceSpace = gl_Position;
 }

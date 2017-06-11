@@ -42,7 +42,6 @@ void Skybox::initialize()
         radius * glm::vec3( -1.0f, -1.0f,  1.0f),
         radius * glm::vec3( -1.0f, -1.0f, -1.0f),  
     }};
-    // TODO: Fix face locations.
     indices = {{
         // Far face
         {{ 0, 6, 2 }},

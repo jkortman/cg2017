@@ -23,7 +23,6 @@ void Object::initialize(Mesh* mesh, const glm::vec4& position, Shader* shader)
     this->palette                   = &mesh->palette;
 }
 
-
 // Functions to update and retrieve data.
 const RenderUnit& Object::get_render_unit()
 {

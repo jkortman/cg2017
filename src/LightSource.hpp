@@ -43,5 +43,4 @@ public:
     glm::mat4& update_view();
 };
 
-
 #endif // LIGHTSOURCE_HPP

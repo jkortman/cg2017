@@ -109,7 +109,6 @@ private:
     void                set_colour              (int row, int col, glm::vec3 colour);
     void                set_biome               (int row, int col, Biome biome);
 
-
     // ---------------------------------------
     // -- Core terrain generation functions --
     // ---------------------------------------
@@ -156,7 +155,6 @@ private:
                         // into div*div regions, each of which can have an
                         // object.
         std::vector<std::vector<bool>>& objects);
-
 };
 
 #endif // TERRAINGENERATOR_HPP

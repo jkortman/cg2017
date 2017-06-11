@@ -39,7 +39,6 @@ void LightSource::attenuate(float constant, float linear, float quadratic)
     K_quadratic = quadratic;
 }
 
-
 glm::mat4& LightSource::update_view()
 {
     view = glm::lookAt(

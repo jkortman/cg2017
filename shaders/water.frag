@@ -132,11 +132,12 @@ vec3 fog(in vec3 fragment, in float dist, in vec3 fog_colour)
     return mix(fragment, fog_colour, f);
 }
 
+// This light-scattering method is derived from
 // http://www.iquilezles.org/www/articles/fog/fog.htm
 vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fog_colour_sun, in vec3 view_dir, in vec3 light_dir)
 {
     float f = 1.0 - exp(-dist * b);
-    float s = max(dot( view_dir, light_dir ), 0.0 );
+    float s = max(dot(view_dir, light_dir), 0.0 );
     float fog_scale = max(dot(light_dir, vec3(0.0, 1.0, 0.0)), 0.0);
     // The new fog colour should scale between the fragment colour and the
     // scattered fog colour using the angle of the sun.
@@ -232,11 +233,11 @@ float in_shadow(vec3 light_dir)
                 vec2 neighbour_coords = vec2(lit_coords.x + i * dist, lit_coords.y + j * dist);
                 float neighbour_depth = texture(ShadowDepthMap, neighbour_coords).r; 
                 //shadow += (frag_depth - bias) > neighbour_depth  ? (1.0/9.0) : 0.0;
-                // interpolate from 0 to 1/9 based on how large the difference is.
                 
+                // interpolate from 0 to 1/9 based on how large the difference is.
                 // This has errors when the sun is below the horizon,
                 // so we increase shadow amount when that is the case.
-                // We use a correction factor for to push the shadow amt towards
+                // We use a correction factor to push the shadow amt towards
                 // the maximum using the angle of the sun.
                 const float e = 1.0;
                 float horizon_correction = max(0.0, -light_angle);

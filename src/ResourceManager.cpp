@@ -22,7 +22,6 @@ Mesh* ResourceManager::get_mesh(const std::string& name)
 
 void ResourceManager::give_shader(const std::string& name, Shader* shader) {
     owned_shaders[name] = std::unique_ptr<Shader>(shader);
-    //shaders.push_back(shader);
 }
 
 void ResourceManager::give_shader(Shader* shader) {
@@ -32,7 +31,7 @@ void ResourceManager::give_shader(Shader* shader) {
 Shader* ResourceManager::get_shader(const std::string& name) {
     if (owned_shaders.find(name) == owned_shaders.end())
     {
-        // 'name' not in meshes
+        // 'name' not in shaders
         throw std::runtime_error("Invalid shader name '" + name + "'.");
     }
     return owned_shaders[name].get();

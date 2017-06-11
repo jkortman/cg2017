@@ -79,7 +79,6 @@ Landscape* TerrainGenerator::landscape()
         landscape->indices.push_back(indices[i][2]);
     }
 
-    // TODO: Make this toggleable.
     // Note that ambient and diffuse probably aren't used in the shader,
     // in favor of the per-vertex colours.
     landscape->material.ambient   = glm::vec3(0.1f, 0.5f, 0.2f);
@@ -283,7 +282,6 @@ void TerrainGenerator::generate_base_map(int seed, float max_height)
                 + std::pow(fcol - 0.5 * float(size), 2))
             / std::sqrt(2 * std::pow(0.5 * float(size), 2));
         // Changing a,b,c changes the island generated.
-        // see: http://www.redblobgames.com/maps/terrain-from-noise/
         const float a = 0.03f;
         const float b = 2.00f;
         const float c = 0.03f; //0.2

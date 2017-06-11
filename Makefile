@@ -1,8 +1,8 @@
 CC = g++
-TARGET = cg2017
+TARGET = assign3_part2
 SOURCES = $(shell echo ./src/*.cpp)
 OBJS = $(subst ./src/,./build/,$(SOURCES:.cpp=.o))
-WARN = -Wall -Wno-unused-private-field -Wno-unused-variable
+WARN = -Wall -Wextra
 CPPFLAGS = $(WARN) -std=c++11
 UNAME = $(shell uname)
 # Linux
@@ -24,12 +24,13 @@ $(TARGET): $(OBJS) LoadShaders.o
 	$(CC) $(CPPFLAGS) $(INC) -o $(TARGET) $(OBJS) build/LoadShaders.o $(LIB)
 
 build/%.o: src/%.cpp src/%.hpp
+	mkdir -p build
 	$(CC) $(CPPFLAGS) $(INC) -c -o $@ $<
 
 .PHONY: all clean refresh
 
 clean:
-	rm -rf build/*
+	rm -rf build/* $(TARGET)
 
 refresh: clean all
 

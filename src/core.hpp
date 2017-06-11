@@ -47,7 +47,6 @@ const glm::vec3 WATER_COLOUR            = glm::vec3(0.30f, 0.30f, 1.00f);
 // -- Globals --
 // -------------
 // Window properties
-// TODO: These can probably be refactored out to not be globals!
 #ifdef MAIN_FILE
     GLFWwindow* window = nullptr;
 #else

@@ -31,7 +31,6 @@ private:
     // Generated mesh properties.
     const float radius;
 
-
     // Mesh building functions.
     void initialize();
 };
