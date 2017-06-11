@@ -123,7 +123,7 @@ void Scene::update(float dt)
     camera.update_view();
 
     // Rotate the day lighting.
-    const float day_cycle_factor = 50.0f;
+    const float day_cycle_factor = 50.0f; // Changing will affect sound sync (currently hardcoded)
     auto daylight_dir = glm::vec3(world_light_day.position);
     daylight_dir = glm::rotate(
         daylight_dir,
@@ -133,6 +133,23 @@ void Scene::update(float dt)
     world_light_day.position.y = daylight_dir.y;
     world_light_day.position.z = daylight_dir.z;
     world_light_day.update_view();
+    
+    if (sound->enabled)
+    {
+       if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.01)
+        {
+            system("killall -q play");
+            sound->play("sea");
+            sound->play("seagulls");
+        }
+        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,-1.0)) < 0.01)
+        {
+            system("killall -q play");
+            sound->play("sea");
+            sound->play("crickets");
+        } 
+    }
+    
 
     // night_factor is >0 at day, <0 at night.
     float night_factor = glm::dot(daylight_dir, AXIS_Y);
@@ -244,6 +261,11 @@ void Scene::give_demo(Demo* demo)
     
 }
 
+void Scene::give_sound(Sound* sound)
+{
+    this->sound = std::unique_ptr<Sound>(sound);
+}
+
 
 
 glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
@@ -251,12 +273,12 @@ glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
     if (no_clip) return proposed;
     
     // Check terrain
-    //if ( proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height) return current;
     if (proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height)
     {
         proposed.y = landscape->get_height_at(proposed.x, proposed.z) + player.height;
     }
 
+    // Add handle for undefined behaviour outside of island area. Just a general dome/cylinder?
 
     // Check objects
     for (auto& object : objects)

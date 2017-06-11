@@ -4,6 +4,8 @@
 #include <cmath>
 #include <chrono>
 #include <glm/gtc/constants.hpp>
+//#include <thread>
+#include <stdio.h>
 
 #define MAIN_FILE
 #include "core.hpp"
@@ -19,6 +21,7 @@
 #include "TerrainGenerator.hpp"
 #include "Water.hpp"
 #include "Demo.hpp"
+#include "Sound.hpp"
 
 const bool          WIREFRAME_MODE = false;
 const unsigned int  NUM_AA_SAMPLES = 4;
@@ -122,7 +125,7 @@ int main(int argc, char** argv)
 
     // Create lights.
     scene.world_light_day = LightSource(
-        glm::vec4(0.0f, -1.0f, 0.0f, 0.0f),
+        glm::vec4(0.0f, 0.0f, 1.0f, 0.0f),
         0.2f, 1.0f, 1.0f);
 
     #if 0
@@ -235,6 +238,11 @@ int main(int argc, char** argv)
         horizon->scale = glm::vec3(600.0f, 0.0f, 600.0f);
         scene.give_object(horizon);
     }
+    
+    // Start background sounds
+    Sound* sound = new Sound;
+    sound->initialize();
+    scene.give_sound(sound);
 
     // Rendering loop
     auto current_time = std::chrono::steady_clock::now();
@@ -253,7 +261,10 @@ int main(int argc, char** argv)
         renderer.render(scene);
         renderer.postrender();
     }
-
     renderer.cleanup();
+
+    // End Sounds
+    if (sound->enabled) sound->cleanup();
+
     return EXIT_SUCCESS;
 }
