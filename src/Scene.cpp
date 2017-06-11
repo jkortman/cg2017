@@ -88,6 +88,7 @@ void Scene::update(float dt)
         movement.y -= move_speed; 
     }
 
+    // Checks if suggested move is valid, and handles the result.
     player.position = check_collisions(player.position, movement);
 
     // Rotations
@@ -103,8 +104,9 @@ void Scene::update(float dt)
     
     if (demo->demo_mode)
     {
+        // Detatches the camera from player (disables collisions)
         node cam_pos = demo->update_pos(dt);
-    
+
         camera.position = cam_pos.pos;
         camera.direction = cam_pos.dir;
     }
@@ -136,7 +138,8 @@ void Scene::update(float dt)
     
     if (sound->enabled)
     {
-       if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.005)
+        // Checks if dawn/dusk, stops any sounds that are still playing, and starts the new sounds
+        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.005)
         {
             system("killall -q play");
             sound->play("sea");
@@ -275,25 +278,24 @@ glm::vec3 Scene::check_collisions(glm::vec3 current, glm::vec3 proposed)
     // Check terrain
     if (proposed.y < landscape->get_height_at(proposed.x, proposed.z) + player.height)
     {
+        // Moves player to touch the terrain rather than pass through.
         proposed.y = landscape->get_height_at(proposed.x, proposed.z) + player.height;
-    }
 
-    // Add handle for undefined behaviour outside of island area. Just a general dome/cylinder?
+        // Helps handle less well defined behaviour beyond the land, while over water
+        if (length(proposed) > 240 && proposed.y > 30) proposed.y = 6.4f;
+    }
 
     // Check objects
     for (auto& object : objects)
     {
         std::vector<Bound> bounds = object->render_unit.mesh->bounds;
-        //std::cout << object->position.x << "\n";
         for (int i = 0; i < bounds.size(); i++)
         {
-            //std::cout << "Here?\n";
             Bound bound = bounds.at(i);
             switch (bound.type)
             {
                 case box:
                 {
-                    //std::cout << "Box!\n";
                     if (   (object->position.x + bound.center.x + bound.dims.x > proposed.x)
                         && (object->position.x + bound.center.x - bound.dims.x < proposed.x)
                         && (object->position.y + bound.center.y + bound.dims.y > proposed.y)

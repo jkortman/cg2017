@@ -46,6 +46,12 @@ std::array<int, 3> Landscape::get_tri(float x, float z) const
 float Landscape::get_height_at(float x, float z) const
 {
     std::array<int, 3> indices = get_tri(x, z);
+
+    for (int i = 0; i < 3; i++)
+    {
+        // If indicies are outside accepted range, return the water height
+        if (indices[i] >= positions.size()) return 6.4f;
+    }
     glm::vec3 downward = 
         positions.at(indices[1])
         - positions.at(indices[0]);
