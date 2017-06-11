@@ -4,6 +4,7 @@
 #include "InputHandler.hpp"
 
 #include "Console.hpp"
+#include "Core.hpp"
 
 // Declaration of statics.
 std::array<bool, 1024> InputHandler::keys; 
@@ -41,7 +42,8 @@ void InputHandler::key_callback(
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
 
-    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
+    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS
+        && CONSOLE_ENABLED)
     {
         console->parse();
     }

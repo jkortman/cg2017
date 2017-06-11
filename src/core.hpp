@@ -43,6 +43,7 @@ const float     DEFAULT_ASPECT          = float(DEFAULT_WINDOW_WIDTH)
 const float     DEFAULT_NEAR            = 0.05;
 const float     DEFAULT_FAR             = 10.0;
 const glm::vec3 WATER_COLOUR            = glm::vec3(0.30f, 0.30f, 1.00f);
+const bool      CONSOLE_ENABLED         = false;
 
 // -------------
 // -- Globals --
