@@ -1,3 +1,6 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+*/
 // Console class
 // A class to manage user input via the terminal.
 

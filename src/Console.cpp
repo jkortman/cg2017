@@ -1,5 +1,9 @@
+/*
+Authorship: Jeremy Hughes (a1646624)
+*/
 // Implementation of Console class member functions.
 
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -33,11 +37,11 @@ Input tokenize(std::string str, const std::string delims)
 void Console::parse()
 {
     std::string output = "";
-    std::cout << "\nEntering Console\n";
+    printf("\nEntering Console\n");
     bool isRunning = true;
     while (isRunning)
     {
-        std::cout << ">>";
+        printf(">>");
 
         // Load input
         std::string input_string;
@@ -66,25 +70,26 @@ void Console::parse()
         if (input.command == "go")
         {
             isRunning = false;
-            std::cout << "Returning to game" << std::endl;
+            printf("Returning to the game.\n");
             continue;
-        } else if (input.command == "quit")
+        }/* else if (input.command == "quit")
         {
             isRunning = false;
-            std::cout << "Shutting down program" << std::endl;
+            printf("Shutting down.\n");
             // Do something to cause window to shutdown?
             continue;
-        } else if (input.command == "help")
+        }*/ else if (input.command == "help")
         {
             output = "Availible commands:\n";
             output += "help - prints out this.\n";
-            output += "continue - unpauses game and ends terminal command session.\n";
-            output += "quit - ends terminal command session.\n";
+            output += "continue (go) - unpauses game and ends terminal command session.\n";
+            //output += "quit - ends terminal command session.\n";
             output += "whatis <var> - describes var (if registered).\n";
-            output += "noclip - toggles collisions and separates camera from player.\n";
+            output += "noclip (tcl) - toggles collisions and separates camera from player.\n";
+            output += "demo - toggles the demo flythrough mode.\n";
             output += "<var> - returns value of variable (if registered).\n";
             output += "<var> <value> - sets value of variable (if registered and writable).\n";
-            std::cout << output << "\n";
+            printf("%s\n",output.c_str());
             continue;
         } else if (input.command == "whatis" )
         {
@@ -122,7 +127,7 @@ void Console::parse()
             {
                 output = name + " is not a registered variable.";
             }
-            std::cout << output << "\n";
+            printf("%s\n",output.c_str());
         } else if (input.command == "noclip" || input.command == "tcl")
         {
             output = "collisions turned ";
@@ -138,7 +143,7 @@ void Console::parse()
                 *ptr = false;
                 output.append("on.");
             }
-            std::cout << output << "\n";
+            printf("%s\n",output.c_str());
         } else if (input.command == "demo")
         {
             output = "Demo turned ";
@@ -154,7 +159,7 @@ void Console::parse()
                 *ptr = false;
                 output.append("off.");
             }
-            std::cout << output << "\n";
+            printf("%s\n",output.c_str());
         } else if (variables.find(input.command) != variables.end())
         {   
             container = variables[input.command];
@@ -167,7 +172,7 @@ void Console::parse()
             }
         } else
         {
-            std::cout << "Command not recognized." << std::endl;
+            printf("Command not recognized.\n");
             // Error
         }
         //              
@@ -230,7 +235,7 @@ void Console::get_var(Var container)
             //error
         break;
     }
-    std::cout << output << "\n";
+    printf("%s\n",output.c_str());
 }
 
 int to_float(float* ptr, std::string val)
@@ -364,6 +369,6 @@ void Console::set_var(Var container, std::vector<std::string> values)
     {
        output = "Error: " + container.name + " is not writable. Value not set.";
     }
-    std::cout << output << "\n";
+    printf("%s\n",output.c_str());
     
 }
