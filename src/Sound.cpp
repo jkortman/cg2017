@@ -3,6 +3,8 @@ Authorship: Jeremy Hughes (a1646624)
 */
 #include "Sound.hpp"
 
+#include <cstdlib>
+
 void Sound::initialize()
 {
 	// Need to verify SoX and pgrep are available on the system
@@ -65,5 +67,5 @@ int Sound::playing_now()
 // Stops any active 'play' processes
 void Sound::cleanup()
 {
-    system("killall -q play");
+    system("killall play");
 }

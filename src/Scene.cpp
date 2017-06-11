@@ -141,13 +141,13 @@ void Scene::update(float dt)
         // Checks if dawn/dusk, stops any sounds that are still playing, and starts the new sounds
         if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.005)
         {
-            system("killall -q play");
+            system("killall play");
             sound->play("sea");
             sound->play("seagulls");
         }
         if (glm::length(daylight_dir - glm::vec3(0.0,0.0,-1.0)) < 0.005)
         {
-            system("killall -q play");
+            system("killall play");
             sound->play("sea");
             sound->play("crickets");
         } 
