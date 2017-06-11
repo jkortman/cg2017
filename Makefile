@@ -1,5 +1,5 @@
 CC = g++
-TARGET = assign3part2
+TARGET = assign3_part2
 SOURCES = $(shell echo ./src/*.cpp)
 OBJS = $(subst ./src/,./build/,$(SOURCES:.cpp=.o))
 WARN = -Wall -Wextra
