@@ -101,12 +101,12 @@ int main(int argc, char** argv)
     // Create meshes.
     // Each mesh entry in meshes is a name, dir name, and filename.
     const std::vector<std::array<std::string, 3>> meshes = {{
-        {{ "Cube",       "cube-simple",  "cube-simple"   }},
-        {{ "Pine01",     "tree",         "PineTree03"    }},
-        {{ "Pine02",     "pine",         "PineTransp"    }},
-        {{ "Stump",      "TreeStump",    "TreeStump03"   }},
-        {{ "Bonfire",    "bonfire",      "bonfire"       }},
-        {{ "Lighthouse", "lighthouse",   "lighthouse"    }},
+        {{ "Cube",          "cube-simple",  "cube-simple"   }},
+        {{ "Pine01",        "tree",         "PineTree03"    }},
+        {{ "Pine02",        "pine",         "PineTransp"    }},
+        {{ "Stump",         "TreeStump",    "TreeStump03"   }},
+        {{ "Bonfire",       "bonfire",      "bonfire"       }},
+        {{ "Lighthouse",    "lighthouse",   "lighthouse"    }},
     }};
     for (const auto& meshinfo: meshes)
     {
