@@ -67,5 +67,7 @@ int Sound::playing_now()
 // Stops any active 'play' processes
 void Sound::cleanup()
 {
+    system("stty -echo");
     system("killall play");
+    system("stty echo");
 }
