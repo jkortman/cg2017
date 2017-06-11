@@ -8,21 +8,26 @@ uniform sampler2D BloomMap;
 uniform int BlurDirection;
 
 // gaussian blur kernel
-const float kernel[5] = float[](0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+const int kernel_size = 15;
+const float kernel[] = float[](
+    0.0, 0.0, 0.000003, 0.000229, 0.005977,
+    0.060598, 0.24173, 0.382925, 0.24173, 0.060598,
+    0.005977, 0.000229, 0.000003, 0.0, 0.0);
 
 
 void main()
 {
-    const float dist = 0.003;
+    float dist = 0.002;
     vec2 direction;
     if (BlurDirection == 0) direction = vec2(1.0, 0.0);
     else                    direction = vec2(0.0, 1.0);
 
     vec3 colour = vec3(0.0);
-    const int radius = 1;
-    for (int i = -2; i <= 2; i += 1)
+    for (int i = 0; i <= kernel_size; i += 1)
     {
-        colour += kernel[i + 2] * texture(BloomMap, TexCoord + direction * i * dist).rgb;
+        colour += kernel[i] * texture(
+            BloomMap,
+            TexCoord + direction * (i - kernel_size/2) * dist).rgb;
     }
     FragColour = vec4(colour, 1.0);
 }

@@ -26,6 +26,47 @@ uniform samplerCube skybox;
 
 out vec4 FragColour; 
 
+float discretize(float value)
+{
+    // We map a continuous value to one of N
+    // fixed values between 0 and 1+W, where W is some factor to force white
+    // highlights on the landscape.
+    // For N = 5 this is equivalent to:
+    //      if      (value < 0.25)      return 0.00;
+    //      else if (value < 0.50)      return 0.33;
+    //      else if (value < 0.75)      return 0.66;
+    //      else if (value < 1.00)      return 1.00;
+    //      else                        return 1.33;
+    /*
+    if      (value < 0.25)      return 0.00;
+    else if (value < 0.50)      return 0.33;
+    else if (value < 0.75)      return 0.66;
+    else if (value < 1.00)      return 1.00;
+    else                        return 1.33;
+    */
+    const float N = 3.0;
+    return floor(N * value) / (N - 1.0);
+}
+
+vec3 sun_haze_colour(in vec3 view_dir, in vec3 light_dir)
+{
+    vec3 colour_sun = vec3(1.0, 1.0, 0.9);
+    float s = max(dot(view_dir, -light_dir), 0.0);
+    float amt = pow(s, 22.0);
+    return mix(vec3(1.0), colour_sun, amt);
+}
+
+vec3 sunset_colour(in vec3 view_dir,   in vec3 light_dir,
+                   in vec3 day_colour, in vec3 sunset_colour)
+{
+    const float squash = 2.0;
+    // h is 1.0 when the sun is at the horizon, and 0.0 away from the horizon.
+    float h = pow(1.0 - abs(dot(view_dir, vec3(0.0, 1.0, 0.0))), 3.0);
+    float s = max(dot(view_dir, -light_dir), 0.0);
+    float amt = h * pow(s, 10.0);
+    return mix(day_colour, sunset_colour, amt);
+}
+
 void main() {
     // TO DO: Need to pass in the horizon location to get the transition right
 
@@ -35,6 +76,8 @@ void main() {
     float dt = -Time/2.0; // Scales time
     float theta = Time / 2.0;
 
+    vec3 view_dir = normalize(ViewPos - FragPos);
+    vec3 light_dir = normalize(-LightDay.position.xyz);
 
     // Vectors normalized to unit sphere - means only useful for relative direction, 
     // unless original direction tracked
@@ -80,6 +123,11 @@ void main() {
     float factor = (LightWC.y+ViewPos.y + dome_radius*0.2)/bound;  
     if (factor > 1) factor = 1;
     if (factor < 0) factor = 0;
+    
+    // Tint day colour red at sunset.
+    #if 0
+    day_colour.xyz = sunset_colour(view_dir, light_dir, day_colour.xyz, vec3(1.0, 0.5, 1.0));
+    #endif
 
     vec4 sky_colour = day_colour*(factor) + night_colour*(1-factor);
 
@@ -154,15 +202,15 @@ void main() {
     }
    
 
-
     // Clouds
     // Process for creating clouds based off http://lodev.org/cgtutor/randomnoise.html
     vec3 cloud_level = normalize(ViewPos-FragPosWorld -vec3(0.0,120,0.0));
-    float phi = Time*0.02;
+    float phi = Time*0.003;
+    float cs = 0.3;
     mat3 rot;
-    rot[0] = vec3(1.0,0.0,0.0);
-    rot[1] = vec3(0.0, cos(phi), sin(phi));
-    rot[2] = vec3(0.0,-sin(phi), cos(phi));
+    rot[0] = vec3(cs *  cos(phi), 0.0, cs * -sin(phi));
+    rot[1] = vec3(           0.0, 1.0,           0.0);
+    rot[2] = vec3(cs *  sin(phi), 0.0, cs *  cos(phi));
 
     float size = 32;
     float val = 0.0, init_size = size;
@@ -172,13 +220,33 @@ void main() {
         val += snoise(100*(rot*cloud_level +vec3(0.0,0.0,phi)) /size) * size;
         size /= 2.0;
     }
-    float col_val = val / init_size;
+    float col_val = discretize(val / init_size);
 
     if (col_val < 0) col_val = 0;
 
-    FragColour += vec4(col_val, col_val, col_val, 0.0);
+    vec3 suncloud_colour = vec3(0.0);
+    float sun_offset = 0.005;
+    float sun_mult = 1.1;
+    if (length(SunPos) < sun_mult * 0.080 + sun_offset) suncloud_colour = vec3(1.0, 0.7, 0.3);
+    if (length(SunPos) < sun_mult * 0.065 + sun_offset) suncloud_colour = vec3(1.0, 0.9, 0.4);
+    if (length(SunPos) < sun_mult * 0.057 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 0.5); 
+    if (length(SunPos) < sun_mult * 0.050 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 0.7);  
+    if (length(SunPos) < sun_mult * 0.040 + sun_offset) suncloud_colour = vec3(1.0, 1.0, 1.0);
+
+    const float night_colour_amt = 0.1;
+    col_val *= factor * (1.0 - night_colour_amt) + night_colour_amt;
 
 
- 
+
+    FragColour.xyz = 
+        0.97 * vec3(col_val)
+        + (1.0 - col_val) * FragColour.xyz
+        + col_val * suncloud_colour;
+
+    // Colour the clouds in the area around the sun in the sky.
+    if (length(SunPos) > 0.08)
+    {
+        FragColour.xyz *= mix(vec3(1.0), sun_haze_colour(view_dir, light_dir), col_val);  
+    }
 }
 

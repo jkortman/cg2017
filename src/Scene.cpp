@@ -123,7 +123,7 @@ void Scene::update(float dt)
     camera.update_view();
 
     // Rotate the day lighting.
-    const float day_cycle_factor = 50.0f; // Changing will affect sound sync (currently hardcoded)
+    const float day_cycle_factor = 20.0f; // Changing will affect sound sync (currently hardcoded)
     auto daylight_dir = glm::vec3(world_light_day.position);
     daylight_dir = glm::rotate(
         daylight_dir,
@@ -136,13 +136,13 @@ void Scene::update(float dt)
     
     if (sound->enabled)
     {
-       if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.01)
+       if (glm::length(daylight_dir - glm::vec3(0.0,0.0,1.0)) < 0.005)
         {
             system("killall -q play");
             sound->play("sea");
             sound->play("seagulls");
         }
-        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,-1.0)) < 0.01)
+        if (glm::length(daylight_dir - glm::vec3(0.0,0.0,-1.0)) < 0.005)
         {
             system("killall -q play");
             sound->play("sea");

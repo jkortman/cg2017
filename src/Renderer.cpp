@@ -1296,6 +1296,12 @@ void Renderer::render(const Scene& scene)
     glUniform1i(
         glGetUniformLocation(scene.hdr_shader->program_id, "BloomMap"),
         5);
+    glUniform3fv(
+        glGetUniformLocation(scene.hdr_shader->program_id, "ViewDir"),
+        1, value_ptr(scene.camera.direction));
+    glUniform3fv(
+        glGetUniformLocation(scene.hdr_shader->program_id, "LightDayDir"),
+        1, value_ptr(scene.world_light_day.position));
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, scene_texture);
     glActiveTexture(GL_TEXTURE5);
