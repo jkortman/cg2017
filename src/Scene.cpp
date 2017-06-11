@@ -100,8 +100,17 @@ void Scene::update(float dt)
         player.direction,
         rotate_factor * float(-InputHandler::mouse_dy),
         right_direction);
-    
-    
+
+    if (InputHandler::keys[GLFW_KEY_O] != prev_state)
+    {
+        if (InputHandler::keys[GLFW_KEY_O])
+        {
+            if (demo->demo_mode) demo->demo_mode = false;
+            else demo->demo_mode = true;
+        }
+        if (prev_state) prev_state = false;
+        else prev_state = true;
+    }
     if (demo->demo_mode)
     {
         // Detatches the camera from player (disables collisions)

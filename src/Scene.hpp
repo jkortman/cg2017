@@ -97,6 +97,8 @@ private:
     bool no_clip;
     bool camera_mode;
     int frame = 0;
+    bool prev_state = false;
+
 };
 
 #endif // SCENE_H
