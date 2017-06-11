@@ -180,11 +180,8 @@ void main() {
 
     float ambi = max(light_day_intensity.x, light_point_intensity.x);
     float diff = max(
-        (1.0 - shadow) * discretize(light_day_intensity.y),
+        discretize(light_day_intensity.y),
         discretize(light_point_intensity.y));
-    float spec = max(
-        (1.0 - shadow) * discretize(light_day_intensity.z),
-        discretize(light_point_intensity.z));
 
     // Lighting application
     // TODO: Replace these with material properties added by TerrainGenerator
