@@ -2,7 +2,7 @@ CC = g++
 TARGET = assign3_part2
 SOURCES = $(shell echo ./src/*.cpp)
 OBJS = $(subst ./src/,./build/,$(SOURCES:.cpp=.o))
-WARN = -Wall -Wextra
+WARN = 
 CPPFLAGS = $(WARN) -std=c++11
 UNAME = $(shell uname)
 # Linux
