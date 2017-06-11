@@ -60,23 +60,10 @@ int main(int argc, char** argv)
     // Create shaders.
     // To load a shader into the resources, add the name here.
     const std::vector<std::string> shaders = {{
-        "landscape-light",
-        "water",
-        "bplight",
-        "depth",
-        "shadow",
-        "extract-brightness",
-        "postprocess",
-        "reflect",
-        "ssao",
-        "texture",
-        "obj-cel",
-        "simple-sky",
-        "skybox",
-        "horizon",
-        "diffuse",
-        "blur",
-        "hdr",
+        "landscape", "water", "texture",
+        "obj-cel", "skybox", "horizon", "blur",
+        "hdr", "depth", "shadow", "extract-brightness",
+        "postprocess", "reflect", "ssao",
     }};
     for (const auto& shname: shaders)
     {
@@ -85,6 +72,7 @@ int main(int argc, char** argv)
                                          "shaders/" + shname + ".frag"));
     }
 
+    // Inform the scene which shaders have specified uses.
     scene.shadow_shader             = resources.get_shader("shadow");
     scene.depth_shader              = resources.get_shader("depth");
     scene.render_tex_shader         = resources.get_shader("postprocess");
@@ -96,7 +84,7 @@ int main(int argc, char** argv)
 
 
     resources.get_shader("ssao")->set_ssao(64);
-    resources.get_shader("landscape-light")->set_ssao(64);
+    resources.get_shader("landscape")->set_ssao(64);
     
     // Create meshes.
     // Each mesh entry in meshes is a name, dir name, and filename.
@@ -174,8 +162,8 @@ int main(int argc, char** argv)
         // See TerrainGenerator::populate().
         TerrainGenerator tg(0, 100, 400.0f, max_height, &resources);
         landscape = renderer.assign_vao(tg.landscape());
-        scene.give_landscape(landscape, resources.get_shader("landscape-light"));
-        resources.get_shader("landscape-light")->set_palette(landscape->palette);
+        scene.give_landscape(landscape, resources.get_shader("landscape"));
+        resources.get_shader("landscape")->set_palette(landscape->palette);
         resources.get_shader("reflect")->set_palette(landscape->palette);
         scene.player.position =
             landscape->get_pos_at(glm::vec3(0.0f, 0.0f, 0.0f))
