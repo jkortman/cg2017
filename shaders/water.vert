@@ -98,8 +98,8 @@ void main()
         ProjectionMatrix
         * ViewMatrix
         * ModelMatrix
-        * vec4(a_Position, 1.0);
-        //* vec4(pos, 1.0);
+        //* vec4(a_Position, 1.0);
+        * vec4(pos, 1.0);
     FragPosDeviceSpace = gl_Position;
 }
 
