@@ -575,7 +575,7 @@ void TerrainGenerator::populate()
                             const float y = get_height_at(x, z);
 
                             // Don't generate if we're above a certain gradient.
-                            if (get_face_norm_cos_angle(x, z) < 0.6f) continue;
+                            if (get_face_norm_cos_angle(x, z) < 0.8f) continue;
 
                             // Select object to generate.
                             float p = randf();
