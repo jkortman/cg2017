@@ -1,0 +1,9 @@
+The sources for each of the models.
+
+model       author          URL
+bonfire     adam127         https://www.cgtrader.com/free-3d-models/architectural/engineering/survival-bonfire
+cube-simple ?               (Provided by course)
+lighthouse  Reiner Prokein  http://www.reinerstilesets.de/de/3d-grafiken/3d-buildings/
+pine        ?               (Provided by course)
+tree        ?               (Provided by course)
+TreeStump   ?               (Provided by course)
