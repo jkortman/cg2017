@@ -147,6 +147,7 @@ vec3 fog(in vec3 fragment, in float dist, in vec3 fog_colour)
     return mix(fragment, fog_colour, f);
 }
 
+// This process for light-scttaering is derived from
 // http://www.iquilezles.org/www/articles/fog/fog.htm
 vec3 fog_scatter(in vec3 fragment, in float dist, in vec3 fog_colour, in vec3 fog_colour_sun, in vec3 view_dir, in vec3 light_dir)
 {
