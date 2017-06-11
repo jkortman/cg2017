@@ -1,13 +1,9 @@
-/*
-Authorship: Jeremy Hughes (a1646624)
-
-Acknowledgements:
-Lode Vandevenne for general method of producing clouds from noise. (http://lodev.org/cgtutor/randomnoise.html)
-Sean Barrett for use of stb_perlin noise function
-*/
-
-
 #version 330
+// Authorship: Jeremy Hughes (a1646624)
+
+// Acknowledgements:
+// Lode Vandevenne for general method of producing clouds from noise. (http://lodev.org/cgtutor/randomnoise.html)
+// Sean Barrett for use of stb_perlin noise function
 
 in vec3 FragPos;
 in vec3 FragPosWorld;

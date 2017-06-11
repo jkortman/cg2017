@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Implementation of Water struct member functions.
 
 #include "Water.hpp"

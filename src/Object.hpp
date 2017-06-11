@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // Object class
 // A physical object in the world with some shape, position, orientation.
 

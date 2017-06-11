@@ -1,4 +1,5 @@
 #version 330
+// Authorship: James Kortman (a1648090)
 
 in vec3 FragPos;
 in vec3 Normal;

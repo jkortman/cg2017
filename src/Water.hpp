@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Water struct
 // A dynamic mesh for water.
 

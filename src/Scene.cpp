@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // Implementation of Scene class member functions.
 
 #include "Scene.hpp"

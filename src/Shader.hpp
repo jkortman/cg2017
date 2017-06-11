@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Shader class
 // Provides tools for loading shader programs.
 

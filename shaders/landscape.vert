@@ -1,4 +1,5 @@
 #version 330
+// Authorship: James Kortman (a1648090)
 
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec3 a_Normal;

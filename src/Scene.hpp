@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // Scene class
 // Contains the entire state of the world:
 // objects, lights, camera.

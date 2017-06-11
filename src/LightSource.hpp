@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 
 #ifndef LIGHTSOURCE_HPP
 #define LIGHTSOURCE_HPP

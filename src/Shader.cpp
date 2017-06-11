@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Implementation of Shader class member functions
 
 #include <cassert>

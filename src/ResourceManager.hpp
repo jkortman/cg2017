@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // ResourceManager class
 // Provides named access to resources needed by the program:
 //  - meshes

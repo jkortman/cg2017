@@ -1,6 +1,4 @@
-/*
-Authorship: Jeremy Hughes (a1646624)
-*/
+// Authorship: Jeremy Hughes (a1646624)
 // Implementation of Skybox struct member functions.
 
 #include "Skybox.hpp"

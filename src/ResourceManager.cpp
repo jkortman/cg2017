@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Implementation of ResourceManager class member functions.
 
 #include "ResourceManager.hpp"

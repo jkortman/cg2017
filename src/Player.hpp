@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Player class
 // A position and direction for a player in the world.
 

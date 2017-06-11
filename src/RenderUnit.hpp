@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // RenderUnit struct
 // Contains all the necessary data to render an object (and nothing else).
 

@@ -1,6 +1,4 @@
-/*
-Authorship: Jeremy Hughes (a1646624)
-*/
+// Authorship: xJeremy Hughes (a1646624)
 // Demo class
 // Handles setting up and running a camera demo to fly through a scene
 

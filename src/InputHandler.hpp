@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // InputHandler class
 // Provides static functions to be used as input callbacks,
 // and informs objects of input when necessary.

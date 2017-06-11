@@ -1,7 +1,4 @@
-/*
-Authorship: James Kortman (a1648090) - object loading
-            Jeremy Hughes (a1646624) - bounding boxes
-*/
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // Mesh class
 // Provides access to a mesh structure of shapes and associated
 // materials, each shape having 

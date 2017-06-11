@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Implementation of Camera class member functions.
 
 #include <glm/glm.hpp>

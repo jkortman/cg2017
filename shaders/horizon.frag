@@ -1,4 +1,5 @@
 #version 330
+// Authorship: James Kortman (a1648090)
 
 out vec4 FragColour;
 

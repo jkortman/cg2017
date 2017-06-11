@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090) & Jeremy Hughes (a1646624)
 // Landscape struct
 // A landscape is some mesh and associated objects.
 // Landscapes are intended to be generated with some TerrainGenerator,

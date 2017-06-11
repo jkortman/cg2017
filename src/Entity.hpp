@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Entity class
 // An abstract class that represents a thing in the world.
 

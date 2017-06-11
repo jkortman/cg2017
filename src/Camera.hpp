@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Camera class
 // A camera in the world with a position, direction,
 // and associated transformation matrices.

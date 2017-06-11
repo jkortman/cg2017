@@ -1,3 +1,4 @@
+// Authorship: Jeremy Hughes (a1646624)
 // Water struct
 // A dynamic mesh for water.
 

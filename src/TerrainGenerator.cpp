@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Implementation of TerrainGenerator class member functions.
 
 #include "TerrainGenerator.hpp"

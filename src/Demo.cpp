@@ -1,6 +1,4 @@
-/*
-Authorship: Jeremy Hughes (a1646624)
-*/
+// Authorship: Jeremy Hughes (a1646624)
 // Implementation of Demo class member functions.
 
 #include <glm/glm.hpp>

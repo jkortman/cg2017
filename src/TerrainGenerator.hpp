@@ -1,5 +1,6 @@
+// Authorship: James Kortman (a1648090)
 // TerrainGenerator class
-// Provides functions to generate Landscape. objects
+// Provides functions to generate Landscape objects.
 
 #ifndef TERRAINGENERATOR_HPP
 #define TERRAINGENERATOR_HPP

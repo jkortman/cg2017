@@ -1,3 +1,4 @@
+// Authorship: James Kortman (a1648090)
 // Core typedefs, constants, and global variables.
 
 #ifndef CORE_H

@@ -1,6 +1,4 @@
-/*
-Authorship: Jeremy Hughes (a1646624)
-*/
+// Authorship: Jeremy Hughes (a1646624)
 // Sound class
 // A class to manage the ambient background sounds
 
