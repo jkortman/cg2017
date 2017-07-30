@@ -35,6 +35,7 @@ const ShaderID  SHADER_NONE             = -1;
 const glm::vec3 AXIS_X                  = glm::vec3(1.0f, 0.0f, 0.0f);
 const glm::vec3 AXIS_Y                  = glm::vec3(0.0f, 1.0f, 0.0f);
 const glm::vec3 AXIS_Z                  = glm::vec3(0.0f, 0.0f, 1.0f);
+const bool      START_FULLSCREEN        = false;
 const int       DEFAULT_WINDOW_HEIGHT   = 480;
 const int       DEFAULT_WINDOW_WIDTH    = 640;
 const float     DEFAULT_FOV             = 70.0f;
@@ -44,6 +45,7 @@ const float     DEFAULT_NEAR            = 0.05;
 const float     DEFAULT_FAR             = 10.0;
 const glm::vec3 WATER_COLOUR            = glm::vec3(0.30f, 0.30f, 1.00f);
 const bool      CONSOLE_ENABLED         = false;
+const bool      DEMO_START              = false;
 
 // -------------
 // -- Globals --

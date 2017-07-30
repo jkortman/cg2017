@@ -75,8 +75,12 @@ void Renderer::initialize(bool wf, unsigned int aa_samples)
     // Setup the window.
     window_width  = DEFAULT_WINDOW_WIDTH;
     window_height = DEFAULT_WINDOW_HEIGHT;
+
+    GLFWmonitor* window_mode = nullptr;
+    if (START_FULLSCREEN) window_mode = glfwGetPrimaryMonitor();
+
     window = glfwCreateWindow(
-        window_width, window_height, "!", nullptr, nullptr);
+        window_width, window_height, "!", window_mode, nullptr);
     fatal_if(window == nullptr, "Failed to create window", glfwTerminate);
 
     glfwMakeContextCurrent(window);

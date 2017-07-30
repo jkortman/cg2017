@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "core.hpp"
 #include "Entity.hpp"
 
 struct node {glm::vec3 pos; glm::vec3 dir; };
@@ -18,7 +19,7 @@ public:
     node update_pos(float dt);
 
     std::vector<node> path;
-    bool demo_mode = false;
+    bool demo_mode = DEMO_START;
     int segment = 0;
 private:
     float time = 0;
